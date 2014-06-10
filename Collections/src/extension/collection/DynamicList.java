@@ -5,6 +5,24 @@ import java.util.Collection;
 import java.util.List;
 import java.util.RandomAccess;
 
+/**
+ * Resizable-array implementation of the <tt>List</tt> interface.  Implements
+ * all optional list operations, and permits all elements, including
+ * <tt>null</tt>.
+ *
+ * <p>The <tt>size</tt>, <tt>isEmpty</tt>, <tt>get</tt>, <tt>set</tt>,
+ * <tt>iterator</tt>, and <tt>listIterator</tt> operations run in constant
+ * time.  The <tt>add</tt> operation runs in <i>amortized constant time</i>,
+ * that is, adding n elements requires O(n) time. Removal and insertion of
+ * elements at arbitrary index runs in <i>O(sqrt(n)) amortized time</i>
+ * In most cases this implementation significantly faster than
+ * {@link java.util.ArrayList ArrayList} implementation and require just
+ * O(sqrt(n)) of additional memory.
+ *
+ * @author Ivan Zaitsau
+ * @see     Collection
+ * @see     List
+ */
 public class DynamicList<E> extends AbstractList<E> implements List<E>, RandomAccess, java.io.Serializable {
 
 	private static final long serialVersionUID = 2013_01_23_2100L;
