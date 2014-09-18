@@ -28,12 +28,12 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, RandomAc
 	private static final long serialVersionUID = 2013_01_23_2100L;
 	
 	/** Actual initial block size is 2<sup>INITIAL_BLOCK_BITSIZE</sup> */
-	static private final int INITIAL_BLOCK_BITSIZE = 3;
+	static private final int INITIAL_BLOCK_BITSIZE = 4;
 	
 	/** Number of blocks on DynamicList initialization.*/
 	static private final int INITIAL_BLOCKS_COUNT = 2;
 	
-	/** This coefficient used to check if reduction of block size is required.*/
+	/** This coefficient used to check if reduction of block size and amount of blocks is required. <br> <b>Note:</b> Must be no less than 4.*/
 	static private final int REDUCTION_COEFFICIENT = 8;
 
 	/**
@@ -57,6 +57,10 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, RandomAc
 			block1.copyToArray((E[]) mergedBlock.values, 0);
 			block2.copyToArray((E[]) mergedBlock.values, block1.size);
 			return mergedBlock;
+		}
+		
+		static <E> void split(Block<E> src, Block<E> trg1, Block<E> trg2) {
+		
 		}
 		
 		private final int mask;
@@ -89,16 +93,39 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, RandomAc
 			return size;
 		}
 		
-		E add(E value) {
-			return add((size < mask) ? size : mask, value);
+		@SuppressWarnings("unchecked")
+		E addFirst(E value) {
+			E last = null;
+			offset = (offset + mask) & mask;
+			if (size > mask)
+				last = (E) values[offset];
+			else
+				size++;
+			values[offset] = value;
+			return last;
 		}
 		
 		@SuppressWarnings("unchecked")
+		E add(E value) {
+			E last = null;
+			if (size > mask) {
+				int i = (offset + mask) & mask;
+				last = (E) values[i];
+				values[i] = value;
+			}
+			else {
+				values[(offset + size) & mask] = value;
+				size++;
+			}
+			return last;
+		}
+		
 		E add(int index, E value) {
 			// - range check
 			assert(index >= 0 && index <= size);
 			
-			Object last = size > mask ? values[(offset + mask) & mask] : null;
+			@SuppressWarnings("unchecked")			
+			E last = size > mask ? (E) values[(offset + mask) & mask] : null;
 			if (2*index < size) {
 				offset = (offset + mask) & mask;
 				for (int i = 0; i < index; i++) {
@@ -112,38 +139,52 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, RandomAc
 			}
 			values[(offset + index) & mask] = value;
 			if (size <= mask) size++;
-			return (E) last;
+			return last;
 		}
 
-		@SuppressWarnings("unchecked")
 		E set(int index, E value) {
 			// - range check
 			assert(index >= 0 && index < size);
 			
 			int i = (offset + index) & mask;
+			@SuppressWarnings("unchecked")
 			E replaced = (E) values[i];
 			values[i] = value;
 			return replaced;
+		}
+		
+		E removeFirst() {
+			// - range check
+			assert(size > 0);
+			
+			@SuppressWarnings("unchecked")
+			E removed = (E) values[offset];
+			values[offset] = null;
+			offset = (offset + 1) & mask;
+			size--;
+			return removed;
 		}
 		
 		E remove(int index) {
 			// - range check
 			assert(index >= 0 && index < size);
 			
-			E removed = get(index);
+			@SuppressWarnings("unchecked")
+			E removed = (E) values[(index + offset) & mask];
 			if (2*index < size) {
 				for (int i = index; i > 0; i--) {
 					values[(offset + i) & mask] = values[(offset + i - 1) & mask];					
 				}
+				values[offset] = null;
 				offset = (offset + 1) & mask;
 			}
 			else {
 				for (int i = index + 1; i < size; i++) {
 					values[(offset + i - 1) & mask] = values[(offset + i) & mask];
 				}
+				values[(offset + size - 1) & mask] = null;
 			}
 			size--;
-			values[(size + offset) & mask] = null;
 			return removed;
 		}
 		
@@ -200,12 +241,6 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, RandomAc
 	}
 	
 	private void compact() {
-		if (totalBlocks == 0 || data[totalBlocks-1].size() > 0)
-			return;
-		do {
-			data[--totalBlocks] = null;
-		} while(totalBlocks > 0 && data[totalBlocks-1].size() == 0);
-		
 		if (data.length <= INITIAL_BLOCKS_COUNT)
 			return;
 		if (REDUCTION_COEFFICIENT * totalBlocks <= data.length) {
@@ -213,13 +248,11 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, RandomAc
 			Block<E>[] newData = new Block[data.length/2];
 			int newBlockBitsize = blockBitsize-1;
 			int newBlocks = 0;
-			
-			Block<E> newBlock = new Block<E>(1 << newBlockBitsize);
-			newData[newBlocks++] = newBlock;
+			Block<E> newBlock = null;
 			for (int i = 0; i < totalBlocks; i++) {
 				Block<E> oldBlock = data[i];
 				for (int j = 0, l = oldBlock.size(); j < l; j++) {
-					if (newBlock.size() == 1 << newBlockBitsize) {
+					if (newBlock == null || newBlock.size() == 1 << newBlockBitsize) {
 						newBlock = new Block<E>(1 << newBlockBitsize);
 						newData[newBlocks++] = newBlock;
 					}
@@ -289,7 +322,7 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, RandomAc
 		int valueIndex = index - (blockIndex << blockBitsize);
 		element = data[blockIndex].add(valueIndex, element);
 		for (int i = blockIndex+1; i < totalBlocks; i++) {
-			element = data[i].add(0, element);
+			element = data[i].addFirst(element);
 		}
 		size++;
 	}
@@ -339,10 +372,13 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, RandomAc
 		int valueIndex = index - (blockIndex << blockBitsize);
 		E removed = data[blockIndex].remove(valueIndex);
 		for (int i = blockIndex+1; i < totalBlocks; i++) {
-			data[i-1].add(data[i].remove(0));			
+			data[i-1].add(data[i].removeFirst());
 		}
 		size--;
-		compact();
+		if (totalBlocks > 0 && data[totalBlocks-1].size() == 0) {
+			data[--totalBlocks] = null;
+			compact();
+		};
 		return removed;
 	}
 }
