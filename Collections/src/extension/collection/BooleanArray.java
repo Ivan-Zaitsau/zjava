@@ -2,7 +2,7 @@ package extension.collection;
 
 /**
  * Simple implementation of array of boolean values which
- * requires only 1 bit of memory per boolean value.
+ * requires only 1 bit of memory per boolean value
  * 
  * @author Ivan Zaitsau
  */
@@ -26,7 +26,7 @@ public class BooleanArray {
         if (size < 0)
             throw new NegativeArraySizeException("size < 0: " + size);
 		this.length = size;
-		data = new int[1 + ((size-1) >>> ADDRESS_BITS)];
+		this.data = new int[1 + ((size-1) >>> ADDRESS_BITS)];
 	}
 
     private String outOfBoundsMsg(int index) {
@@ -34,7 +34,7 @@ public class BooleanArray {
     }
 	
 	private void rangeCheck(int index) {
-		if (index >= length)
+		if (index < 0 | index >= length)
 			throw new IndexOutOfBoundsException(outOfBoundsMsg(index));
 	}
 	

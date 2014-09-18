@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.RandomAccess;
 
 /**
- * Resizable-array implementation of the <tt>List</tt> interface.  Implements
+ * Resizable array implementation of the <tt>List</tt> interface.  Implements
  * all optional list operations, and permits all elements, including
  * <tt>null</tt>.
  *
@@ -14,8 +14,8 @@ import java.util.RandomAccess;
  * <tt>iterator</tt>, and <tt>listIterator</tt> operations run in constant
  * time.  The <tt>add</tt> operation runs in <i>amortized constant time</i>,
  * that is, adding n elements requires O(n) time. Removal and insertion of
- * elements at arbitrary index runs in <i>O(sqrt(n)) amortized time</i>
- * In most cases this implementation significantly faster than
+ * elements at arbitrary index runs in <i>O(sqrt(n)) amortized time</i>.<br>
+ * In most cases this implementation is significantly faster than
  * {@link java.util.ArrayList ArrayList} implementation and require just
  * O(sqrt(n)) of additional memory.
  *
@@ -27,9 +27,25 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, RandomAc
 
 	private static final long serialVersionUID = 2013_01_23_2100L;
 	
+	/** Actual initial block size is 2<sup>INITIAL_BLOCK_BITSIZE</sup> */
 	static private final int INITIAL_BLOCK_BITSIZE = 3;
+	
+	/** Number of blocks on DynamicList initialization.*/
 	static private final int INITIAL_BLOCKS_COUNT = 2;
+	
+	/** This coefficient used to check if reduction of block size is required.*/
+	static private final int REDUCTION_COEFFICIENT = 8;
 
+	/**
+	 * Internal storage block.<br>
+	 * Implementation may vary, but the following conditions must be met:
+	 * <li> Insertions and deletions at the beginning and the end of the block must complete in constant time
+	 * <li> Retrieval of element at arbitrary position must complete in constant time
+	 * <li> Any other operation must complete in O(n)
+	 * <li> Only Blocks of sizes 2, 4, 8, ... 2<sup>30</sup> need to be supported
+	 * 
+	 * @author Ivan Zaitsau
+	 */
 	static final private class Block<E> implements java.io.Serializable {
 		
 		private static final long serialVersionUID = 2013_01_23_2100L;
@@ -49,7 +65,7 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, RandomAc
 		private final Object[] values;
 
 		Block(int capacity) {
-			// - capacity must be a power of two greater that one
+			// - capacity must be even power of 2
 			assert((capacity & (capacity-1)) == 0 && capacity > 1);
 			
 			this.mask = capacity - 1;
@@ -127,11 +143,12 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, RandomAc
 				}
 			}
 			size--;
+			values[(size + offset) & mask] = null;
 			return removed;
 		}
 		
 		@SuppressWarnings("unchecked")
-		public E get(int index) {
+		E get(int index) {
 			// - range check
 			assert(index >= 0 && index < size);
 			
@@ -148,28 +165,70 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, RandomAc
 	private void init() {
 		size = 0;
 		blockBitsize = INITIAL_BLOCK_BITSIZE;
-		int blockSize = 1 << blockBitsize;
 		data = new Block[INITIAL_BLOCKS_COUNT];
-		data[0] = new Block<E>(blockSize);
-		totalBlocks = 1;
+		totalBlocks = 0;
 	}
 	
-	@SuppressWarnings("unchecked")
-	private void ensureCapacity() {
-		if (size() < totalBlocks << blockBitsize)
-			return;
-		if (totalBlocks < data.length) {
-			data[totalBlocks++] = new Block<E>(1 << blockBitsize);
-		}
-		else {
-			blockBitsize++;
-			Block<E>[] oldData = data;
-			data = new Block[2*data.length];
-			totalBlocks = 0;
-			for (int i = 0; i < oldData.length; i += 2) {
-				data[totalBlocks++] = Block.merge(oldData[i], oldData[i+1]);
+	private void ensureCapacity(int requiredCapacity) {
+		int capacity = totalBlocks << blockBitsize;
+		while (requiredCapacity > capacity) {
+			if (totalBlocks < data.length) {
+				data[totalBlocks++] = new Block<E>(1 << blockBitsize);
 			}
-			data[totalBlocks++] = new Block<E>(1 << blockBitsize);
+			else {
+				@SuppressWarnings("unchecked")
+				Block<E>[] newData = new Block[2*data.length];
+				int newBlocks = 0;
+				int newBlockBitsize = blockBitsize+1;
+				for (int i = 1; i < data.length; i += 2) {
+					newData[newBlocks++] = Block.merge(data[i-1], data[i]);
+				}
+				newData[newBlocks++] = new Block<E>(1 << newBlockBitsize);
+				if ((data.length & 1) > 0) {
+					Block<E> oldBlock = data[data.length-1];
+					Block<E> newBlock = newData[newBlocks-1];
+					for (int i = 0; i < oldBlock.size(); i++) {
+						newBlock.add(oldBlock.get(i));
+					}
+				}
+				data = newData;
+				totalBlocks = newBlocks;
+				blockBitsize = newBlockBitsize;
+			}
+			capacity = totalBlocks << blockBitsize;
+		}
+	}
+	
+	private void compact() {
+		if (totalBlocks == 0 || data[totalBlocks-1].size() > 0)
+			return;
+		do {
+			data[--totalBlocks] = null;
+		} while(totalBlocks > 0 && data[totalBlocks-1].size() == 0);
+		
+		if (data.length <= INITIAL_BLOCKS_COUNT)
+			return;
+		if (REDUCTION_COEFFICIENT * totalBlocks <= data.length) {
+			@SuppressWarnings("unchecked")
+			Block<E>[] newData = new Block[data.length/2];
+			int newBlockBitsize = blockBitsize-1;
+			int newBlocks = 0;
+			
+			Block<E> newBlock = new Block<E>(1 << newBlockBitsize);
+			newData[newBlocks++] = newBlock;
+			for (int i = 0; i < totalBlocks; i++) {
+				Block<E> oldBlock = data[i];
+				for (int j = 0, l = oldBlock.size(); j < l; j++) {
+					if (newBlock.size() == 1 << newBlockBitsize) {
+						newBlock = new Block<E>(1 << newBlockBitsize);
+						newData[newBlocks++] = newBlock;
+					}
+					newBlock.add(oldBlock.get(j));
+				}
+			}
+			data = newData;
+			totalBlocks = newBlocks;
+			blockBitsize = newBlockBitsize;
 		}
 	}
 	
@@ -178,12 +237,12 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, RandomAc
     }
 	
 	private void rangeCheck(int index) {
-		if (index < 0 || index >= size)
+		if (index < 0 || index >= size())
 			throw new IndexOutOfBoundsException(outOfBoundsMsg(index));			
 	}
 
 	private void rangeCheckForAdd(int index) {
-		if (index < 0 || index > size)
+		if (index < 0 || index > size())
 			throw new IndexOutOfBoundsException(outOfBoundsMsg(index));
 	}
 
@@ -225,7 +284,7 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, RandomAc
      */
 	public void add(int index, E element) {
 		rangeCheckForAdd(index);
-		ensureCapacity();
+		ensureCapacity(size() + 1);
 		int blockIndex = index >>> blockBitsize;
 		int valueIndex = index - (blockIndex << blockBitsize);
 		element = data[blockIndex].add(valueIndex, element);
@@ -282,8 +341,8 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, RandomAc
 		for (int i = blockIndex+1; i < totalBlocks; i++) {
 			data[i-1].add(data[i].remove(0));			
 		}
-		if (data[totalBlocks-1].size() == 0) totalBlocks--;
 		size--;
+		compact();
 		return removed;
 	}
 }
