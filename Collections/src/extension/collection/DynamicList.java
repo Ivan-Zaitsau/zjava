@@ -28,7 +28,7 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, RandomAc
 	private static final long serialVersionUID = 2013_01_23_2100L;
 	
 	/** Actual initial block size is 2<sup>INITIAL_BLOCK_BITSIZE</sup> */
-	static private final int INITIAL_BLOCK_BITSIZE = 4;
+	static private final int INITIAL_BLOCK_BITSIZE = 3;
 	
 	/** Number of blocks on DynamicList initialization.*/
 	static private final int INITIAL_BLOCKS_COUNT = 2;
@@ -38,7 +38,10 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, RandomAc
 
 	/**
 	 * Internal storage block.<br>
-	 * Implementation may vary, but the following conditions must be met:
+	 * Maintains up to <tt>capacity</tt> objects.<br>
+	 * If there are more elements than <tt>capacity</tt> after <tt>add</tt> operation, last element is removed from the block and returned from <tt>add</tt> method.<br>
+	 * 
+	 * <p>Implementation may vary, but the following conditions must be met:
 	 * <li> Insertions and deletions at the beginning and the end of the block must complete in constant time
 	 * <li> Retrieval of element at arbitrary position must complete in constant time
 	 * <li> Any other operation must complete in O(n)
@@ -58,11 +61,7 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, RandomAc
 			block2.copyToArray((E[]) mergedBlock.values, block1.size);
 			return mergedBlock;
 		}
-		
-		static <E> void split(Block<E> src, Block<E> trg1, Block<E> trg2) {
-		
-		}
-		
+
 		private final int mask;
 		private int offset;
 		private int size;
@@ -244,6 +243,7 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, RandomAc
 		if (data.length <= INITIAL_BLOCKS_COUNT)
 			return;
 		if (REDUCTION_COEFFICIENT * totalBlocks <= data.length) {
+			// - TODO optimization required
 			@SuppressWarnings("unchecked")
 			Block<E>[] newData = new Block[data.length/2];
 			int newBlockBitsize = blockBitsize-1;
@@ -270,12 +270,12 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, RandomAc
     }
 	
 	private void rangeCheck(int index) {
-		if (index < 0 || index >= size())
+		if (index < 0 || index >= size)
 			throw new IndexOutOfBoundsException(outOfBoundsMsg(index));			
 	}
 
 	private void rangeCheckForAdd(int index) {
-		if (index < 0 || index > size())
+		if (index < 0 || index > size)
 			throw new IndexOutOfBoundsException(outOfBoundsMsg(index));
 	}
 
@@ -301,8 +301,10 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, RandomAc
      * @param e element to be appended to this list
      * @return <tt>true</tt> (as specified by {@link Collection#add})
      */
-	public boolean add(E e) {
-		add(size(), e);
+	public boolean add(E element) {
+		ensureCapacity(size + 1);
+		data[size >>> blockBitsize].add(element);
+		size++;
 		return true;
 	}
 
@@ -317,12 +319,12 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, RandomAc
      */
 	public void add(int index, E element) {
 		rangeCheckForAdd(index);
-		ensureCapacity(size() + 1);
+		ensureCapacity(size + 1);
 		int blockIndex = index >>> blockBitsize;
-		int valueIndex = index - (blockIndex << blockBitsize);
+		int valueIndex = index & (-1 >>> -blockBitsize);
 		element = data[blockIndex].add(valueIndex, element);
-		for (int i = blockIndex+1; i < totalBlocks; i++) {
-			element = data[i].addFirst(element);
+		while (++blockIndex < totalBlocks) {
+			element = data[blockIndex].addFirst(element);
 		}
 		size++;
 	}
@@ -337,7 +339,7 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, RandomAc
 	public E get(int index) {
 		rangeCheck(index);
 		int blockIndex = index >>> blockBitsize;
-		int valueIndex = index - (blockIndex << blockBitsize);
+		int valueIndex = index & (-1 >>> -blockBitsize);
 		return data[blockIndex].get(valueIndex);
 	}
 
@@ -353,7 +355,7 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, RandomAc
 	public E set(int index, E element) {
 		rangeCheck(index);
 		int blockIndex = index >>> blockBitsize;
-		int valueIndex = index - (blockIndex << blockBitsize);
+		int valueIndex = index & (-1 >>> -blockBitsize);
 		return data[blockIndex].set(valueIndex, element);
 	}
 
@@ -369,10 +371,10 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, RandomAc
 	public E remove(int index) {
 		rangeCheck(index);
 		int blockIndex = index >>> blockBitsize;
-		int valueIndex = index - (blockIndex << blockBitsize);
+		int valueIndex = index & (-1 >>> -blockBitsize);
 		E removed = data[blockIndex].remove(valueIndex);
-		for (int i = blockIndex+1; i < totalBlocks; i++) {
-			data[i-1].add(data[i].removeFirst());
+		while (++blockIndex < totalBlocks) {
+			data[blockIndex-1].add(data[blockIndex].removeFirst());
 		}
 		size--;
 		if (totalBlocks > 0 && data[totalBlocks-1].size() == 0) {
