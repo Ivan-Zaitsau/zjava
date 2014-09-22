@@ -62,6 +62,30 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, RandomAc
 			return mergedBlock;
 		}
 
+		@SuppressWarnings("unchecked")
+		static <E> Block<E>[] split(Block<E> block) {
+			if (block == null || block.size == 0)
+				return new Block[] {null, null};
+			
+			int halfSize = block.values.length / 2;
+			
+			if (block.size <= halfSize) {
+				Block<E> block1 = new Block<E>(halfSize);
+				block.copyToArray((E[]) block1.values, 0, 0, block.size);
+				block1.size = block.size;
+				return new Block[] {block1, null};
+			}
+			else {
+				Block<E> block1 = new Block<E>(halfSize);
+				block.copyToArray((E[]) block1.values, 0, 0, halfSize);
+				block1.size = halfSize;
+				Block<E> block2 = new Block<E>(halfSize);
+				block.copyToArray((E[]) block2.values, 0, halfSize, block.size - halfSize);
+				block2.size = halfSize;
+				return new Block[] {block1, block2};				
+			}
+		}
+		
 		private final int mask;
 		private int offset;
 		private int size;
@@ -76,16 +100,21 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, RandomAc
 			this.size = 0;
 			this.values = new Object[capacity];
 		}
-		
-		private void copyToArray(E[] array, int pos) {
-			if (offset + size <= values.length) {
-				System.arraycopy(values, offset, array, pos, size);
+
+		private void copyToArray(E[] array, int trgPos, int srcPos, int count) {
+			int first = (offset + srcPos < values.length) ? offset + srcPos : offset + srcPos - values.length;
+			if (first + count <= values.length) {
+				System.arraycopy(values, first, array, trgPos, count);
 			}
 			else {
-				int halfSize = values.length - offset;
-				System.arraycopy(values, offset, array, pos, halfSize);
-				System.arraycopy(values, 0, array, pos + halfSize, size - halfSize);
+				int halfCount = values.length - first;
+				System.arraycopy(values, first, array, trgPos, halfCount);
+				System.arraycopy(values, 0, array, trgPos + halfCount, count - halfCount);
 			}
+		}
+
+		private void copyToArray(E[] array, int pos) {
+			copyToArray(array, pos, 0, size);
 		}
 
 		int size() {
@@ -243,21 +272,15 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, RandomAc
 		if (data.length <= INITIAL_BLOCKS_COUNT)
 			return;
 		if (REDUCTION_COEFFICIENT * totalBlocks <= data.length) {
-			// - TODO optimization required
 			@SuppressWarnings("unchecked")
 			Block<E>[] newData = new Block[data.length/2];
 			int newBlockBitsize = blockBitsize-1;
 			int newBlocks = 0;
-			Block<E> newBlock = null;
 			for (int i = 0; i < totalBlocks; i++) {
-				Block<E> oldBlock = data[i];
-				for (int j = 0, l = oldBlock.size(); j < l; j++) {
-					if (newBlock == null || newBlock.size() == 1 << newBlockBitsize) {
-						newBlock = new Block<E>(1 << newBlockBitsize);
-						newData[newBlocks++] = newBlock;
-					}
-					newBlock.add(oldBlock.get(j));
-				}
+				Block<E>[] splitBlock = Block.split(data[i]);
+				for (int j = 0; j <= 1; j++)
+					if (splitBlock[j] != null && splitBlock[j].size() > 0)
+						newData[newBlocks++] = splitBlock[j];
 			}
 			data = newData;
 			totalBlocks = newBlocks;
