@@ -228,31 +228,33 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeCapa
 	private int blockBitsize;
 	private Block<E>[] data;
 	
-	private FarListAccess<E> farListAccess = new FarListAccess<E>() {
-
+	transient private FarListAccess<E> farAccess;
+	
+	private class FarAccess implements FarListAccess<E> {
+		
 		public long size() {
 			return size;
 		}
 
 		public E get(long index) {
 			rangeCheck(index);
-			return DynamicList.this.fastGet(index);
+			return fastGet(index);
 		}
 
 		public E set(long index, E element) {
 			rangeCheck(index);
-			return DynamicList.this.fastSet(index, element);
+			return fastSet(index, element);
 		}
 
 		public void add(long index, E element) {
 			rangeCheckForAdd(index);
 			ensureCapacity(size + 1);
-			DynamicList.this.fastAdd(index, element);
+			fastAdd(index, element);
 		}
 
 		public E remove(long index) {
 			rangeCheck(index);
-			return DynamicList.this.fastRemove(index);
+			return fastRemove(index);
 		}
 	};
 
@@ -313,7 +315,9 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeCapa
 	
 	@Override
 	public FarListAccess<E> far() {
-		return farListAccess;
+		if (farAccess == null)
+			farAccess = new FarAccess();
+		return farAccess;
 	}
 
 	@SuppressWarnings("unchecked")
