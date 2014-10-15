@@ -98,7 +98,7 @@ public class DynamicListTest {
 		assertTrue(actual.size() == 1000);
 	}
 	
-	@Test(timeout = 400)
+	@Test(timeout = 500)
 	public void performanceTest02() {
 		for (int i = 0; i < 65536; i++) {
 			actual.add(i);
