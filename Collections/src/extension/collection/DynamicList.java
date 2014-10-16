@@ -56,12 +56,11 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeCapa
 		
 		private static final long serialVersionUID = 2013_01_23_2100L;
 		
-		@SuppressWarnings("unchecked")
 		static <E> Block<E> merge(Block<E> block1, Block<E> block2) {
 			Block<E> mergedBlock = new Block<E>(block1.values.length + block2.values.length);
 			mergedBlock.size = block1.size + block2.size;
-			block1.copyToArray((E[]) mergedBlock.values, 0);
-			block2.copyToArray((E[]) mergedBlock.values, block1.size);
+			block1.copyToArray(mergedBlock.values, 0);
+			block2.copyToArray(mergedBlock.values, block1.size);
 			return mergedBlock;
 		}
 
@@ -74,16 +73,16 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeCapa
 			
 			if (block.size <= halfSize) {
 				Block<E> block1 = new Block<E>(halfSize);
-				block.copyToArray((E[]) block1.values, 0, 0, block.size);
+				block.copyToArray(block1.values, 0, 0, block.size);
 				block1.size = block.size;
 				return new Block[] {block1, null};
 			}
 			else {
 				Block<E> block1 = new Block<E>(halfSize);
-				block.copyToArray((E[]) block1.values, 0, 0, halfSize);
+				block.copyToArray(block1.values, 0, 0, halfSize);
 				block1.size = halfSize;
 				Block<E> block2 = new Block<E>(halfSize);
-				block.copyToArray((E[]) block2.values, 0, halfSize, block.size - halfSize);
+				block.copyToArray(block2.values, 0, halfSize, block.size - halfSize);
 				block2.size = halfSize;
 				return new Block[] {block1, block2};				
 			}
@@ -104,9 +103,9 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeCapa
 			this.values = new Object[capacity];
 		}
 
-		private void copyToArray(E[] array, int trgPos, int srcPos, int count) {
+		int copyToArray(Object[] array, int trgPos, int srcPos, int count) {
 			if (srcPos >= values.length | count <= 0)
-				return;
+				return 0;
 			if (srcPos + count > values.length)
 				count = values.length - srcPos;
 			int first = (offset + srcPos < values.length) ? offset + srcPos : offset + srcPos - values.length;
@@ -118,10 +117,11 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeCapa
 				System.arraycopy(values, first, array, trgPos, halfCount);
 				System.arraycopy(values, 0, array, trgPos + halfCount, count - halfCount);
 			}
+			return count;
 		}
 
-		private void copyToArray(E[] array, int pos) {
-			copyToArray(array, pos, 0, size);
+		int copyToArray(Object[] array, int pos) {
+			return copyToArray(array, pos, 0, size);
 		}
 
 		int size() {
@@ -537,5 +537,74 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeCapa
      */
 	public Iterator<E> iterator() {
 		return new Iter();
+	}
+	
+    /**
+     * Returns an array containing all of the elements in this list
+     * in proper sequence (from first to last element).
+     *
+     * <p>The returned array will be "safe" in that no references to it are
+     * maintained by this list.  (In other words, this method must allocate
+     * a new array).  The caller is thus free to modify the returned array.
+     *
+     * <p>This method acts as bridge between array-based and collection-based
+     * APIs.
+     *
+     * @return an array containing all of the elements in this list in
+     *         proper sequence
+     */
+	public Object[] toArray() {
+		long size = this.size;
+		if (size > Integer.MAX_VALUE)
+			throw new OutOfMemoryError("Required array size too large");
+		int expectedModCount = modCount;
+		Object[] r = new Object[(int) size];
+		for (int i = 0, pos = 0; i < totalBlocks; i++) {
+			pos += data[i].copyToArray(r, pos);
+			if (expectedModCount != modCount)
+				throw new ConcurrentModificationException();
+		}
+		return r;
+	}
+
+    /**
+     * Returns an array containing all of the elements in this list in proper
+     * sequence (from first to last element); the runtime type of the returned
+     * array is that of the specified array.  If the list fits in the
+     * specified array, it is returned therein.  Otherwise, a new array is
+     * allocated with the runtime type of the specified array and the size of
+     * this list.
+     *
+     * <p>If the list fits in the specified array with room to spare
+     * (i.e., the array has more elements than the list), the element in
+     * the array immediately following the end of the collection is set to
+     * <tt>null</tt>.  (This is useful in determining the length of the
+     * list <i>only</i> if the caller knows that the list does not contain
+     * any null elements.)
+     *
+     * @param a the array into which the elements of the list are to
+     *          be stored, if it is big enough; otherwise, a new array of the
+     *          same runtime type is allocated for this purpose.
+     * @return an array containing the elements of the list
+     * @throws ArrayStoreException if the runtime type of the specified array
+     *         is not a supertype of the runtime type of every element in
+     *         this list
+     * @throws NullPointerException if the specified array is null
+     */
+	public <T> T[] toArray(T[] a) {
+		long size = this.size;
+		if (size > Integer.MAX_VALUE)
+			throw new OutOfMemoryError("Required array size too large");
+		int expectedModCount = modCount;
+		@SuppressWarnings("unchecked")
+		T[] r = (a.length < size) ? (T[]) java.lang.reflect.Array.newInstance(a.getClass().getComponentType(), (int) size) : a;
+		for (int i = 0, pos = 0; i < totalBlocks; i++) {
+			pos += data[i].copyToArray(r, pos);
+			if (expectedModCount != modCount)
+				throw new ConcurrentModificationException();			
+		}
+		if (r.length > size)
+			r[(int) size] = null;
+		return r;
 	}
 }
