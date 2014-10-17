@@ -1,6 +1,7 @@
 package extension.collection;
 
 import java.util.AbstractList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.ConcurrentModificationException;
 import java.util.Iterator;
@@ -400,6 +401,21 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeCapa
 		data = new Block[INITIAL_BLOCKS_COUNT];
 		totalBlocks = 0;
 	}
+
+    /**
+     * Constructs a list containing the elements of the specified
+     * collection, in the order they are returned by the collection's
+     * iterator.
+     *
+     * @param c the collection whose elements are to be placed into this list
+     * @throws NullPointerException if the specified collection is null
+     */
+	@SuppressWarnings("unchecked")
+	public DynamicList(Collection<? extends E> src) {
+		this();
+		for (E e : (E[]) src.toArray())
+			add(e);			
+	}
 	
     /**
      * Returns the number of elements in this list.<br>
@@ -556,14 +572,12 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeCapa
 		if (size > Integer.MAX_VALUE)
 			throw new OutOfMemoryError("Required array size too large");
 		
-		int expectedModCount = modCount;
 		Object[] r = new Object[(int) size];
-		for (int i = 0, pos = 0; i < totalBlocks; i++) {
+		int pos = 0;
+		for (int i = 0; i < totalBlocks; i++) {
 			pos += data[i].copyToArray(r, pos);
-			if (expectedModCount != modCount)
-				throw new ConcurrentModificationException();
 		}
-		return r;
+		return (pos < size) ? Arrays.copyOf(r, pos) : r;
 	}
 
     /**
@@ -595,15 +609,12 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeCapa
 		if (size > Integer.MAX_VALUE)
 			throw new OutOfMemoryError("Required array size too large");
 		
-		int expectedModCount = modCount;
 		@SuppressWarnings("unchecked")
 		T[] r = (a.length < size)
 				? (T[]) java.lang.reflect.Array.newInstance(a.getClass().getComponentType(), (int) size)
 				: a;
 		for (int i = 0, pos = 0; i < totalBlocks; i++) {
-			pos += data[i].copyToArray(r, pos);
-			if (expectedModCount != modCount)
-				throw new ConcurrentModificationException();			
+			pos += data[i].copyToArray(r, pos);	
 		}
 		if (r.length > size)
 			r[(int) size] = null;
