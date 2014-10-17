@@ -78,22 +78,19 @@ public class DynamicListTest {
 	
 	// - performance tests
 	
-	@Test(timeout = 1000)
+	@Test(timeout = 2000)
 	public void performanceTest01() {
 		for (int i = 0; i < 1000; i++) {
 			actual.add(i);
 		}
-		for (int i = 0; i < 300000; i++) {
-			int index = i / 2;
-			actual.add(index, i);
+		for (int i = 0; i < 500000; i++) {
+			actual.add(32 + (i & 1), i & 63);
 		}
-		for (int i = 0; i < 150000; i++) {
-			int index = 150000-i;
-			actual.remove(index);
+		for (int i = 0; i < 250000; i++) {
+			actual.remove(250000 - i);
 		}
-		for (int i = 0; i < 150000; i++) {
-			int index = 720;
-			actual.remove(index);
+		for (int i = 0; i < 250000; i++) {
+			actual.remove(i & 511);
 		}
 		assertTrue(actual.size() == 1000);
 	}
@@ -101,7 +98,7 @@ public class DynamicListTest {
 	@Test(timeout = 500)
 	public void performanceTest02() {
 		for (int i = 0; i < 65536; i++) {
-			actual.add(i);
+			actual.add(i & 63);
 		}
 		for (int i = 0; i < 100000000; i++) {
 			actual.get(i & 65535);

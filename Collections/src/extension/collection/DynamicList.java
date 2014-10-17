@@ -31,12 +31,13 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeCapa
 	private static final long serialVersionUID = 2013_01_23_2100L;
 	
 	/** Actual initial block size is 2<sup>INITIAL_BLOCK_BITSIZE</sup> */
-	static private final int INITIAL_BLOCK_BITSIZE = 3;
+	static private final int INITIAL_BLOCK_BITSIZE = 4;
 	
 	/** Number of blocks on DynamicList initialization.*/
-	static private final int INITIAL_BLOCKS_COUNT = 2;
+	static private final int INITIAL_BLOCKS_COUNT = 1;
 	
-	/** This coefficient used to check if reduction of block size and amount of blocks is required. <br> <b>Note:</b> Must be no less than 4.*/
+	/** This coefficient used to check if reduction of block size and amount of blocks is required.
+	 * <br> <b>Note:</b> Must be no less than 4. Needs to be no less than 8 to hold */
 	static private final int REDUCTION_COEFFICIENT = 8;
 
 	/**
@@ -276,17 +277,18 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeCapa
 		int expectedModCount = modCount;
 		
 		public boolean hasNext() {
-			return i < DynamicList.this.size;
+			return i < size;
 		}
 
         public E next() {
             checkForComodification();
-            
             try {
-                E next = DynamicList.this.fastGet(i);
+                rangeCheck(i);
+                E next = fastGet(i);
                 last = i++;
                 return next;
-            } catch (IndexOutOfBoundsException e) {
+            }
+            catch (IndexOutOfBoundsException e) {
                 checkForComodification();
                 throw new NoSuchElementException();
             }
@@ -320,14 +322,6 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeCapa
 		return farAccess;
 	}
 
-	@SuppressWarnings("unchecked")
-	private void init() {
-		size = 0;
-		blockBitsize = INITIAL_BLOCK_BITSIZE;
-		data = new Block[INITIAL_BLOCKS_COUNT];
-		totalBlocks = 0;
-	}
-	
 	private void ensureCapacity(long requiredCapacity) {
 		long capacity = (long) totalBlocks << blockBitsize;
 		while (requiredCapacity > capacity) {
@@ -399,8 +393,12 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeCapa
     /**
      * Constructs an empty list with an initial capacity of 16 elements.
      */
+	@SuppressWarnings("unchecked")
 	public DynamicList() {
-		init();
+		size = 0;
+		blockBitsize = INITIAL_BLOCK_BITSIZE;
+		data = new Block[INITIAL_BLOCKS_COUNT];
+		totalBlocks = 0;
 	}
 	
     /**
@@ -557,6 +555,7 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeCapa
 		long size = this.size;
 		if (size > Integer.MAX_VALUE)
 			throw new OutOfMemoryError("Required array size too large");
+		
 		int expectedModCount = modCount;
 		Object[] r = new Object[(int) size];
 		for (int i = 0, pos = 0; i < totalBlocks; i++) {
@@ -595,9 +594,12 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeCapa
 		long size = this.size;
 		if (size > Integer.MAX_VALUE)
 			throw new OutOfMemoryError("Required array size too large");
+		
 		int expectedModCount = modCount;
 		@SuppressWarnings("unchecked")
-		T[] r = (a.length < size) ? (T[]) java.lang.reflect.Array.newInstance(a.getClass().getComponentType(), (int) size) : a;
+		T[] r = (a.length < size)
+				? (T[]) java.lang.reflect.Array.newInstance(a.getClass().getComponentType(), (int) size)
+				: a;
 		for (int i = 0, pos = 0; i < totalBlocks; i++) {
 			pos += data[i].copyToArray(r, pos);
 			if (expectedModCount != modCount)
