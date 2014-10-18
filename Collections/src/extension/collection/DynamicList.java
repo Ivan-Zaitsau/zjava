@@ -41,7 +41,15 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeCapa
 	 * <br> <b>Note:</b> Must be no less than 4. Needs to be no less than 8 to hold */
 	static private final int REDUCTION_COEFFICIENT = 8;
 
-	/**
+    /**
+     * The maximum size of array to allocate.<br>
+     * Some VMs reserve some header words in an array.
+     * Attempts to allocate larger arrays may result in
+     * OutOfMemoryError: Requested array size exceeds VM limit
+     */
+	static private final int MAX_ARRAY_SIZE = Integer.MAX_VALUE - 8;
+
+    /**
 	 * Internal storage block.<br>
 	 * Maintains up to <tt>capacity</tt> objects.<br>
 	 * If there are more elements than <tt>capacity</tt> after <tt>add</tt> operation, last element is removed from the block and returned from <tt>add</tt> method.<br>
@@ -230,7 +238,7 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeCapa
 	private int blockBitsize;
 	private Block<E>[] data;
 	
-	transient private FarListAccess<E> farAccess;
+	private transient FarListAccess<E> farAccess;
 	
 	private class FarAccess implements FarListAccess<E> {
 		
@@ -413,10 +421,21 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeCapa
 	@SuppressWarnings("unchecked")
 	public DynamicList(Collection<? extends E> src) {
 		this();
-		for (E e : (E[]) src.toArray())
-			add(e);			
+		// - unsafe, can throw ConcurrentModificationException if source collection is changed
+		if (src.size() > MAX_ARRAY_SIZE) {
+			synchronized(src) {
+				for (E e : src)
+					add(e);
+			}
+		}
+		// - more safe but resource consuming as well.
+		// - can't be applied to enormous collections with more than MAX_ARRAY_SIZE elements.
+		else {
+			for (E e : (E[]) src.toArray())
+				add(e);
+		}
 	}
-	
+
     /**
      * Returns the number of elements in this list.<br>
      * If this list  contains more than <tt>Integer.MAX_VALUE</tt> elements,
@@ -569,7 +588,7 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeCapa
      */
 	public Object[] toArray() {
 		long size = this.size;
-		if (size > Integer.MAX_VALUE)
+		if (size > MAX_ARRAY_SIZE)
 			throw new OutOfMemoryError("Required array size too large");
 		
 		Object[] r = new Object[(int) size];
@@ -606,7 +625,7 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeCapa
      */
 	public <T> T[] toArray(T[] a) {
 		long size = this.size;
-		if (size > Integer.MAX_VALUE)
+		if (size > MAX_ARRAY_SIZE)
 			throw new OutOfMemoryError("Required array size too large");
 		
 		@SuppressWarnings("unchecked")
