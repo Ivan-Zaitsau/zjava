@@ -101,8 +101,9 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeCapa
 		private final int mask;
 		private int offset;
 		private int size;
-		private final Object[] values;
+		private final E[] values;
 
+		@SuppressWarnings("unchecked")
 		Block(int capacity) {
 			// - capacity must be even power of 2
 			assert((capacity & (capacity-1)) == 0 && capacity > 1);
@@ -110,7 +111,7 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeCapa
 			this.mask = capacity - 1;
 			this.offset = 0;
 			this.size = 0;
-			this.values = new Object[capacity];
+			this.values = (E[]) new Object[capacity];
 		}
 
 		int copyToArray(Object[] array, int trgPos, int srcPos, int count) {
@@ -140,8 +141,7 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeCapa
 		
 		E addFirst(E value) {
 			offset = (offset - 1) & mask;
-			@SuppressWarnings("unchecked")
-			E last = (E) values[offset];
+			E last = values[offset];
 			values[offset] = value;
 			if (size <= mask) {
 				size++;
@@ -160,8 +160,7 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeCapa
 			// - range check
 			assert(index >= 0 && index <= size);
 			
-			@SuppressWarnings("unchecked")			
-			E last = size > mask ? (E) values[(offset - 1) & mask] : null;
+			E last = size > mask ? values[(offset - 1) & mask] : null;
 			if (2*index < size) {
 				offset = (offset - 1) & mask;
 				for (int i = 0; i < index; i++) {
@@ -183,8 +182,7 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeCapa
 			assert(index >= 0 && index < size);
 			
 			int i = (offset + index) & mask;
-			@SuppressWarnings("unchecked")
-			E replaced = (E) values[i];
+			E replaced = values[i];
 			values[i] = value;
 			return replaced;
 		}
@@ -193,8 +191,7 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeCapa
 			// - range check
 			assert(size > 0);
 			
-			@SuppressWarnings("unchecked")
-			E removed = (E) values[offset];
+			E removed = values[offset];
 			values[offset] = null;
 			offset = (offset + 1) & mask;
 			size--;
@@ -205,8 +202,7 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeCapa
 			// - range check
 			assert(index >= 0 && index < size);
 			
-			@SuppressWarnings("unchecked")
-			E removed = (E) values[(offset + index) & mask];
+			E removed = values[(offset + index) & mask];
 			if (2*index < size) {
 				for (int i = index; i > 0; i--) {
 					values[(offset + i) & mask] = values[(offset + i - 1) & mask];					
@@ -224,12 +220,11 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeCapa
 			return removed;
 		}
 		
-		@SuppressWarnings("unchecked")
 		E get(int index) {
 			// - range check
 			assert(index >= 0 && index < size);
 			
-			return (E) values[(offset + index) & mask];
+			return values[(offset + index) & mask];
 		}
 	}
 
@@ -281,7 +276,7 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeCapa
 		long last = -1;
 		
 		/**
-		 * Expected version (modifications count) of the backing List, must 
+		 * Expected version (modifications count) of the backing List 
 		 */
 		int expectedModCount = modCount;
 		
@@ -502,7 +497,7 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeCapa
 	private E fastGet(long index) {
 		int blockIndex = (int) (index >>> blockBitsize);
 		int valueIndex = (int) (index & (-1L >>> -blockBitsize));
-		return data[blockIndex].get(valueIndex);		
+		return data[blockIndex].get(valueIndex);
 	}
 	
     /**
