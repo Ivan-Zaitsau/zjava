@@ -306,7 +306,8 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeCapa
             checkForComodification();
             
             try {
-            	DynamicList.this.remove(last);
+                rangeCheck(last);
+            	fastRemove(last);
                 if (last < i) i--;
                 last = -1;
                 expectedModCount = modCount;
@@ -387,7 +388,7 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeCapa
 	
 	private void rangeCheck(long index) {
 		if (index < 0 || index >= size)
-			throw new IndexOutOfBoundsException(outOfBoundsMsg(index));			
+			throw new IndexOutOfBoundsException(outOfBoundsMsg(index));
 	}
 
 	private void rangeCheckForAdd(long index) {
