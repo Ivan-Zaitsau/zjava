@@ -2,7 +2,7 @@ package extension.collection;
 
 /**
  * The <tt>FarListAccess</tt> interface provides number of methods to access
- * {@link List} elements beyond <tt>Integer.MAX_VALUE</tt> limit.<br>
+ * list elements beyond <tt>Integer.MAX_VALUE</tt> limit.<br>
  * 
  * @author Ivan Zaitsau
  */

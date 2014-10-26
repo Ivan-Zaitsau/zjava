@@ -5,6 +5,7 @@ import static org.junit.Assert.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -76,9 +77,21 @@ public class DynamicListTest {
 		assertTrue(actual.isEmpty());
 	}
 	
+	@Test
+	public void iteratorTest01() {
+		try {
+			expected.iterator().next();
+		}
+		catch(NoSuchElementException e) {
+			return;
+		}
+		catch (Throwable e) {}
+		assertTrue(false);
+	}
+	
 	// - performance tests
 	
-	@Test(timeout = 2000)
+	@Test(timeout = 1000)
 	public void performanceTest01() {
 		for (int i = 0; i < 1000; i++) {
 			actual.add(i);
@@ -95,13 +108,14 @@ public class DynamicListTest {
 		assertTrue(actual.size() == 1000);
 	}
 	
-	@Test(timeout = 500)
+	@Test(timeout = 1000)
 	public void performanceTest02() {
 		for (int i = 0; i < 65536; i++) {
 			actual.add(i & 63);
 		}
 		for (int i = 0; i < 100000000; i++) {
 			actual.get(i & 65535);
+			actual.get((i + 40000) & 65535);
 		}
 	}
 }

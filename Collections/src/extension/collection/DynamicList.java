@@ -29,7 +29,7 @@ import java.util.RandomAccess;
  */
 public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeCapacityList<E>, RandomAccess, java.io.Serializable {
 
-	private static final long serialVersionUID = 2013_01_23_2100L;
+	static private final long serialVersionUID = 2013_01_23_2100L;
 	
 	/** Actual initial block size is 2<sup>INITIAL_BLOCK_BITSIZE</sup> */
 	static private final int INITIAL_BLOCK_BITSIZE = 4;
@@ -38,7 +38,7 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeCapa
 	static private final int INITIAL_BLOCKS_COUNT = 1;
 	
 	/** This coefficient used to check if reduction of block size and amount of blocks is required.
-	 * <br> <b>Note:</b> Must be no less than 4. Needs to be no less than 8 to hold */
+	 * <br> <b>Note:</b> Must be no less than 4. Needs to be no less than 8 for amortized performance estimations to hold */
 	static private final int REDUCTION_COEFFICIENT = 8;
 
     /**
@@ -67,7 +67,9 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeCapa
 		private static final long serialVersionUID = 2013_01_23_2100L;
 		
 		static <E> Block<E> merge(Block<E> block1, Block<E> block2) {
-			Block<E> mergedBlock = new Block<E>(block1.values.length + block2.values.length);
+			assert block1.values.length == block2.values.length;
+			
+			Block<E> mergedBlock = new Block<E>(2*block1.values.length);
 			mergedBlock.size = block1.size + block2.size;
 			block1.copyToArray(mergedBlock.values, 0);
 			block2.copyToArray(mergedBlock.values, block1.size);
@@ -319,7 +321,6 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeCapa
 		}
 	}
 	
-	@Override
 	public FarListAccess<E> far() {
 		if (farAccess == null)
 			farAccess = new FarAccess();
@@ -394,15 +395,19 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeCapa
 			throw new IndexOutOfBoundsException(outOfBoundsMsg(index));
 	}
 
+	@SuppressWarnings("unchecked")
+	private void init() {
+		size = 0;
+		totalBlocks = 0;		
+		blockBitsize = INITIAL_BLOCK_BITSIZE;
+		data = new Block[INITIAL_BLOCKS_COUNT];
+	}
+	
     /**
      * Constructs an empty list with an initial capacity of 16 elements.
      */
-	@SuppressWarnings("unchecked")
 	public DynamicList() {
-		size = 0;
-		blockBitsize = INITIAL_BLOCK_BITSIZE;
-		data = new Block[INITIAL_BLOCKS_COUNT];
-		totalBlocks = 0;
+		init();
 	}
 
     /**
@@ -549,6 +554,16 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeCapa
 			compact();
 		};
 		return removed;
+	}
+
+	/**
+	 * Removes all of the elements from this list. The list will be empty after this call returns.
+	 */
+	public void clear() {
+		for (int i = 0; i < totalBlocks; i++)
+			data[i] = null;
+		totalBlocks = 0;
+		size = 0;
 	}
 
     /**
