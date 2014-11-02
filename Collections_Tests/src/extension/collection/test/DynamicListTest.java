@@ -13,9 +13,9 @@ import org.junit.Test;
 import extension.collection.DynamicList;
 
 public class DynamicListTest {
-
-	List<Integer> expected;
-	List<Integer> actual;
+	
+	private List<Integer> actual;
+	private List<Integer> expected;
 	
 	@Before
 	public void init() {
@@ -24,29 +24,80 @@ public class DynamicListTest {
 		actual = new DynamicList<Integer>();
 	}
 	
-	// - basic operations tests
+	// - edge cases
 	
-	@Test
-	public void addRemoveTest01() {
-		List<Integer> sample = Arrays.asList(new Integer[] {2, 3, 5, null, 7, 13, 1, 8, null});
-		expected.addAll(sample);
-		actual.addAll(sample);
-		assertEquals(expected, actual);
-		expected.remove(1);
-		actual.remove(1);
-		assertEquals(expected, actual);
-		expected.add(1);
-		actual.add(1);
-		assertEquals(expected, actual);
-		expected.addAll(sample);
-		actual.addAll(sample);
-		assertEquals(expected, actual);
-		for (int i = 0; i < expected.size(); i++)
-			assertEquals(expected.get(i), actual.get(i));
+	@Test(timeout = 200)
+	public void iteratorTest01() {
+		try {
+			actual.iterator().next();
+		}
+		catch(NoSuchElementException e) {
+			return;
+		}
+		catch (Throwable e) {}
+		assertTrue(false);
 	}
 	
-	@Test
-	public void addRemoveTest02() {
+	@Test(timeout = 200)
+	public void nullTest01() {
+		int exceptionsCount = 0;
+		// - 1
+		try {
+			actual.add(null);
+		}
+		catch (NullPointerException npe) {
+			exceptionsCount++;
+		}
+		// - 2
+		try {
+			actual.addAll(Arrays.asList(new Integer[] {1, null, 1}));
+		}
+		catch (NullPointerException npe) {
+			exceptionsCount++;
+		}
+		// - 3
+		try {
+			assertTrue(actual.contains(null));
+		}
+		catch (NullPointerException npe) {
+			exceptionsCount++;
+		}
+		// - 4
+		try {
+			assertEquals(actual.indexOf(null), 0);
+		}
+		catch (NullPointerException npe) {
+			exceptionsCount++;
+		}
+		// - 5
+		try {
+			assertEquals(actual.lastIndexOf(null), 2);
+		}
+		catch (NullPointerException npe) {
+			exceptionsCount++;
+		}
+		// - 6
+		try {
+			actual.retainAll(Arrays.asList(new Integer[] {null}));
+		}
+		catch (NullPointerException npe) {
+			exceptionsCount++;
+		}
+		// - 7
+		try {
+			actual.removeAll(Arrays.asList(new Integer[] {null}));
+		}
+		catch (NullPointerException npe) {
+			exceptionsCount++;
+		}
+		assertTrue(actual.isEmpty());
+		assertTrue(exceptionsCount == 0 || exceptionsCount == 7);
+	}
+
+	// - basic operations tests
+	
+	@Test(timeout = 200)
+	public void addRemoveTest01() {
 		for (int i = 0; i < 1000; i++) {
 			Integer value = i;
 			expected.add(value);
@@ -77,16 +128,23 @@ public class DynamicListTest {
 		assertTrue(actual.isEmpty());
 	}
 	
-	@Test
-	public void iteratorTest01() {
-		try {
-			expected.iterator().next();
-		}
-		catch(NoSuchElementException e) {
-			return;
-		}
-		catch (Throwable e) {}
-		assertTrue(false);
+	@Test(timeout = 200)
+	public void addRemoveTest02() {
+		List<Integer> sample = Arrays.asList(new Integer[] {2, 3, 5, null, 7, 13, 1, 8, null});
+		expected.addAll(sample);
+		actual.addAll(sample);
+		assertEquals(expected, actual);
+		expected.remove(1);
+		actual.remove(1);
+		assertEquals(expected, actual);
+		expected.add(1);
+		actual.add(1);
+		assertEquals(expected, actual);
+		expected.addAll(sample);
+		actual.addAll(sample);
+		assertEquals(expected, actual);
+		for (int i = 0; i < expected.size(); i++)
+			assertEquals(expected.get(i), actual.get(i));
 	}
 	
 	// - performance tests
