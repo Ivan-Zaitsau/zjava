@@ -34,7 +34,7 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeCapa
 	static private final long serialVersionUID = 2014_10_30_2100L;
 	
 	/** Actual initial block size is 2<sup>INITIAL_BLOCK_BITSIZE</sup> */
-	static private final int INITIAL_BLOCK_BITSIZE = 5;
+	static private final int INITIAL_BLOCK_BITSIZE = 4;
 	
 	/** Number of blocks on DynamicList initialization.*/
 	static private final int INITIAL_BLOCKS_COUNT = 1;
@@ -118,6 +118,12 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeCapa
 			this.values = (E[]) new Object[capacity];
 		}
 
+		Block(int capacity, E[] values, int pos, int length) {
+			this(capacity);
+			System.arraycopy(values, pos, this.values, 0, length);
+			size = length;
+		}
+		
 		int copyToArray(Object[] array, int trgPos, int srcPos, int count) {
 			if (srcPos >= values.length | count <= 0)
 				return 0;
@@ -233,7 +239,7 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeCapa
 	}
 
 	private long size;
-	private int usedBlocks;
+	private int allocatedBlocks;
 	private int blockBitsize;
 	private Block<E>[] data;
 	
@@ -331,11 +337,11 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeCapa
 	}
 
 	private void ensureCapacity(long requiredCapacity) {
-		long capacity = (long) usedBlocks << blockBitsize;
+		long capacity = (long) allocatedBlocks << blockBitsize;
 		while (requiredCapacity > capacity) {
 			modCount++;
-			if (usedBlocks < data.length) {
-				data[usedBlocks++] = new Block<E>(1 << blockBitsize);
+			if (allocatedBlocks < data.length) {
+				data[allocatedBlocks++] = new Block<E>(1 << blockBitsize);
 			}
 			else {
 				// - double number of blocks and their size
@@ -355,32 +361,32 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeCapa
 					}
 				}
 				data = newData;
-				usedBlocks = newBlocks;
+				allocatedBlocks = newBlocks;
 				blockBitsize = newBlockBitsize;
 			}
-			capacity = usedBlocks << blockBitsize;
+			capacity = (long) allocatedBlocks << blockBitsize;
 		}
 	}
 	
 	private void compact() {
 		if (data.length <= INITIAL_BLOCKS_COUNT)
 			return;
-		if (REDUCTION_COEFFICIENT * usedBlocks <= data.length) {
-			modCount++;
+		if ((long) REDUCTION_COEFFICIENT * allocatedBlocks <= data.length) {
 			// - decrease number of blocks and their size by half
 			@SuppressWarnings("unchecked")
 			Block<E>[] newData = new Block[(data.length+1)/2];
 			int newBlockBitsize = blockBitsize-1;
 			int newBlocks = 0;
-			for (int i = 0; i < usedBlocks; i++) {
+			for (int i = 0; i < allocatedBlocks; i++) {
 				Block<E>[] splitBlock = Block.split(data[i]);
 				for (int j = 0; j <= 1; j++)
 					if (splitBlock[j] != null && splitBlock[j].size() > 0)
 						newData[newBlocks++] = splitBlock[j];
 			}
 			data = newData;
-			usedBlocks = newBlocks;
+			allocatedBlocks = newBlocks;
 			blockBitsize = newBlockBitsize;
+			modCount++;
 		}
 	}
 	
@@ -405,7 +411,7 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeCapa
 	@SuppressWarnings("unchecked")
 	private void init(long initialCapacity) {
 		size = 0;
-		usedBlocks = 0;		
+		allocatedBlocks = 0;		
 		blockBitsize = INITIAL_BLOCK_BITSIZE;
 		int blocksCount = INITIAL_BLOCKS_COUNT;
 		while ((long)blocksCount << blockBitsize < initialCapacity) {
@@ -415,18 +421,36 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeCapa
 		data = new Block[blocksCount];
 	}
 
+    /**
+     * Removes from this list all of the elements whose index is between
+     * {@code fromIndex}, inclusive, and {@code toIndex}, exclusive.
+     * Shifts any succeeding elements to the left (reduces their index).
+     *
+     * @throws IndexOutOfBoundsException if {@code fromIndex} or
+     *         {@code toIndex} is out of range
+     */
+	protected void removeRange(int fromIndex, int toIndex) {
+		int fromBlock = (int) (((long)fromIndex + (1 << blockBitsize) - 1) >>> blockBitsize);
+		int toBlock = (toIndex >>> blockBitsize);
+		int d = toBlock - fromBlock;
+		if (d > 0) {
+			for (int i = toBlock; i < allocatedBlocks; i++) {
+				data[i-d] = data[i];
+				data[i] = null;
+			}
+			allocatedBlocks -= d;
+			size -= d << blockBitsize;
+			toIndex -= d << blockBitsize;
+		}
+		for (int i = fromIndex; i < toIndex; i++)
+			fastRemove(fromIndex);
+	}
+	
 	/**
-     * Constructs an empty list with an initial capacity of 32 elements.
+     * Constructs an empty list with an initial capacity of 16 elements.
      */
 	public DynamicList() {
 		init();
-	}
-
-    /**
-     * Constructs an empty list with an initial capacity of 32 elements.
-     */
-	public DynamicList(long initialCapacity) {
-		init(initialCapacity);
 	}
 
     /**
@@ -499,13 +523,84 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeCapa
 		modCount++;
 		int blockIndex = (int) (index >>> blockBitsize);
 		int valueIndex = (int) (index & (-1L >>> -blockBitsize));
-		element = data[blockIndex].add(valueIndex, element);
-		while (++blockIndex < usedBlocks) {
-			element = data[blockIndex].addFirst(element);
+		int blockSize = 1 << blockBitsize;
+		if (data[blockIndex].size() < blockSize) {
+			data[blockIndex].add(valueIndex, element);
+		}
+		else {
+			element = data[blockIndex].add(valueIndex, element);
+			while (data[++blockIndex].size() == blockSize) {
+				element = data[blockIndex].addFirst(element);
+			}
+			data[blockIndex].addFirst(element);			
 		}
 		size++;		
 	}
-	
+
+    /**
+     * Appends all of the elements in the specified collection to the end of
+     * this list, in the order that they are returned by the
+     * specified collection's Iterator.
+     *
+     * @param c collection containing elements to be added to this list
+     * @return <tt>true</tt> if this list changed as a result of the call
+     * @throws NullPointerException if the specified collection is null
+     */
+    public boolean addAll(Collection<? extends E> c) {
+		@SuppressWarnings("unchecked")
+		E[] values = (E[]) c.toArray();
+    	if (values.length == 0)
+    		return false;
+    	for (E value : values)
+    		add(value);
+    	return true;
+    }
+    
+    /**
+     * Inserts all of the elements in the specified collection into this
+     * list, starting at the specified position.  Shifts the element
+     * currently at that position (if any) and any subsequent elements to
+     * the right (increases their indices).  The new elements will appear
+     * in the list in the order that they are returned by the
+     * specified collection's iterator.
+     *
+     * @param index index at which to insert the first element from the
+     *              specified collection
+     * @param c collection containing elements to be added to this list
+     * @return <tt>true</tt> if this list changed as a result of the call
+     * @throws IndexOutOfBoundsException {@inheritDoc}
+     * @throws NullPointerException if the specified collection is null
+     */
+	public boolean addAll(int index, Collection<? extends E> c) {
+    	rangeCheckForAdd(index);
+    	@SuppressWarnings("unchecked")
+		E[] values = (E[]) c.toArray();
+    	if (values.length == 0)
+    		return false;
+    	ensureCapacity(size + values.length);
+    	int blockSize = 1 << blockBitsize;
+    	int mask = (1 << blockBitsize) - 1;
+    	int i = 0;
+		while (i < values.length && ((index + i) & mask) > 0) {
+    		fastAdd((long)index + i, values[i]);
+    		i++;
+		}
+    	while ((long)i + blockSize < values.length) {
+    		int fromBlock = (int) (((long)index + i) >>> blockBitsize);
+    		int toBlock = (int) ((size + mask) >>> blockBitsize);
+    		for (int j = toBlock; j > fromBlock; j--)
+    			data[j] = data[j-1];
+    		data[fromBlock] = new Block<>(blockSize, values, i, blockSize);
+    		i += blockSize;
+    		size += blockSize;
+    	}
+    	while (i < values.length) {
+    		fastAdd((long)index + i, values[i]);
+    		i++;
+    	}
+    	return true;
+    }
+
     /**
      * Returns the element at the specified position in this list.
      *
@@ -563,15 +658,18 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeCapa
 		int blockIndex = (int) (index >>> blockBitsize);
 		int valueIndex = (int) (index & (-1L >>> -blockBitsize));
 		E removed = data[blockIndex].remove(valueIndex);
-		while (++blockIndex < usedBlocks) {
+		while (++blockIndex < allocatedBlocks && data[blockIndex].size() > 0) {
 			data[blockIndex-1].add(data[blockIndex].removeFirst());
 		}
 		size--;
 		// - free unused block for GC and compact list if needed
-		if (usedBlocks > 0 && data[usedBlocks-1].size() == 0) {
-			data[--usedBlocks] = null;
-			compact();
+		boolean blockFreed = false;
+		while (allocatedBlocks > 0 && data[allocatedBlocks-1].size() == 0) {
+			data[--allocatedBlocks] = null;
+			blockFreed = true;
 		};
+		if (blockFreed)
+			compact();
 		return removed;
 	}
 
@@ -579,9 +677,9 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeCapa
 	 * Removes all of the elements from this list. The list will be empty after this call returns.
 	 */
 	public void clear() {
-		for (int i = 0; i < usedBlocks; i++)
+		for (int i = 0; i < allocatedBlocks; i++)
 			data[i] = null;
-		usedBlocks = 0;
+		allocatedBlocks = 0;
 		size = 0;
 	}
 
@@ -622,7 +720,7 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeCapa
 		
 		Object[] r = new Object[(int) size];
 		int pos = 0;
-		for (int i = 0; i < usedBlocks; i++) {
+		for (int i = 0; i < allocatedBlocks; i++) {
 			pos += data[i].copyToArray(r, pos);
 		}
 		return (pos < size) ? Arrays.copyOf(r, pos) : r;
@@ -661,7 +759,7 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeCapa
 		T[] r = (a.length < size)
 				? (T[]) java.lang.reflect.Array.newInstance(a.getClass().getComponentType(), (int) size)
 				: a;
-		for (int i = 0, pos = 0; i < usedBlocks; i++) {
+		for (int i = 0, pos = 0; i < allocatedBlocks; i++) {
 			pos += data[i].copyToArray(r, pos);	
 		}
 		if (r.length > size)

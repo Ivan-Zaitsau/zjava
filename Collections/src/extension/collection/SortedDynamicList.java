@@ -8,7 +8,10 @@ import java.util.Iterator;
 import java.util.RandomAccess;
 
 /**
- * TODO javadoc required
+ * Simple implementation of <tt>SortedList</tt> interface which
+ * uses <tt>DynamicList</tt> implementation as internal storage. <br>
+ * Does <b>not</b> permit <i>null</i> element.<br>
+ * Supports more than <tt>Integer.MAX_VALUE</tt> elements.
  * 
  * @param <E> the type of elements in this list
  * 
@@ -83,33 +86,33 @@ public class SortedDynamicList<E> extends AbstractCollection<E> implements Sorte
 		if (size == 0)
 			return -1;
 		
-		long l = 0, r = size - 1;
+		long low = 0, high = size - 1;
 		int lastCmp;
 		if (comparator == null) {
 			@SuppressWarnings("unchecked")
 			Comparable<? super E> e = (Comparable<? super E>) o;
-			while (l < r) {
-				long i = (l + r) >>> 1;
+			while (low < high) {
+				long i = (low + high) >>> 1;
 				if (e.compareTo(storage.get(i)) <= 0)
-					r = i;
+					high = i;
 				else
-					l = i + 1;
+					low = i + 1;
 			}
-			lastCmp = e.compareTo(storage.get(l));
+			lastCmp = e.compareTo(storage.get(low));
 		}
 		else {
 			@SuppressWarnings("unchecked")
 			E e = (E) o;
-			while (l < r) {
-				long i = (l + r) >>> 1;
+			while (low < high) {
+				long i = (low + high) >>> 1;
 				if (comparator.compare(e, storage.get(i)) <= 0)
-					r = i;
+					high = i;
 				else
-					l = i + 1;
+					low = i + 1;
 			}
-			lastCmp = comparator.compare(e, storage.get(l));
+			lastCmp = comparator.compare(e, storage.get(low));
 		}
-		return (lastCmp < 0) ? -(l+1) : (lastCmp == 0) ? l : -(l+2);
+		return (lastCmp < 0) ? -(low+1) : (lastCmp == 0) ? low : -(low+2);
 	}
 	
 	// - returns index of position right after last element which is less or equal to method argument
@@ -124,41 +127,41 @@ public class SortedDynamicList<E> extends AbstractCollection<E> implements Sorte
 		if (size == 0)
 			return -1;
 		
-		long l = 0, r = size - 1;
+		long low = 0, high = size - 1;
 		int lastCmp;
 		if (comparator == null) {
 			@SuppressWarnings("unchecked")
 			Comparable<? super E> e = (Comparable<? super E>) o;
-			if (e.compareTo(storage.get(r)) >= 0)
+			if (e.compareTo(storage.get(high)) >= 0)
 				return -(size+1);
 			else
-				r--;
-			while (l < r) {
-				long i = (l + r + 1) >>> 1;
+				high--;
+			while (low < high) {
+				long i = (low + high + 1) >>> 1;
 				if (e.compareTo(storage.get(i)) < 0)
-					r = i - 1;
+					high = i - 1;
 				else
-					l = i;
+					low = i;
 			}
-			lastCmp = e.compareTo(storage.get(l));
+			lastCmp = e.compareTo(storage.get(low));
 		}
 		else {
 			@SuppressWarnings("unchecked")
 			E e = (E) o;
-			if (comparator.compare(e, storage.get(r)) >= 0)
+			if (comparator.compare(e, storage.get(high)) >= 0)
 				return -(size+1);
 			else
-				r--;
-			while (l < r) {
-				long i = (l + r + 1) >>> 1;
+				high--;
+			while (low < high) {
+				long i = (low + high + 1) >>> 1;
 				if (comparator.compare(e, storage.get(i)) < 0)
-					r = i - 1;
+					high = i - 1;
 				else
-					l = i;
+					low = i;
 			}
-			lastCmp = comparator.compare(e, storage.get(l));
+			lastCmp = comparator.compare(e, storage.get(low));
 		}
-		return (lastCmp < 0) ? -(l+1) : (lastCmp == 0) ? l+1 : -(l+2);
+		return (lastCmp < 0) ? -(low+1) : (lastCmp == 0) ? low+1 : -(low+2);
 	}
 	
 	public int indexOf(Object o) {
