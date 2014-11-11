@@ -9,7 +9,7 @@ import java.util.RandomAccess;
 
 /**
  * Simple implementation of <tt>SortedList</tt> interface which
- * uses <tt>DynamicList</tt> implementation as internal storage. <br>
+ * uses <tt>DynamicList</tt> as internal storage. <br>
  * Does <b>not</b> permit <i>null</i> element.<br>
  * Supports more than <tt>Integer.MAX_VALUE</tt> elements.
  * 

@@ -3,7 +3,9 @@ package extension.tree.test;
 import static org.junit.Assert.*;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 import org.junit.Test;
 
@@ -18,7 +20,35 @@ public class NodeTest {
 			values.add(node.getValue());
 		return (E[]) values.toArray();
 	}
+
+	// - edge cases
 	
+	@Test(timeout = 200)
+	public void iteratorAtEnd01() {
+		Node<Integer> node01 = new Node<>(1);
+		Iterator<Node<Integer>> bfsIter = node01.breadthFirstSearch().iterator();
+		assertEquals(Integer.valueOf(1), bfsIter.next().getValue());
+		boolean noSuchElement = false;
+		try {
+			bfsIter.next();
+		}
+		catch(NoSuchElementException nsee) {
+			noSuchElement = true;
+		}
+		assertTrue(noSuchElement);
+		Iterator<Node<Integer>> dfsIter = node01.depthFirstSearch().iterator();
+		assertEquals(Integer.valueOf(1), dfsIter.next().getValue());
+		noSuchElement = false;
+		try {
+			dfsIter.next();
+		}
+		catch(NoSuchElementException nsee) {
+			noSuchElement = true;
+		}
+		assertTrue(noSuchElement);
+	}
+	
+	// - basic tests
 	@Test(timeout = 200)
 	public void testDfs01() {
 		Node<Integer> node01 = new Node<>(1);
