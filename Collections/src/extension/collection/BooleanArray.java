@@ -12,7 +12,7 @@ public class BooleanArray {
 	private static int BITS = 1 << ADDRESS_BITS;
 	private static int MASK = BITS - 1;
 	
-	private int length;
+	private final int length;
 	private int[] data;
 
     /**
@@ -58,6 +58,20 @@ public class BooleanArray {
 	public void setFalse(int index) {
 		rangeCheck(index);
 		data[index >>> ADDRESS_BITS] &= ~(1L << (index & MASK));
+	}
+	
+	/**
+	 * Replaces the value at specified position with method argument
+	 * 
+	 * @param index index of value to change
+	 * @param value new value
+     * @throws IndexOutOfBoundsException if the index is out of range
+	 */
+	public void set(int index, boolean value) {
+		if (value)
+			setTrue(index);
+		else
+			setFalse(index);
 	}
 	
 	/**
