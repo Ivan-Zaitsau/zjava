@@ -31,13 +31,14 @@ import java.util.RandomAccess;
  */
 public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeCapacityList<E>, RandomAccess, java.io.Serializable {
 
-	static private final long serialVersionUID = 2014_10_30_2100L;
+	static private final long serialVersionUID = 2014_11_17_1800L;
 	
 	/** Actual initial block size is 2<sup>INITIAL_BLOCK_BITSIZE</sup> */
-	static private final int INITIAL_BLOCK_BITSIZE = 4;
+	static private final int INITIAL_BLOCK_BITSIZE = 5;
 	
-	/** Number of blocks on DynamicList initialization.*/
-	static private final int INITIAL_BLOCKS_COUNT = 1;
+	/** Number of blocks on DynamicList initialization.
+	 * <br> <b>Note:</b> Must be even number due to some simplifications and assumptions made in the code*/
+	static private final int INITIAL_BLOCKS_COUNT = 2;
 	
 	/** This coefficient used to check if reduction of block size and amount of blocks is required.
 	 * <br> <b>Note:</b> Must be no less than 4. Needs to be no less than 8 for amortized performance estimations to hold */
@@ -66,18 +67,24 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeCapa
 	 */
 	static final private class Block<E> implements java.io.Serializable {
 		
-		private static final long serialVersionUID = 2014_10_30_2100L;
+		private static final long serialVersionUID = 2014_11_17_1800L;
 		
+		// - merges two blocks of equal capacities into block with doubled capacity
 		static <E> Block<E> merge(Block<E> block1, Block<E> block2) {
-			assert block1.values.length == block2.values.length;
-			
-			Block<E> mergedBlock = new Block<E>(2*block1.values.length);
-			mergedBlock.size = block1.size + block2.size;
-			block1.copyToArray(mergedBlock.values, 0);
-			block2.copyToArray(mergedBlock.values, block1.size);
+			if ((block1 == null || block1.size() == 0) && (block2 == null || block2.size() == 0))
+				return null;
+
+			assert (block1 == null | block2 == null) || (block1.values.length == block2.values.length);
+
+			Block<E> mergedBlock = new Block<E>(2 * ((block1 == null) ? block2.values.length : block1.values.length));
+			if (block1 != null)
+				mergedBlock.size += block1.copyToArray(mergedBlock.values, 0);
+			if (block2 != null)
+				mergedBlock.size += block2.copyToArray(mergedBlock.values, mergedBlock.size);
 			return mergedBlock;
 		}
 
+		// - splits block to two smaller blocks of capacity equal to half of given block
 		@SuppressWarnings("unchecked")
 		static <E> Block<E>[] split(Block<E> block) {
 			if (block == null || block.size == 0)
@@ -239,7 +246,7 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeCapa
 	}
 
 	private long size;
-	private int allocatedBlocks;
+	// private int allocatedBlocks;
 	private int blockBitsize;
 	private Block<E>[] data;
 	
@@ -278,12 +285,12 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeCapa
 		/**
 		 * Cursor position
 		 */
-		long i = 0;
+		private long i = 0;
 		
 		/**
 		 * Current (last returned) element index or -1 if element is not defined (or has been removed)
 		 */
-		long last = -1;
+		private long last = -1;
 		
 		/**
 		 * Expected version (modifications count) of the backing List 
@@ -336,55 +343,52 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeCapa
 		return farAccess;
 	}
 
+	/** Null-safe access to data block.*/
+	private Block<E> data(int index) {
+		if (data[index] == null)
+			data[index] = new Block<E>(1 << blockBitsize);
+		return data[index];
+	}
+	
 	private void ensureCapacity(long requiredCapacity) {
-		long capacity = (long) allocatedBlocks << blockBitsize;
+		long capacity = (long) data.length << blockBitsize;
 		while (requiredCapacity > capacity) {
-			modCount++;
-			if (allocatedBlocks < data.length) {
-				data[allocatedBlocks++] = new Block<E>(1 << blockBitsize);
+			// - double number of blocks and their size
+			@SuppressWarnings("unchecked")
+			Block<E>[] newData = new Block[2*data.length];
+			int newBlockBitsize = blockBitsize+1;
+			for (int i = 1, j = 0; i < data.length; i += 2, j++) {
+				newData[j] = Block.merge(data[i-1], data[i]);
+				if (newData[j] == null)
+					break;
 			}
-			else {
-				// - double number of blocks and their size
-				@SuppressWarnings("unchecked")
-				Block<E>[] newData = new Block[2*data.length];
-				int newBlocks = 0;
-				int newBlockBitsize = blockBitsize+1;
-				for (int i = 1; i < data.length; i += 2) {
-					newData[newBlocks++] = Block.merge(data[i-1], data[i]);
-				}
-				newData[newBlocks++] = new Block<E>(1 << newBlockBitsize);
-				if ((data.length & 1) > 0) {
-					Block<E> oldBlock = data[data.length-1];
-					Block<E> newBlock = newData[newBlocks-1];
-					for (int i = 0; i < oldBlock.size(); i++) {
-						newBlock.add(oldBlock.get(i));
-					}
-				}
-				data = newData;
-				allocatedBlocks = newBlocks;
-				blockBitsize = newBlockBitsize;
-			}
-			capacity = (long) allocatedBlocks << blockBitsize;
+			/* Redundant because data.length assumed to be even number
+			 * *deleted code*
+			*/
+			data = newData;
+			blockBitsize = newBlockBitsize;
+			capacity = (long) data.length << blockBitsize;
 		}
 	}
 	
 	private void compact() {
 		if (data.length <= INITIAL_BLOCKS_COUNT)
 			return;
-		if ((long) REDUCTION_COEFFICIENT * allocatedBlocks <= data.length) {
+		if (size * REDUCTION_COEFFICIENT <= (long) data.length << blockBitsize) {
 			// - decrease number of blocks and their size by half
 			@SuppressWarnings("unchecked")
 			Block<E>[] newData = new Block[(data.length+1)/2];
 			int newBlockBitsize = blockBitsize-1;
-			int newBlocks = 0;
-			for (int i = 0; i < allocatedBlocks; i++) {
+			main:
+			for (int i = 0; ; i++) {
 				Block<E>[] splitBlock = Block.split(data[i]);
-				for (int j = 0; j <= 1; j++)
-					if (splitBlock[j] != null && splitBlock[j].size() > 0)
-						newData[newBlocks++] = splitBlock[j];
+				for (int j = 0; j <= 1; j++) {
+					if (splitBlock[j] == null || splitBlock[j].size() == 0)
+						break main;
+						newData[i+i+j] = splitBlock[j];
+				}
 			}
 			data = newData;
-			allocatedBlocks = newBlocks;
 			blockBitsize = newBlockBitsize;
 			modCount++;
 		}
@@ -411,7 +415,6 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeCapa
 	@SuppressWarnings("unchecked")
 	private void init(long initialCapacity) {
 		size = 0;
-		allocatedBlocks = 0;		
 		blockBitsize = INITIAL_BLOCK_BITSIZE;
 		int blocksCount = INITIAL_BLOCKS_COUNT;
 		while ((long)blocksCount << blockBitsize < initialCapacity) {
@@ -434,11 +437,10 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeCapa
 		int toBlock = (toIndex >>> blockBitsize);
 		int d = toBlock - fromBlock;
 		if (d > 0) {
-			for (int i = toBlock; i < allocatedBlocks; i++) {
+			for (int i = toBlock; i < data.length && data[i] != null && data[i].size() > 0; i++) {
 				data[i-d] = data[i];
 				data[i] = null;
 			}
-			allocatedBlocks -= d;
 			size -= d << blockBitsize;
 			toIndex -= d << blockBitsize;
 		}
@@ -499,7 +501,7 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeCapa
 	public boolean add(E element) {
 		ensureCapacity(size + 1);
 		int blockIndex = (int) (size >>> blockBitsize);
-		data[blockIndex].add(element);
+		data(blockIndex).add(element);
 		size++;
 		return true;
 	}
@@ -524,17 +526,17 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeCapa
 		int blockIndex = (int) (index >>> blockBitsize);
 		int valueIndex = (int) (index & (-1L >>> -blockBitsize));
 		int blockSize = 1 << blockBitsize;
-		if (data[blockIndex].size() < blockSize) {
+		if (data(blockIndex).size() < blockSize) {
 			data[blockIndex].add(valueIndex, element);
 		}
 		else {
 			element = data[blockIndex].add(valueIndex, element);
-			while (data[++blockIndex].size() == blockSize) {
+			while (data(++blockIndex).size() == blockSize) {
 				element = data[blockIndex].addFirst(element);
 			}
-			data[blockIndex].addFirst(element);			
+			data[blockIndex].addFirst(element);
 		}
-		size++;		
+		size++;
 	}
 
     /**
@@ -658,16 +660,16 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeCapa
 		int blockIndex = (int) (index >>> blockBitsize);
 		int valueIndex = (int) (index & (-1L >>> -blockBitsize));
 		E removed = data[blockIndex].remove(valueIndex);
-		while (++blockIndex < allocatedBlocks && data[blockIndex].size() > 0) {
+		while (++blockIndex < data.length && data[blockIndex] != null && data[blockIndex].size() > 0) {
 			data[blockIndex-1].add(data[blockIndex].removeFirst());
 		}
 		size--;
-		// - free unused block for GC and compact list if needed
+		// - free unused blocks for GC and compact list if needed
 		boolean blockFreed = false;
-		while (allocatedBlocks > 0 && data[allocatedBlocks-1].size() == 0) {
-			data[--allocatedBlocks] = null;
+		while (++blockIndex < data.length && data[blockIndex] != null && data[blockIndex].size() == 0) {
+			data[blockIndex] = null;
 			blockFreed = true;
-		};
+		}
 		if (blockFreed)
 			compact();
 		return removed;
@@ -677,9 +679,7 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeCapa
 	 * Removes all of the elements from this list. The list will be empty after this call returns.
 	 */
 	public void clear() {
-		for (int i = 0; i < allocatedBlocks; i++)
-			data[i] = null;
-		allocatedBlocks = 0;
+		Arrays.fill(data, null);
 		size = 0;
 	}
 
@@ -720,7 +720,7 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeCapa
 		
 		Object[] r = new Object[(int) size];
 		int pos = 0;
-		for (int i = 0; i < allocatedBlocks; i++) {
+		for (int i = 0; i < data.length && data[i] != null && data[i].size() > 0; i++) {
 			pos += data[i].copyToArray(r, pos);
 		}
 		return (pos < size) ? Arrays.copyOf(r, pos) : r;
@@ -759,7 +759,7 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeCapa
 		T[] r = (a.length < size)
 				? (T[]) java.lang.reflect.Array.newInstance(a.getClass().getComponentType(), (int) size)
 				: a;
-		for (int i = 0, pos = 0; i < allocatedBlocks; i++) {
+		for (int i = 0, pos = 0; i < data.length && data[i] != null && data[i].size() > 0; i++) {
 			pos += data[i].copyToArray(r, pos);	
 		}
 		if (r.length > size)

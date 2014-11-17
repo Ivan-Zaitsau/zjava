@@ -23,7 +23,7 @@ import java.util.RandomAccess;
  */
 public class SortedDynamicList<E> extends AbstractCollection<E> implements SortedList<E>, HugeCapacityList<E>, RandomAccess, java.io.Serializable {
 
-	static private final long serialVersionUID = 2014_10_30_2100L;
+	static private final long serialVersionUID = 2014_11_17_1800L;
 
 	private DynamicList<E> data;
 	private Comparator<? super E> comparator;
