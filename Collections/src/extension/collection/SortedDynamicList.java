@@ -333,7 +333,7 @@ public class SortedDynamicList<E> extends AbstractCollection<E> implements Sorte
 	public boolean equals(Object o) {
 		if (o == this)
 			return true;
-		if (!(o instanceof SortedList<?>))
+		if (!(o instanceof SortedList))
 			return false;
 		SortedList<?> other = (SortedList<?>) o;
 		if (size() != other.size())

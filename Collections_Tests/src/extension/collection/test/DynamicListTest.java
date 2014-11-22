@@ -26,6 +26,40 @@ public class DynamicListTest {
 	
 	// - edge cases
 	
+	@Test//(timeout = 200)
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	public void containsItself01Test() {
+		// - 1st case : simple list containing itself
+		List list = new DynamicList();
+		list.addAll(Arrays.asList(0, list, 1));
+		
+		// - positional checks
+		assertTrue(list == list.get(1));
+		assertTrue(list.equals(list.get(1)));
+		assertEquals(list, list.toArray()[1]);
+		assertEquals(list, list.toArray(new Object[0])[1]);
+		assertEquals(list, list.toArray(new Object[3])[1]);
+		// - search operations
+		assertTrue(list.contains(list));
+		assertTrue(list.containsAll(list));
+		assertEquals(1, list.indexOf(list));
+		assertEquals(1, list.lastIndexOf(list));
+		// - clone testing
+		List clone = (List)((DynamicList)list).clone();
+		assertFalse(list == clone);
+		assertTrue(list.getClass() == clone.getClass());
+		assertTrue(list.equals(clone));
+		clone.add(0, -1);
+		assertFalse(list.equals(clone));
+		assertTrue(list.get(1) == clone.get(2));
+		// - basic Object methods
+		assertNotNull(list.toString());
+		// - check&remove operations
+		assertFalse(list.retainAll(list));
+		assertTrue(list.removeAll(list));
+		assertTrue(list.isEmpty());
+	}
+	
 	@Test(timeout = 200)
 	public void iteratorTest01() {
 		try {
@@ -35,10 +69,10 @@ public class DynamicListTest {
 			return;
 		}
 		catch (Throwable e) {}
-		assertTrue(false);
+		fail();
 	}
 	
-	@Test//(timeout = 200)
+	@Test(timeout = 200)
 	public void nullTest01() {
 		int exceptionsCount = 0;
 		// - 1
@@ -96,7 +130,7 @@ public class DynamicListTest {
 
 	// - basic operations tests
 	
-	@Test//(timeout = 200)
+	@Test(timeout = 200)
 	public void addRemoveTest01() {
 		for (int i = 0; i < 1000; i++) {
 			Integer value = i;
@@ -147,12 +181,14 @@ public class DynamicListTest {
 			assertEquals(expected.get(i), actual.get(i));
 	}
 	
-	@Test//(timeout = 200)
+	@Test(timeout = 200)
 	public void addRemoveTest03() {
 		List<Integer> sample0 = Arrays.asList(7, 7, 7, 7, 7, 7, 7);
 		List<Integer> sample1 = Arrays.asList(1, 2, 1, 2, 1, 2, 1, 2);
 		List<Integer> sample2 = Arrays.asList(3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19);
 		List<Integer> sample3 = Arrays.asList(85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99);
+		List<Integer> sample4 = new ArrayList<>();
+		for (int i = 100; i < 200; i++) sample4.add(i);
 		expected.add(null);
 		actual.add(null);
 		assertEquals(expected, actual);
@@ -186,9 +222,12 @@ public class DynamicListTest {
 		expected.addAll(65, sample3);
 		actual.addAll(65, sample3);
 		assertEquals(expected, actual);
+		expected.addAll(50, sample4);
+		actual.addAll(50, sample4);
+		assertEquals(expected, actual);
 	}
 	
-	@Test//(timeout = 200)
+	@Test(timeout = 200)
 	public void sublistTest01() {
 		List<Integer> sample0 = Arrays.asList(7, 7, 7, 7, 7, 7, 7);
 		List<Integer> sample1 = Arrays.asList(1, 2, 1, 2, 1, 2, 1, 2);
@@ -228,7 +267,6 @@ public class DynamicListTest {
 		expected.subList(0, 66).clear();
 		actual.subList(0, 66).clear();
 		assertEquals(expected, actual);
-
 		assertEquals(actual, actual.subList(0, expected.size()));
 		assertTrue(actual.subList(5, 5).isEmpty());
 	}

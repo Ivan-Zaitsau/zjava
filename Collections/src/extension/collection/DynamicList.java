@@ -29,7 +29,7 @@ import java.util.RandomAccess;
  * @see     Collection
  * @see     List
  */
-public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeCapacityList<E>, RandomAccess, java.io.Serializable {
+public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeCapacityList<E>, RandomAccess, Cloneable, java.io.Serializable {
 
 	static private final long serialVersionUID = 2014_11_17_1800L;
 	
@@ -65,7 +65,7 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeCapa
 	 * 
 	 * @author Ivan Zaitsau
 	 */
-	static final private class Block<E> implements java.io.Serializable {
+	static final private class Block<E> implements Cloneable, java.io.Serializable {
 		
 		private static final long serialVersionUID = 2014_11_17_1800L;
 		
@@ -112,7 +112,7 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeCapa
 		private final int mask;
 		private int offset;
 		private int size;
-		private final E[] values;
+		private E[] values;
 
 		@SuppressWarnings("unchecked")
 		Block(int capacity) {
@@ -243,10 +243,21 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeCapa
 			
 			return values[(offset + index) & mask];
 		}
+		
+		public Object clone() {
+			try {
+				@SuppressWarnings("unchecked")
+				Block<E> clone = (Block<E>) super.clone();
+				clone.values = Arrays.copyOf(values, values.length);
+				return clone;
+			} catch (CloneNotSupportedException e) {
+	    		// - this should never be thrown since we are Cloneable
+	    		throw new InternalError();
+			}
+		}
 	}
 
 	private long size;
-	// private int allocatedBlocks;
 	private int blockBitsize;
 	private Block<E>[] data;
 	
@@ -455,7 +466,14 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeCapa
 		init();
 	}
 
-    /**
+	/**
+     * Constructs an empty list with at least specified capacity.
+     */
+	public DynamicList(long initialCapacity) {
+		init(initialCapacity);
+	}
+
+	/**
      * Constructs a list containing the elements of the specified
      * collection, in the order they are returned by the collection's
      * iterator.
@@ -587,7 +605,7 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeCapa
     		fastAdd((long)index + i, values[i]);
     		i++;
 		}
-    	while ((long)i + blockSize < values.length) {
+    	while (i < values.length - blockSize) {
     		int fromBlock = (int) (((long)index + i) >>> blockBitsize);
     		int toBlock = (int) ((size + mask) >>> blockBitsize);
     		for (int j = toBlock; j > fromBlock; j--)
@@ -718,12 +736,12 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeCapa
 		if (size > MAX_ARRAY_SIZE)
 			throw new OutOfMemoryError("Required array size too large");
 		
-		Object[] r = new Object[(int) size];
+		Object[] result = new Object[(int) size];
 		int pos = 0;
 		for (int i = 0; i < data.length && data[i] != null && data[i].size() > 0; i++) {
-			pos += data[i].copyToArray(r, pos);
+			pos += data[i].copyToArray(result, pos);
 		}
-		return (pos < size) ? Arrays.copyOf(r, pos) : r;
+		return (pos < size) ? Arrays.copyOf(result, pos) : result;
 	}
 
     /**
@@ -756,14 +774,66 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeCapa
 			throw new OutOfMemoryError("Required array size too large");
 		
 		@SuppressWarnings("unchecked")
-		T[] r = (a.length < size)
+		T[] result = (a.length < size)
 				? (T[]) java.lang.reflect.Array.newInstance(a.getClass().getComponentType(), (int) size)
 				: a;
 		for (int i = 0, pos = 0; i < data.length && data[i] != null && data[i].size() > 0; i++) {
-			pos += data[i].copyToArray(r, pos);	
+			pos += data[i].copyToArray(result, pos);	
 		}
-		if (r.length > size)
-			r[(int) size] = null;
-		return r;
+		if (result.length > size)
+			result[(int) size] = null;
+		return result;
+	}
+	
+    /**
+     * Returns a shallow copy of this <tt>DynamicList</tt> instance.
+     * (The elements themselves are not cloned).
+     *
+     * @return a clone of this <tt>DynamicList</tt> instance
+     */
+    @SuppressWarnings("unchecked")
+	public Object clone() {
+    	try {
+			DynamicList<E> clone = (DynamicList<E>) super.clone();
+			clone.farAccess = null;
+			clone.data = new Block[data.length];
+    		for (int i = 0; i < data.length && data[i] != null; i++) {
+    			clone.data[i] = (Block<E>) data[i].clone();
+    		}
+    		return clone;
+		}
+    	catch (CloneNotSupportedException e) {
+    		// - should never be thrown since we are Cloneable
+    		throw new InternalError();
+		}
+    }
+
+    /**
+     * Returns a string representation of this list. The string representation
+     * consists of a list of the collection's elements separated by commas
+     * in the order they are returned by its iterator. List enclosed in square
+     * brackets (<tt>"[]"</tt>).<br>
+     * If list is too large, only first elements will be shown, followed by
+     * three-dot (<tt>"..."</tt>).
+     */
+	public String toString() {
+        if (isEmpty())
+            return "[]";
+
+        StringBuilder sb = new StringBuilder();
+        sb.append('[');
+        for (int i = 0; i < size; ) {
+            E e = fastGet(i);
+            sb.append(e == this ? "(this List)" : e);
+            if (++i < size) {
+                if (sb.length() > 1000) {
+                	sb.append(',').append(" ...");
+                	break;
+                }            	
+                sb.append(',').append(' ');
+            }
+        }
+        sb.append(']');
+        return sb.toString();
 	}
 }
