@@ -26,7 +26,7 @@ public class DynamicListTest {
 	
 	// - edge cases
 	
-	@Test//(timeout = 200)
+	@Test(timeout = 200)
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public void containsItself01Test() {
 		// - 1st case : simple list containing itself
