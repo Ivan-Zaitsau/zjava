@@ -32,7 +32,7 @@ public class SortedDynamicListTest {
 			return;
 		}
 		catch (Throwable e) {}
-		fail();
+		assertTrue(false);
 	}
 	
 	@Test(timeout = 200)
