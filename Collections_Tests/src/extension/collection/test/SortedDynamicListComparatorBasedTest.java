@@ -1,8 +1,6 @@
 package extension.collection.test;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 import java.util.Arrays;
 import java.util.Comparator;
@@ -41,7 +39,7 @@ public class SortedDynamicListComparatorBasedTest {
 			return;
 		}
 		catch (Throwable e) {}
-		assertTrue(false);
+		fail();
 	}
 	
 	@Test(timeout = 200)
