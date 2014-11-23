@@ -21,7 +21,7 @@ import java.util.RandomAccess;
  * @see SortedList
  * @see DynamicList
  */
-public class SortedDynamicList<E> extends AbstractCollection<E> implements SortedList<E>, HugeCapacityList<E>, RandomAccess, java.io.Serializable {
+public class SortedDynamicList<E> extends AbstractCollection<E> implements SortedList<E>, HugeCapacityList<E>, RandomAccess, Cloneable, java.io.Serializable {
 
 	static private final long serialVersionUID = 2014_11_17_1800L;
 
@@ -320,6 +320,26 @@ public class SortedDynamicList<E> extends AbstractCollection<E> implements Sorte
 		return data.toArray(a);
 	}
 	
+    /**
+     * Returns a shallow copy of this <tt>SortedDynamicList</tt> instance.
+     * (The elements themselves are not cloned).
+     *
+     * @return a clone of this <tt>SortedDynamicList</tt> instance
+     */
+    @SuppressWarnings("unchecked")
+	public Object clone() {
+    	try {
+			SortedDynamicList<E> clone = (SortedDynamicList<E>) super.clone();
+			clone.farAccess = null;
+			clone.data = (DynamicList<E>) data.clone();
+    		return clone;
+		}
+    	catch (CloneNotSupportedException e) {
+    		// - should never be thrown since we are Cloneable
+    		throw new InternalError();
+		}
+    }
+
     /**
      * Compares the specified object with this list for equality. Returns
      * <tt>true</tt> if and only if the specified object is also a <tt>SortedList</tt>,

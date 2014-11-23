@@ -4,6 +4,7 @@ import static org.junit.Assert.*;
 
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.NoSuchElementException;
 
 import org.junit.Before;
@@ -89,6 +90,7 @@ public class SortedDynamicListComparatorBasedTest {
 	}
 	
 	// - basic operations tests
+	
 	@Test(timeout = 200)
 	public void generalPurposeTest01() {
 		assertTrue(actual.indexOf(1) == -1);
@@ -129,6 +131,20 @@ public class SortedDynamicListComparatorBasedTest {
 		assertFalse(actual.contains(1));
 	}
 
+	@Test(timeout = 200)
+	public void cloneTest01() {
+		actual.addAll(Arrays.asList(new Integer[] {100, 200, 300, 500, 800, 1300, 2000, 3500, 5500}));
+		@SuppressWarnings("unchecked")
+		SortedList<Integer> clone = (SortedList<Integer>) ((SortedDynamicList<?>) actual).clone();
+		assertTrue(actual.hashCode() == clone.hashCode());
+		assertTrue(actual.equals(clone) && clone.equals(actual));
+		Iterator<Integer> it1 = actual.iterator(), it2 = clone.iterator();
+		while(it1.hasNext() && it2.hasNext()) {
+			assertTrue(it1.next() == it2.next());
+		}
+		assertFalse(it1.hasNext() || it2.hasNext());
+	}
+	
 	// - performance tests
 	
 	@Test(timeout = 300)
@@ -141,6 +157,6 @@ public class SortedDynamicListComparatorBasedTest {
 	@Test(timeout = 300)	
 	public void performanceTest02() {
 		for (int i = 0; i < 100000; i++)
-			assertTrue(actual.add(-i));
+			assertTrue(actual.add(i));
 	}
 }
