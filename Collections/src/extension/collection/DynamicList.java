@@ -354,7 +354,7 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeCapa
 		return farAccess;
 	}
 
-	/** Null-safe access to data block.*/
+	/** Null-safe access to data block with initialization.*/
 	private Block<E> data(int index) {
 		if (data[index] == null)
 			data[index] = new Block<E>(1 << blockBitsize);
@@ -460,7 +460,7 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeCapa
 	}
 	
 	/**
-     * Constructs an empty list with an initial capacity of 16 elements.
+     * Constructs an empty list with an initial capacity of 32 elements.
      */
 	public DynamicList() {
 		init();

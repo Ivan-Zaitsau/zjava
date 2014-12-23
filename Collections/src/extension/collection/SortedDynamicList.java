@@ -384,4 +384,14 @@ public class SortedDynamicList<E> extends AbstractCollection<E> implements Sorte
             hashCode = 31*hashCode + e.hashCode();
         return hashCode;
     }
+    
+    /**
+     * Returns a string representation of this list. The string representation
+     * depends on <tt>toString</tt> implementation of underlying list.
+     * 
+     * @see DynamicList#toString()
+     */
+	public String toString() {
+		return data.toString();
+	}
 }

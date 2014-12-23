@@ -300,4 +300,19 @@ public class DynamicListTest {
 			actual.get((i + 40000) & 65535);
 		}
 	}
+	
+	@Test(timeout = 1000)
+	public void performanceTest03() {
+		for (int i = 0; i < 127; i++)
+			actual.add(i);
+		Integer zero = 0;
+		for (int i = 0; i < 5000000; i++) {
+			actual.add(zero);
+			actual.add(zero);
+			actual.add(zero);
+			actual.remove(129);
+			actual.remove(127);
+			actual.remove(127);
+		}
+	}
 }
