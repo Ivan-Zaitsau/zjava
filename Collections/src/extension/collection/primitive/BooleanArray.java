@@ -50,7 +50,7 @@ public class BooleanArray implements Cloneable, java.io.Serializable {
      */
 	public void setTrue(int index) {
 		rangeCheck(index);
-		data[index >>> ADDRESS_BITS] |= 1L << (index & MASK);
+		data[index >>> ADDRESS_BITS] |= 1 << (index & MASK);
 	}
 
 	/**
@@ -61,7 +61,7 @@ public class BooleanArray implements Cloneable, java.io.Serializable {
      */
 	public void setFalse(int index) {
 		rangeCheck(index);
-		data[index >>> ADDRESS_BITS] &= ~(1L << (index & MASK));
+		data[index >>> ADDRESS_BITS] &= ~(1 << (index & MASK));
 	}
 	
 	/**
@@ -87,7 +87,7 @@ public class BooleanArray implements Cloneable, java.io.Serializable {
      */	
 	public boolean get(int index) {
 		rangeCheck(index);
-		return (data[index >>> ADDRESS_BITS] & (1L << (index & MASK))) > 0;
+		return (data[index >>> ADDRESS_BITS] & (1 << (index & MASK))) > 0;
 	}
 	
 	/**

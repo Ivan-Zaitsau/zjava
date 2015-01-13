@@ -78,7 +78,8 @@ public class HugeArray<E> implements Cloneable, java.io.Serializable {
      */
 	public E get(long index) {
 		rangeCheck(index);
-		return data((int)(index >> blockBitsize))[(int)(index & blockMask)];
+		E[] dataBlock = data[(int)(index >>> blockBitsize)];
+		return (dataBlock == null) ? null : dataBlock[(int)(index & blockMask)];
 	}
 	
 	/**
@@ -90,7 +91,7 @@ public class HugeArray<E> implements Cloneable, java.io.Serializable {
 	 */
 	public void set(long index, E value) {
 		rangeCheck(index);
-		data((int)(index >> blockBitsize))[(int)(index & blockMask)] = value;
+		data((int)(index >>> blockBitsize))[(int)(index & blockMask)] = value;
 	}
 	
 	/**
