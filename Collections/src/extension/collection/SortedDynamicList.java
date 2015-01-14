@@ -70,6 +70,13 @@ public class SortedDynamicList<E> extends AbstractCollection<E> implements Sorte
 		return farAccess;
 	}
 
+    /**
+     * Returns the number of elements in this sorted list.<br>
+     * If this sorted list  contains more than <tt>Integer.MAX_VALUE</tt> elements,
+     * returns <tt>Integer.MAX_VALUE</tt>.
+     *
+     * @return the number of elements in this list
+     */
 	public int size() {
 		return data.size();
 	}
@@ -164,6 +171,23 @@ public class SortedDynamicList<E> extends AbstractCollection<E> implements Sorte
 		return (lastCmp < 0) ? -(low+1) : (lastCmp == 0) ? low+1 : -(low+2);
 	}
 	
+    /**
+     * Returns the index of the first occurrence of the specified element
+     * in this list, or -1 if this list does not contain the element.
+     * More formally, returns the lowest index <tt>i</tt> such that
+     * <tt>o.equals(get(i))</tt>, or -1 if there is no such index.
+     * 
+     * <p><b>Note:</b> only up to <tt>Integer.MAX_VALUE</tt> first elements
+     * are visible to this method. So, for huge lists {@link #contains(Object)}
+     * may return <tt>true</tt> while this method may return <tt>-1</tt> at
+     * the same time.
+
+     * @param o element to search for
+     * @return the index of the first occurrence of the specified element in
+     *         this list, or -1 if this list does not contain the element
+     *         
+     * @throws NullPointerException if the specified element is null
+     */
 	public int indexOf(Object o) {
 		long i = binarySearch(o);
 		if (i < 0)
@@ -174,6 +198,23 @@ public class SortedDynamicList<E> extends AbstractCollection<E> implements Sorte
 			return -1;
 	}
 
+    /**
+     * Returns the index of the last occurrence of the specified element
+     * in this list, or -1 if this list does not contain the element.
+     * More formally, returns the highest index <tt>i</tt> such that
+     * <tt>o.equals(get(i))</tt>, or -1 if there is no such index.<br>
+     * 
+     * <p><b>Note:</b> only up to <tt>Integer.MAX_VALUE</tt> first elements
+     * are visible to this method. So, for huge lists {@link #contains(Object)}
+     * may return <tt>true</tt> while this method may return <tt>-1</tt> at the
+     * same time.
+     *
+     * @param o element to search for
+     * @return the index of the first occurrence of the specified element in
+     *         this list, or -1 if this list does not contain the element
+     *         
+     * @throws NullPointerException if the specified element is null
+     */
 	public int lastIndexOf(Object o) {
 		long i = binarySearchNext(o);
 		if (i < 0)
@@ -185,12 +226,47 @@ public class SortedDynamicList<E> extends AbstractCollection<E> implements Sorte
 			return (o.equals(data.get(Integer.MAX_VALUE))) ? Integer.MAX_VALUE : -1;
 	}
 
+    /**
+     * Returns <tt>true</tt> if this list contains the specified element.
+     * More formally, returns <tt>true</tt> if and only if this list contains
+     * at least one element <tt>e</tt> such that <tt>o.equals(e)</tt>.
+     *
+     * @param o element whose presence in this list is to be tested
+     * @return <tt>true</tt> if this list contains the specified element
+
+     * @throws NullPointerException if the specified element is null
+     */
 	public boolean contains(Object o) {
 		return binarySearch(o) >= 0;
 	}
 
+    /**
+     * Returns the element at the specified position in this list.
+     *
+     * @param index index of the element to return
+     * @return the element at the specified position in this list
+     * @throws IndexOutOfBoundsException if the index is out of range
+     *         (<tt>index &lt; 0 || index &gt;= size()</tt>)
+     */
 	public E get(int index) {
 		return data.get(index);
+	}
+
+    /**
+     * Inserts the specified element in this list in such way that it remains sorted.
+     *
+     * <p>This list doesn't permit <tt>null</tt>.
+     *
+     * @param e element to be added to this list
+     * @return <tt>true</tt> (as specified by {@link Collection#add})
+     * @throws NullPointerException if the specified element is null
+     */
+	public boolean add(E e) {
+		long i = binarySearchNext(e);
+		if (i < 0)
+			i = -(i+1);
+		data.far().add(i, e);
+		return true;
 	}
 
 	private void checkForNull(Collection<?> c) {
@@ -203,19 +279,44 @@ public class SortedDynamicList<E> extends AbstractCollection<E> implements Sorte
 			throw new NullPointerException();
 	}
 	
-	public boolean add(E e) {
-		long i = binarySearchNext(e);
-		if (i < 0)
-			i = -(i+1);
-		data.far().add(i, e);
-		return true;
-	}
-
+    /**
+     * Inserts all the elements from the specified collection in
+     * this list, in such way that the list remains sorted. The behavior of this
+     * operation is undefined if the specified collection is modified while
+     * the operation is in progress.  (Note that this will occur if the
+     * specified collection is this list, and it's nonempty.)
+     *
+     * @param c collection containing elements to be added to this list
+     * @return <tt>true</tt> if this list changed as a result of the call
+     * @throws UnsupportedOperationException if the <tt>addAll</tt> operation
+     *         is not supported by this list
+     * @throws NullPointerException if the specified collection contains one
+     *         or more null elements or if the specified collection is null
+     * @throws IllegalArgumentException if some property of an element of the
+     *         specified collection prevents it from being added to this list
+     * @see #add(Object)
+     */
 	public boolean addAll(Collection<? extends E> c) {
 		checkForNull(c);
-		return super.addAll(c);
+        boolean modified = false;
+        for (E e : c)
+            if (add(e))
+                modified = true;
+        return modified;
 	}
 	
+	/**
+	 * Removes the first occurrence of the specified element from this list,
+     * if it is present. If this list does not contain the element, it is 
+     * unchanged. More formally, removes the element with the lowest index 
+     * <tt>i</tt> such that <tt>o.equals(get(i))</tt> (if such an element exists).
+     * Returns <tt>true</tt> if this list was changed as a result of the call.
+     *
+     * @param o element to be removed from this list, if present
+     * @return <tt>true</tt> if this list contained the specified element
+     * 
+     * @throws NullPointerException if the specified element is null 
+     */
 	public boolean remove(Object o) {
 		long i = binarySearch(o);
 		if (i < 0)
@@ -224,17 +325,40 @@ public class SortedDynamicList<E> extends AbstractCollection<E> implements Sorte
 		return true;
 	}
 
+    /**
+     * Removes from this list all of its elements that are contained in the
+     * specified collection.
+     *
+     * @param c collection containing elements to be removed from this list
+     * @return <tt>true</tt> if this list changed as a result of the call
+     * 
+     * @throws NullPointerException if the specified collection is null
+     * 
+     * @see #remove(Object)
+     * @see #contains(Object)
+     */
 	public boolean removeAll(Collection<?> c) {
-		checkForNull(c);
 		boolean modified = false;
 		for (Object e : c)
-			while (remove(e))
-				modified = true;
+			if (e != null)
+				while (remove(e))
+					modified = true;
 		return modified;
 	}
 
+    /**
+     * Retains only the elements in this list that are contained in the
+     * specified collection. In other words, removes from this list all
+     * of its elements that are not contained in the specified collection.
+     *
+     * @param c collection containing elements to be retained in this list
+     * @return <tt>true</tt> if this list changed as a result of the call
+     * 
+     * @throws NullPointerException if the specified collection is null
+     * @see #remove(Object)
+     * @see #contains(Object)
+     */
 	public boolean retainAll(Collection<?> c) {
-		checkForNull(c);
 		return data.retainAll(c);
 	}
 
@@ -387,7 +511,7 @@ public class SortedDynamicList<E> extends AbstractCollection<E> implements Sorte
     
     /**
      * Returns a string representation of this list. The string representation
-     * depends on <tt>toString</tt> implementation of underlying list.
+     * relies on <tt>toString</tt> implementation of underlying list.
      * 
      * @see DynamicList#toString()
      */

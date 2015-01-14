@@ -65,21 +65,22 @@ public class SortedDynamicListTest {
 		};
 		assertTrue(actual.isEmpty());
 		actual.addAll(Arrays.asList(2, 0, 1, 2));
+		assertArrayEquals(actual.toArray(), new Integer[] {0, 1, 2, 2});
 		try {
 			actual.retainAll(Arrays.asList(0, null, 2));
 		}
 		catch (NullPointerException npe) {
 			exceptionsCount++;
 		};
-		assertTrue(actual.size() == 4);
+		assertTrue(actual.size() == 3);
 		try {
 			actual.removeAll(Arrays.asList(1, null, 0));
 		}
 		catch (NullPointerException npe) {
 			exceptionsCount++;
 		};
-		assertArrayEquals(actual.toArray(), new Integer[] {0, 1, 2, 2});
-		assertTrue(exceptionsCount == 6);
+		assertArrayEquals(actual.toArray(), new Integer[] {2, 2});
+		assertTrue(exceptionsCount == 4);
 	}
 	
 	// - basic operations tests
