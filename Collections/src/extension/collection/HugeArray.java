@@ -54,7 +54,7 @@ public class HugeArray<E> implements Cloneable, java.io.Serializable {
 	public HugeArray(long size) {
         if (size < 0)
             throw new NegativeArraySizeException("size < 0: " + size);
-        if (size > (long)MAX_ARRAY_SIZE * MAX_ARRAY_SIZE)
+        if (size > (long)MAX_ARRAY_SIZE << 30)
         	throw new OutOfMemoryError("Required array size too large");
 		this.length = size;
 		

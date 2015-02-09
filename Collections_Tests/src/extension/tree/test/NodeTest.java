@@ -10,24 +10,25 @@ import java.util.NoSuchElementException;
 import org.junit.Test;
 
 import extension.tree.Node;
+import extension.tree.SimpleNode;
 
 public class NodeTest {
 	
-	@SuppressWarnings("unchecked")
-	private <E> E[] toArray(Iterable<Node<E>> iterable) {
-		List<E> values = new ArrayList<>();
-		for (Node<E> node : iterable)
-			values.add(node.getValue());
-		return (E[]) values.toArray();
+	private Object[] toArray(Iterable<Node> iterable) {
+		List<Object> values = new ArrayList<>();
+		for (Node node : iterable)
+			values.add(((SimpleNode<?>) node).getValue());
+		return values.toArray();
 	}
 
 	// - edge cases
 	
+	@SuppressWarnings("unchecked")
 	@Test(timeout = 200)
 	public void iteratorAtEnd01() {
-		Node<Integer> node01 = new Node<>(1);
-		Iterator<Node<Integer>> bfsIter = node01.breadthFirstSearch().iterator();
-		assertEquals(Integer.valueOf(1), bfsIter.next().getValue());
+		SimpleNode<Integer> node01 = new SimpleNode<>(1);
+		Iterator<Node> bfsIter = node01.breadthFirstSearch().iterator();
+		assertEquals(Integer.valueOf(1), ((SimpleNode<Integer>) bfsIter.next()).getValue());
 		boolean noSuchElement = false;
 		try {
 			bfsIter.next();
@@ -36,8 +37,8 @@ public class NodeTest {
 			noSuchElement = true;
 		}
 		assertTrue(noSuchElement);
-		Iterator<Node<Integer>> dfsIter = node01.depthFirstSearch().iterator();
-		assertEquals(Integer.valueOf(1), dfsIter.next().getValue());
+		Iterator<Node> dfsIter = node01.depthFirstSearch().iterator();
+		assertEquals(Integer.valueOf(1), ((SimpleNode<Integer>) dfsIter.next()).getValue());
 		noSuchElement = false;
 		try {
 			dfsIter.next();
@@ -51,20 +52,20 @@ public class NodeTest {
 	// - basic tests
 	@Test(timeout = 200)
 	public void testDfs01() {
-		Node<Integer> node01 = new Node<>(1);
+		SimpleNode<Integer> node01 = new SimpleNode<>(1);
 		assertArrayEquals(new Integer[] {1}, toArray(node01.depthFirstSearch()));
 		
-		Node<Integer>
-			node02 = Node.createNode(node01, 2),
-			node03 = Node.createNode(node01, 3),
-			node04 = Node.createNode(node01, 4),
-			node05 = Node.createNode(node02, 5),
-			node06 = Node.createNode(node02, 6),
-			node07 = Node.createNode(node03, 7),
-			node08 = Node.createNode(node04, 8),
-			node09 = Node.createNode(node04, 9),
-			node10 = Node.createNode(node04, 10),
-			node11 = Node.createNode(node05, 11);
+		SimpleNode<Integer>
+			node02 = SimpleNode.createNode(node01, 2),
+			node03 = SimpleNode.createNode(node01, 3),
+			node04 = SimpleNode.createNode(node01, 4),
+			node05 = SimpleNode.createNode(node02, 5),
+			node06 = SimpleNode.createNode(node02, 6),
+			node07 = SimpleNode.createNode(node03, 7),
+			node08 = SimpleNode.createNode(node04, 8),
+			node09 = SimpleNode.createNode(node04, 9),
+			node10 = SimpleNode.createNode(node04, 10),
+			node11 = SimpleNode.createNode(node05, 11);
 		
 		assertArrayEquals(new Integer[] {1, 2, 5, 11, 6, 3, 7, 4, 8, 9, 10}, toArray(node01.depthFirstSearch()));
 		assertArrayEquals(new Integer[] {2, 5, 11, 6}, toArray(node02.depthFirstSearch()));
@@ -81,20 +82,20 @@ public class NodeTest {
 	
 	@Test(timeout = 200)
 	public void testBfs01() {
-		Node<Integer> node01 = new Node<>(1);
+		SimpleNode<Integer> node01 = new SimpleNode<>(1);
 		assertArrayEquals(new Integer[] {1}, toArray(node01.breadthFirstSearch()));
 
-		Node<Integer>
-			node02 = Node.createNode(node01, 2),
-			node03 = Node.createNode(node01, 3),
-			node04 = Node.createNode(node01, 4),
-			node05 = Node.createNode(node02, 5),
-			node06 = Node.createNode(node02, 6),
-			node07 = Node.createNode(node03, 7),
-			node08 = Node.createNode(node04, 8),
-			node09 = Node.createNode(node04, 9),
-			node10 = Node.createNode(node04, 10),
-			node11 = Node.createNode(node05, 11);
+		SimpleNode<Integer>
+			node02 = SimpleNode.createNode(node01, 2),
+			node03 = SimpleNode.createNode(node01, 3),
+			node04 = SimpleNode.createNode(node01, 4),
+			node05 = SimpleNode.createNode(node02, 5),
+			node06 = SimpleNode.createNode(node02, 6),
+			node07 = SimpleNode.createNode(node03, 7),
+			node08 = SimpleNode.createNode(node04, 8),
+			node09 = SimpleNode.createNode(node04, 9),
+			node10 = SimpleNode.createNode(node04, 10),
+			node11 = SimpleNode.createNode(node05, 11);
 		
 		assertArrayEquals(new Integer[] {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11}, toArray(node01.breadthFirstSearch()));
 		assertArrayEquals(new Integer[] {2, 5, 6, 11}, toArray(node02.breadthFirstSearch()));

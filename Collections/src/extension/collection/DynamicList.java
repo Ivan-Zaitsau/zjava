@@ -42,7 +42,7 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeCapa
 	
 	/** This coefficient used to check if reduction of block size and amount of blocks is required.
 	 * <br> <b>Note:</b> Must be no less than 4. Needs to be no less than 8 for amortized performance estimations to hold */
-	static private final int REDUCTION_COEFFICIENT = 8;
+	static private final int REDUCTION_COEFFICIENT = 12;
 
     /**
      * The maximum size of array to allocate.<br>
