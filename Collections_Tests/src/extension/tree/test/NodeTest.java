@@ -9,8 +9,8 @@ import java.util.NoSuchElementException;
 
 import org.junit.Test;
 
-import extension.tree.Node;
-import extension.tree.SimpleNode;
+import zjava.datastructure.Node;
+import zjava.datastructure.SimpleNode;
 
 public class NodeTest {
 	

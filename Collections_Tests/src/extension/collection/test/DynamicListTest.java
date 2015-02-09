@@ -10,7 +10,7 @@ import java.util.NoSuchElementException;
 import org.junit.Before;
 import org.junit.Test;
 
-import extension.collection.DynamicList;
+import zjava.collection.DynamicList;
 
 public class DynamicListTest {
 	

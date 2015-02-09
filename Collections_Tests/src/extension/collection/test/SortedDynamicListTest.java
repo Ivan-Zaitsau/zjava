@@ -9,8 +9,8 @@ import java.util.NoSuchElementException;
 import org.junit.Before;
 import org.junit.Test;
 
-import extension.collection.SortedDynamicList;
-import extension.collection.SortedList;
+import zjava.collection.SortedDynamicList;
+import zjava.collection.SortedList;
 
 public class SortedDynamicListTest {
 	

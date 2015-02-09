@@ -1,4 +1,4 @@
-package extension.collection;
+package zjava.collection;
 
 /**
  * Marker interface which indicates that list can handle more than 

@@ -1,4 +1,4 @@
-package extension.collection;
+package zjava.collection;
 
 /**
  * The <tt>FarListAccess</tt> interface provides number of methods to access

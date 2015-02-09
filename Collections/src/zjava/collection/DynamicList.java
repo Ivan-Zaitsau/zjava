@@ -1,4 +1,4 @@
-package extension.collection;
+package zjava.collection;
 
 import java.util.AbstractList;
 import java.util.Arrays;

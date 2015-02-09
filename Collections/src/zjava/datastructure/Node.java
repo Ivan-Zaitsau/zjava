@@ -1,4 +1,4 @@
-package extension.tree;
+package zjava.datastructure;
 
 import java.util.List;
 
@@ -17,5 +17,4 @@ public interface Node {
 	 * @return list of node children
 	 */
 	List<Node> getChildren();
-
 }

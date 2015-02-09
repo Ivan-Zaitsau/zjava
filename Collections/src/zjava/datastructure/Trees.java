@@ -1,4 +1,4 @@
-package extension.tree;
+package zjava.datastructure;
 
 import java.util.Collections;
 import java.util.Iterator;
@@ -9,7 +9,7 @@ import java.util.Queue;
 import java.util.Stack;
 
 /**
- * 
+ * This class contains useful methods to work with trees (data structures) and tree-nodes
  * 
  * @author Ivan Zaitsau
  */

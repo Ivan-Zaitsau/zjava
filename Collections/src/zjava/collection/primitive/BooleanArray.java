@@ -1,4 +1,4 @@
-package extension.collection.primitive;
+package zjava.collection.primitive;
 
 import java.util.Arrays;
 
