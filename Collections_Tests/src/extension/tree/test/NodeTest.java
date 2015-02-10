@@ -23,12 +23,11 @@ public class NodeTest {
 
 	// - edge cases
 	
-	@SuppressWarnings("unchecked")
 	@Test(timeout = 200)
 	public void iteratorAtEnd01() {
 		SimpleNode<Integer> node01 = new SimpleNode<>(1);
 		Iterator<Node> bfsIter = node01.breadthFirstSearch().iterator();
-		assertEquals(Integer.valueOf(1), ((SimpleNode<Integer>) bfsIter.next()).getValue());
+		assertEquals(Integer.valueOf(1), ((SimpleNode<?>) bfsIter.next()).getValue());
 		boolean noSuchElement = false;
 		try {
 			bfsIter.next();
@@ -38,7 +37,7 @@ public class NodeTest {
 		}
 		assertTrue(noSuchElement);
 		Iterator<Node> dfsIter = node01.depthFirstSearch().iterator();
-		assertEquals(Integer.valueOf(1), ((SimpleNode<Integer>) dfsIter.next()).getValue());
+		assertEquals(Integer.valueOf(1), ((SimpleNode<?>) dfsIter.next()).getValue());
 		noSuchElement = false;
 		try {
 			dfsIter.next();
