@@ -16,7 +16,10 @@ import java.util.Stack;
 final public class Trees {
 	
 	/**
-	 * NodeFilter defines conditions for ignoring nodes during tree traversal
+	 * NodeFilter defines conditions for ignoring nodes during tree traversal<br>
+	 * 
+	 * <p>Can be used to track and ignore already visited nodes as well as 
+	 * ignore nodes on certain conditions.
 	 * 
 	 * @author Ivan Zaitsau
 	 */
