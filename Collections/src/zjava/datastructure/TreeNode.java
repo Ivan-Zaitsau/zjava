@@ -29,7 +29,7 @@ public class TreeNode<E> implements Node<TreeNode<E>> {
 	}
 	
 	private TreeNode<E> parent;
-	private List<TreeNode<E>> children = new ArrayList<>(2);
+	private final List<TreeNode<E>> children = new ArrayList<>(2);
 	private E value;
 	
 	/**
