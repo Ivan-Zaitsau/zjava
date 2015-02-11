@@ -166,7 +166,7 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeCapa
 			return last;
 		}
 		
-		void add(E value) {
+		void addLast(E value) {
 			if (size > mask)
 				return;
 			values[(offset + size) & mask] = value;
@@ -519,7 +519,7 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeCapa
 	public boolean add(E element) {
 		ensureCapacity(size + 1);
 		int blockIndex = (int) (size >>> blockBitsize);
-		data(blockIndex).add(element);
+		data(blockIndex).addLast(element);
 		size++;
 		return true;
 	}
@@ -679,7 +679,7 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeCapa
 		int valueIndex = (int) (index & (-1L >>> -blockBitsize));
 		E removed = data[blockIndex].remove(valueIndex);
 		while (++blockIndex < data.length && data[blockIndex] != null && data[blockIndex].size() > 0) {
-			data[blockIndex-1].add(data[blockIndex].removeFirst());
+			data[blockIndex-1].addLast(data[blockIndex].removeFirst());
 		}
 		size--;
 		// - free unused blocks for GC and compact list if needed
