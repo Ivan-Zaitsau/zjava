@@ -4,13 +4,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * <tt>SimpleNode</tt> class represents a single node in a tree.<br>
+ * <tt>TreeNode</tt> class represents a single node in a tree with some value assigned.<br>
  * 
  * @param <E> element contained at a node
  * 
  * @author Ivan Zaitsau
  */
-public class SimpleNode<E> implements Node {
+public class TreeNode<E> implements Node<TreeNode<E>> {
 	
 	/**
 	 * Adds new child node to given parent node, passed as parameter.
@@ -22,14 +22,14 @@ public class SimpleNode<E> implements Node {
 	 *         child with value
 	 * 
 	 */
-	public static <E> SimpleNode<E> createNode(SimpleNode<E> parent, E value) {
-		SimpleNode<E> node = new SimpleNode<>(parent, value);
+	public static <E> TreeNode<E> createNode(TreeNode<E> parent, E value) {
+		TreeNode<E> node = new TreeNode<>(parent, value);
 		parent.getChildren().add(node);
 		return node;
 	}
 	
-	private SimpleNode<E> parent;
-	private List<Node> children = new ArrayList<>(2);
+	private TreeNode<E> parent;
+	private List<TreeNode<E>> children = new ArrayList<>(2);
 	private E value;
 	
 	/**
@@ -37,12 +37,12 @@ public class SimpleNode<E> implements Node {
 	 * 
 	 * @param value - value to assign to newly created Node
 	 */
-	public SimpleNode(E value) {
+	public TreeNode(E value) {
 		this.value = value;
 	}
 	
 	// - constructs a Node with specified parent and value
-	private SimpleNode(SimpleNode<E> parent, E value) {
+	private TreeNode(TreeNode<E> parent, E value) {
 		this(value);
 		this.parent = parent;
 	}
@@ -70,7 +70,7 @@ public class SimpleNode<E> implements Node {
 	 * 
 	 * @return parent of this node or <tt>null</tt> if this node is a root
 	 */
-	public SimpleNode<E> getParent() {
+	public TreeNode<E> getParent() {
 		return parent;
 	}
 	
@@ -79,7 +79,7 @@ public class SimpleNode<E> implements Node {
 	 * 
 	 * @return list of node children
 	 */
-	public List<Node> getChildren() {
+	public List<TreeNode<E>> getChildren() {
 		return children;
 	}
 
@@ -90,7 +90,7 @@ public class SimpleNode<E> implements Node {
 	 * @return <tt>Iterable</tt> which navigates this node and it's successors
 	 * in depth-first search order.
 	 */
-	public Iterable<Node> depthFirstSearch() {
+	public Iterable<TreeNode<E>> depthFirstSearch() {
 		return Trees.depthFirstSearch(this);
 	}
 
@@ -101,7 +101,7 @@ public class SimpleNode<E> implements Node {
 	 * @return <tt>Iterable</tt> which navigates this node and it's successors
 	 * in breadth-first search order.
 	 */
-	public Iterable<Node> breadthFirstSearch() {
+	public Iterable<TreeNode<E>> breadthFirstSearch() {
 		return Trees.breadthFirstSearch(this);
 	}
 }

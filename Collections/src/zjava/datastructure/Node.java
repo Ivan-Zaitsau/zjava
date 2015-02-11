@@ -3,18 +3,18 @@ package zjava.datastructure;
 import java.util.List;
 
 /**
- * <tt>Node</tt> interface represents a single node in a tree.<br>
+ * <tt>Node</tt> interface represents a single node in a tree or tree-like data structure.<br>
  * 
- * @param <E> element contained at a node
+ * @param <T> actual node type
  * 
  * @author Ivan Zaitsau
  */
-public interface Node {
+public interface Node<T extends Node<T>> {
 	
 	/**
 	 * Returns list of node child-nodes
 	 * 
 	 * @return list of node children
 	 */
-	List<Node> getChildren();
+	List<T> getChildren();
 }

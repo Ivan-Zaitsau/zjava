@@ -9,36 +9,19 @@ import java.util.NoSuchElementException;
 
 import org.junit.Test;
 
-import zjava.datastructure.Node;
-import zjava.datastructure.SimpleNode;
+import zjava.datastructure.TreeNode;
+import zjava.datastructure.Trees;
 
 public class NodeTest {
 	
-	private Object[] toArray(Iterable<Node> iterable) {
-		List<Object> values = new ArrayList<>();
-		for (Node node : iterable)
-			values.add(((SimpleNode<?>) node).getValue());
-		return values.toArray();
-	}
-
 	// - edge cases
-	
+
 	@Test(timeout = 200)
-	public void iteratorAtEnd01() {
-		SimpleNode<Integer> node01 = new SimpleNode<>(1);
-		Iterator<Node> bfsIter = node01.breadthFirstSearch().iterator();
-		assertEquals(Integer.valueOf(1), ((SimpleNode<?>) bfsIter.next()).getValue());
+	public void iteratorAtEndDfs01() {
+		TreeNode<Integer> node01 = new TreeNode<>(1);
+		Iterator<TreeNode<Integer>> dfsIter = node01.depthFirstSearch().iterator();
+		assertEquals(Integer.valueOf(1), dfsIter.next().getValue());
 		boolean noSuchElement = false;
-		try {
-			bfsIter.next();
-		}
-		catch(NoSuchElementException nsee) {
-			noSuchElement = true;
-		}
-		assertTrue(noSuchElement);
-		Iterator<Node> dfsIter = node01.depthFirstSearch().iterator();
-		assertEquals(Integer.valueOf(1), ((SimpleNode<?>) dfsIter.next()).getValue());
-		noSuchElement = false;
 		try {
 			dfsIter.next();
 		}
@@ -47,24 +30,93 @@ public class NodeTest {
 		}
 		assertTrue(noSuchElement);
 	}
+
+	@Test(timeout = 200)
+	public void iteratorAtEndBfs01() {
+		TreeNode<Integer> node01 = new TreeNode<>(1);
+		Iterator<TreeNode<Integer>> bfsIter = node01.breadthFirstSearch().iterator();
+		assertEquals(Integer.valueOf(1), bfsIter.next().getValue());
+		boolean noSuchElement = false;
+		try {
+			bfsIter.next();
+		}
+		catch(NoSuchElementException nsee) {
+			noSuchElement = true;
+		}
+		assertTrue(noSuchElement);		
+	}
+	
+	@Test(timeout = 200)
+	@SuppressWarnings("unused")
+	public void testEarlyRewindDfs01() {
+		TreeNode<Integer> node01 = new TreeNode<>(1);
+		Iterator<TreeNode<Integer>> dfsIter = Trees.depthFirstSearch(node01, new Trees.NodeFilter<TreeNode<Integer>>() {
+			public boolean isIgnored(TreeNode<Integer> node) {
+				return (node.getValue() & 1) == 0;
+			}
+		}).iterator();
+		TreeNode<Integer>
+			node02 = TreeNode.createNode(node01, 2),
+			node03 = TreeNode.createNode(node01, 3);
+		assertEquals(Integer.valueOf(1), dfsIter.next().getValue());
+		node02.setValue(7);
+		TreeNode<Integer>
+			node4 = TreeNode.createNode(node02, 4),
+			node5 = TreeNode.createNode(node02, 5);
+		assertEquals(Integer.valueOf(7), dfsIter.next().getValue());
+		assertEquals(Integer.valueOf(5), dfsIter.next().getValue());
+		assertEquals(Integer.valueOf(3), dfsIter.next().getValue());
+		assertFalse(dfsIter.hasNext());
+	}
+	
+	@Test(timeout = 200)
+	@SuppressWarnings("unused")
+	public void testEarlyRewindBfs01() {
+		TreeNode<Integer> node01 = new TreeNode<>(1);
+		Iterator<TreeNode<Integer>> bfsIter = Trees.breadthFirstSearch(node01, new Trees.NodeFilter<TreeNode<Integer>>() {
+			public boolean isIgnored(TreeNode<Integer> node) {
+				return (node.getValue() & 1) == 0;
+			}
+		}).iterator();
+		TreeNode<Integer>
+			node02 = TreeNode.createNode(node01, 2),
+			node03 = TreeNode.createNode(node01, 3);
+		assertEquals(Integer.valueOf(1), bfsIter.next().getValue());
+		node02.setValue(7);
+		TreeNode<Integer>
+			node4 = TreeNode.createNode(node02, 4),
+			node5 = TreeNode.createNode(node02, 5);
+		assertEquals(Integer.valueOf(7), bfsIter.next().getValue());
+		assertEquals(Integer.valueOf(3), bfsIter.next().getValue());
+		assertEquals(Integer.valueOf(5), bfsIter.next().getValue());
+		assertFalse(bfsIter.hasNext());
+	}
 	
 	// - basic tests
+	
+	private <E> Object[] toArray(Iterable<TreeNode<E>> iterable) {
+		List<E> values = new ArrayList<>();
+		for (TreeNode<E> node : iterable)
+			values.add(node.getValue());
+		return values.toArray();
+	}
+
 	@Test(timeout = 200)
 	public void testDfs01() {
-		SimpleNode<Integer> node01 = new SimpleNode<>(1);
+		TreeNode<Integer> node01 = new TreeNode<>(1);
 		assertArrayEquals(new Integer[] {1}, toArray(node01.depthFirstSearch()));
 		
-		SimpleNode<Integer>
-			node02 = SimpleNode.createNode(node01, 2),
-			node03 = SimpleNode.createNode(node01, 3),
-			node04 = SimpleNode.createNode(node01, 4),
-			node05 = SimpleNode.createNode(node02, 5),
-			node06 = SimpleNode.createNode(node02, 6),
-			node07 = SimpleNode.createNode(node03, 7),
-			node08 = SimpleNode.createNode(node04, 8),
-			node09 = SimpleNode.createNode(node04, 9),
-			node10 = SimpleNode.createNode(node04, 10),
-			node11 = SimpleNode.createNode(node05, 11);
+		TreeNode<Integer>
+			node02 = TreeNode.createNode(node01, 2),
+			node03 = TreeNode.createNode(node01, 3),
+			node04 = TreeNode.createNode(node01, 4),
+			node05 = TreeNode.createNode(node02, 5),
+			node06 = TreeNode.createNode(node02, 6),
+			node07 = TreeNode.createNode(node03, 7),
+			node08 = TreeNode.createNode(node04, 8),
+			node09 = TreeNode.createNode(node04, 9),
+			node10 = TreeNode.createNode(node04, 10),
+			node11 = TreeNode.createNode(node05, 11);
 		
 		assertArrayEquals(new Integer[] {1, 2, 5, 11, 6, 3, 7, 4, 8, 9, 10}, toArray(node01.depthFirstSearch()));
 		assertArrayEquals(new Integer[] {2, 5, 11, 6}, toArray(node02.depthFirstSearch()));
@@ -81,20 +133,20 @@ public class NodeTest {
 	
 	@Test(timeout = 200)
 	public void testBfs01() {
-		SimpleNode<Integer> node01 = new SimpleNode<>(1);
+		TreeNode<Integer> node01 = new TreeNode<>(1);
 		assertArrayEquals(new Integer[] {1}, toArray(node01.breadthFirstSearch()));
 
-		SimpleNode<Integer>
-			node02 = SimpleNode.createNode(node01, 2),
-			node03 = SimpleNode.createNode(node01, 3),
-			node04 = SimpleNode.createNode(node01, 4),
-			node05 = SimpleNode.createNode(node02, 5),
-			node06 = SimpleNode.createNode(node02, 6),
-			node07 = SimpleNode.createNode(node03, 7),
-			node08 = SimpleNode.createNode(node04, 8),
-			node09 = SimpleNode.createNode(node04, 9),
-			node10 = SimpleNode.createNode(node04, 10),
-			node11 = SimpleNode.createNode(node05, 11);
+		TreeNode<Integer>
+			node02 = TreeNode.createNode(node01, 2),
+			node03 = TreeNode.createNode(node01, 3),
+			node04 = TreeNode.createNode(node01, 4),
+			node05 = TreeNode.createNode(node02, 5),
+			node06 = TreeNode.createNode(node02, 6),
+			node07 = TreeNode.createNode(node03, 7),
+			node08 = TreeNode.createNode(node04, 8),
+			node09 = TreeNode.createNode(node04, 9),
+			node10 = TreeNode.createNode(node04, 10),
+			node11 = TreeNode.createNode(node05, 11);
 		
 		assertArrayEquals(new Integer[] {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11}, toArray(node01.breadthFirstSearch()));
 		assertArrayEquals(new Integer[] {2, 5, 6, 11}, toArray(node02.breadthFirstSearch()));
