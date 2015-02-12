@@ -14,8 +14,9 @@ public interface Node<T extends Node<T>> {
 	/**
 	 * Returns list of node child-nodes<br>
 	 * 
-	 * <p><b>Important:</b><br>List object must remain the same during
-	 * subsequent calls. List contents may change over time.
+	 * <p><b>Important:</b><br>List object must remain the same on
+	 * subsequent calls during certain operations (tree traversal, for example).
+	 * List contents may change over time.
 	 * 
 	 * @return list of node children
 	 */

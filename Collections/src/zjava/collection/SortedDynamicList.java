@@ -23,7 +23,7 @@ import java.util.RandomAccess;
  */
 public class SortedDynamicList<E> extends AbstractCollection<E> implements SortedList<E>, HugeCapacityList<E>, RandomAccess, Cloneable, java.io.Serializable {
 
-	static private final long serialVersionUID = 2014_11_17_1800L;
+	static private final long serialVersionUID = 2015_02_12_1200L;
 
 	private DynamicList<E> data;
 	private Comparator<? super E> comparator;
@@ -255,7 +255,7 @@ public class SortedDynamicList<E> extends AbstractCollection<E> implements Sorte
     /**
      * Inserts the specified element in this list in such way that it remains sorted.
      *
-     * <p>This list doesn't permit <tt>null</tt>.
+     * <p>This list doesn't permit <tt>null</tt> element.
      *
      * @param e element to be added to this list
      * @return <tt>true</tt> (as specified by {@link Collection#add})

@@ -31,7 +31,7 @@ import java.util.RandomAccess;
  */
 public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeCapacityList<E>, RandomAccess, Cloneable, java.io.Serializable {
 
-	static private final long serialVersionUID = 2014_11_17_1800L;
+	static private final long serialVersionUID = 2015_02_12_1200L;
 	
 	/** Actual initial block size is 2<sup>INITIAL_BLOCK_BITSIZE</sup> */
 	static private final int INITIAL_BLOCK_BITSIZE = 5;
@@ -67,7 +67,7 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeCapa
 	 */
 	static final private class Block<E> implements Cloneable, java.io.Serializable {
 		
-		private static final long serialVersionUID = 2014_11_17_1800L;
+		private static final long serialVersionUID = 2015_02_12_1200L;
 		
 		// - merges two blocks of equal capacities into block with doubled capacity
 		static <E> Block<E> merge(Block<E> block1, Block<E> block2) {
@@ -109,7 +109,6 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeCapa
 			}
 		}
 		
-		private final int mask;
 		private int offset;
 		private int size;
 		private E[] values;
@@ -119,7 +118,6 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeCapa
 			// - capacity must be even power of 2
 			assert((capacity & (capacity-1)) == 0 && capacity > 1);
 			
-			this.mask = capacity - 1;
 			this.offset = 0;
 			this.size = 0;
 			this.values = (E[]) new Object[capacity];
@@ -157,19 +155,19 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeCapa
 		}
 		
 		E addFirst(E value) {
-			offset = (offset - 1) & mask;
+			offset = (offset - 1) & (values.length-1);
 			E last = values[offset];
 			values[offset] = value;
-			if (size <= mask) {
+			if (size < values.length) {
 				size++;
 			}
 			return last;
 		}
 		
 		void addLast(E value) {
-			if (size > mask)
+			if (size == values.length)
 				return;
-			values[(offset + size) & mask] = value;
+			values[(offset + size) & (values.length-1)] = value;
 			size++;
 		}
 		
@@ -177,20 +175,20 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeCapa
 			// - range check
 			assert(index >= 0 && index <= size);
 			
-			E last = size > mask ? values[(offset - 1) & mask] : null;
+			E last = (size == values.length) ? values[(offset - 1) & (values.length-1)] : null;
 			if (2*index < size) {
-				offset = (offset - 1) & mask;
+				offset = (offset - 1) & (values.length-1);
 				for (int i = 0; i < index; i++) {
-					values[(offset + i) & mask] = values[(offset + i + 1) & mask];
+					values[(offset + i) & (values.length-1)] = values[(offset + i + 1) & (values.length-1)];
 				}
 			}
 			else {
-				for (int i = (size < mask) ? size : mask; i > index; i--) {
-					values[(offset + i) & mask] = values[(offset + i - 1) & mask];
+				for (int i = (size == values.length) ? size-1 : size; i > index; i--) {
+					values[(offset + i) & (values.length-1)] = values[(offset + i - 1) & (values.length-1)];
 				}
 			}
-			values[(offset + index) & mask] = value;
-			if (size <= mask) size++;
+			values[(offset + index) & (values.length-1)] = value;
+			if (size < values.length) size++;
 			return last;
 		}
 
@@ -198,7 +196,7 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeCapa
 			// - range check
 			assert(index >= 0 && index < size);
 			
-			int i = (offset + index) & mask;
+			int i = (offset + index) & (values.length-1);
 			E replaced = values[i];
 			values[i] = value;
 			return replaced;
@@ -210,7 +208,7 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeCapa
 			
 			E removed = values[offset];
 			values[offset] = null;
-			offset = (offset + 1) & mask;
+			offset = (offset + 1) & (values.length-1);
 			size--;
 			return removed;
 		}
@@ -219,19 +217,19 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeCapa
 			// - range check
 			assert(index >= 0 && index < size);
 			
-			E removed = values[(offset + index) & mask];
+			E removed = values[(offset + index) & (values.length-1)];
 			if (2*index < size) {
 				for (int i = index; i > 0; i--) {
-					values[(offset + i) & mask] = values[(offset + i - 1) & mask];					
+					values[(offset + i) & (values.length-1)] = values[(offset + i - 1) & (values.length-1)];					
 				}
 				values[offset] = null;
-				offset = (offset + 1) & mask;
+				offset = (offset + 1) & (values.length-1);
 			}
 			else {
 				for (int i = index + 1; i < size; i++) {
-					values[(offset + i - 1) & mask] = values[(offset + i) & mask];
+					values[(offset + i - 1) & (values.length-1)] = values[(offset + i) & (values.length-1)];
 				}
-				values[(offset + size - 1) & mask] = null;
+				values[(offset + size - 1) & (values.length-1)] = null;
 			}
 			size--;
 			return removed;
@@ -241,7 +239,7 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeCapa
 			// - range check
 			assert(index >= 0 && index < size);
 			
-			return values[(offset + index) & mask];
+			return values[(offset + index) & (values.length-1)];
 		}
 		
 		public Object clone() {
