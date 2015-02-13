@@ -3,7 +3,6 @@ package zjava.datastructure;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Queue;
 import java.util.Stack;
@@ -144,7 +143,7 @@ final public class Trees {
 	private static class BfsIterator<T extends Node<T>> implements Iterator<T>, Iterable<T> {
 
 		private Iterator<T> currentIterator;
-		private final Queue<List<T>> nodesQueue = new LinkedList<>();
+		private final Queue<T> nodesQueue = new LinkedList<>();
 		private T currentNode;		
 		private final NodeFilter<T> filter;
 		private boolean filterApplied;
@@ -158,7 +157,7 @@ final public class Trees {
 		
 		private void moveToNext() {
 			while (!currentIterator.hasNext() && !nodesQueue.isEmpty())
-				currentIterator = nodesQueue.poll().iterator();
+				currentIterator = nodesQueue.poll().getChildren().iterator();
 			if (!currentIterator.hasNext()) {
 				iterationDone = true;
 			}
@@ -186,7 +185,7 @@ final public class Trees {
 			if (!hasNext())
 				throw new NoSuchElementException();
 			T result = currentNode;
-			nodesQueue.add(currentNode.getChildren());
+			nodesQueue.add(currentNode);
 			moveToNext();
 			return result;
 		}

@@ -151,11 +151,11 @@ public class SortedDynamicListComparatorBasedTest {
 	@Test(timeout = 300)
 	public void performanceTest01() {
 		Integer v = 1;
-		for (int i = 0; i < 1000000; i++)
+		for (int i = 0; i < 2000000; i++)
 			assertTrue(actual.add(v));
 	}
 
-	@Test(timeout = 300)	
+	@Test(timeout = 300)
 	public void performanceTest02() {
 		for (int i = 0; i < 100000; i++)
 			assertTrue(actual.add(i));
