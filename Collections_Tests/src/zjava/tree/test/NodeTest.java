@@ -1,4 +1,4 @@
-package extension.tree.test;
+package zjava.tree.test;
 
 import static org.junit.Assert.*;
 
@@ -58,14 +58,14 @@ public class NodeTest {
 		TreeNode<Integer>
 			node02 = TreeNode.createNode(node01, 2),
 			node03 = TreeNode.createNode(node01, 3);
-		assertEquals(Integer.valueOf(1), dfsIter.next().getValue());
+		assertEquals((Integer) 1, dfsIter.next().getValue());
 		node02.setValue(7);
 		TreeNode<Integer>
 			node4 = TreeNode.createNode(node02, 4),
 			node5 = TreeNode.createNode(node02, 5);
-		assertEquals(Integer.valueOf(7), dfsIter.next().getValue());
-		assertEquals(Integer.valueOf(5), dfsIter.next().getValue());
-		assertEquals(Integer.valueOf(3), dfsIter.next().getValue());
+		assertEquals((Integer) 7, dfsIter.next().getValue());
+		assertEquals((Integer) 5, dfsIter.next().getValue());
+		assertEquals((Integer) 3, dfsIter.next().getValue());
 		assertFalse(dfsIter.hasNext());
 	}
 	
@@ -81,14 +81,14 @@ public class NodeTest {
 		TreeNode<Integer>
 			node02 = TreeNode.createNode(node01, 2),
 			node03 = TreeNode.createNode(node01, 3);
-		assertEquals(Integer.valueOf(1), bfsIter.next().getValue());
+		assertEquals((Integer) 1, bfsIter.next().getValue());
 		node02.setValue(7);
 		TreeNode<Integer>
 			node4 = TreeNode.createNode(node02, 4),
 			node5 = TreeNode.createNode(node02, 5);
-		assertEquals(Integer.valueOf(7), bfsIter.next().getValue());
-		assertEquals(Integer.valueOf(3), bfsIter.next().getValue());
-		assertEquals(Integer.valueOf(5), bfsIter.next().getValue());
+		assertEquals((Integer) 7, bfsIter.next().getValue());
+		assertEquals((Integer) 3, bfsIter.next().getValue());
+		assertEquals((Integer) 5, bfsIter.next().getValue());
 		assertFalse(bfsIter.hasNext());
 	}
 	

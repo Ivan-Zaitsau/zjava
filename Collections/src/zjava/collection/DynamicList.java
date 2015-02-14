@@ -90,6 +90,8 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeCapa
 			if (block == null || block.size == 0)
 				return new Block[] {null, null};
 			
+			assert (block.values.length & 1) == 0;
+			
 			int halfSize = block.values.length / 2;
 			
 			if (block.size <= halfSize) {
@@ -374,6 +376,8 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeCapa
 			/* Redundant because data.length assumed to be even number
 			 * *deleted code*
 			*/
+			assert (data.length & 1) == 0;
+			
 			data = newData;
 			blockBitsize = newBlockBitsize;
 			capacity = (long) data.length << blockBitsize;

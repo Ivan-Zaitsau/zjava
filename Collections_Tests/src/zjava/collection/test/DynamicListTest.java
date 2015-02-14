@@ -1,4 +1,4 @@
-package extension.collection.test;
+package zjava.collection.test;
 
 import static org.junit.Assert.*;
 

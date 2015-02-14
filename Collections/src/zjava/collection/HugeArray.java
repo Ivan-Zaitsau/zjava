@@ -122,4 +122,33 @@ public class HugeArray<E> implements Cloneable, java.io.Serializable {
     		throw new InternalError();
 		}
 	}
+	
+    /**
+     * Returns a string representation of this array. The string representation
+     * consists of a list of the array's elements separated by commas
+     * in index ascending order. List enclosed in square brackets (<tt>"[]"</tt>).
+     * <br>
+     * If list is too large, only first elements will be shown, followed by
+     * three-dot (<tt>"..."</tt>).
+     */
+	public String toString() {
+        if (length == 0)
+            return "[]";
+
+        StringBuilder sb = new StringBuilder();
+        sb.append('[');
+        for (long i = 0; i < length; ) {
+            E e = get(i);
+            sb.append(e == this ? "(this Array)" : e);
+            if (++i < length) {
+                if (sb.length() > 1000) {
+                	sb.append(',').append(" ...");
+                	break;
+                }            	
+                sb.append(',').append(' ');
+            }
+        }
+        sb.append(']');
+        return sb.toString();
+	}
 }

@@ -13,8 +13,7 @@ public class BooleanArray implements Cloneable, java.io.Serializable {
 	private static final long serialVersionUID = 2014_12_03_1500L;
 
 	private static int ADDRESS_BITS = 5;
-	private static int BITS = 1 << ADDRESS_BITS;
-	private static int MASK = BITS - 1;
+	private static int MASK = (1 << ADDRESS_BITS) - 1;
 	
 	private final int length;
 	private int[] data;
@@ -87,7 +86,7 @@ public class BooleanArray implements Cloneable, java.io.Serializable {
      */	
 	public boolean get(int index) {
 		rangeCheck(index);
-		return (data[index >>> ADDRESS_BITS] & (1 << (index & MASK))) > 0;
+		return (data[index >>> ADDRESS_BITS] & (1 << (index & MASK))) != 0;
 	}
 	
 	/**
@@ -113,5 +112,33 @@ public class BooleanArray implements Cloneable, java.io.Serializable {
     		// - should never be thrown since we are Cloneable
     		throw new InternalError();
 		}
+	}
+	
+    /**
+     * Returns a string representation of this array. The string representation
+     * consists of a list of the array's elements separated by commas
+     * in index ascending order. List enclosed in square brackets (<tt>"[]"</tt>).
+     * <br>
+     * If list is too large, only first elements will be shown, followed by
+     * three-dot (<tt>"..."</tt>).
+     */
+	public String toString() {
+        if (length == 0)
+            return "[]";
+
+        StringBuilder sb = new StringBuilder();
+        sb.append('[');
+        for (int i = 0; i < length; ) {
+            sb.append(Boolean.toString(get(i)));
+            if (++i < length) {
+                if (sb.length() > 1000) {
+                	sb.append(',').append(" ...");
+                	break;
+                }            	
+                sb.append(',').append(' ');
+            }
+        }
+        sb.append(']');
+        return sb.toString();
 	}
 }
