@@ -52,7 +52,7 @@ final public class Trees {
 
 		private Stack<Iterator<T>> iteratorsStack;
 		private T currentNode;		
-		private final NodeFilter<T> filter;
+		private NodeFilter<T> filter;
 		private boolean filterApplied;
 		private boolean iterationDone;
 
@@ -67,6 +67,7 @@ final public class Trees {
 				iteratorsStack.pop();
 			if (iteratorsStack.isEmpty()) {
 				iterationDone = true;
+				filter = null;
 			}
 			else {
 				currentNode = iteratorsStack.peek().next();
@@ -145,7 +146,7 @@ final public class Trees {
 		private Iterator<T> currentIterator;
 		private final Queue<T> nodesQueue = new LinkedList<>();
 		private T currentNode;		
-		private final NodeFilter<T> filter;
+		private NodeFilter<T> filter;
 		private boolean filterApplied;
 		private boolean iterationDone;
 
@@ -160,6 +161,7 @@ final public class Trees {
 				currentIterator = nodesQueue.poll().getChildren().iterator();
 			if (!currentIterator.hasNext()) {
 				iterationDone = true;
+				filter = null;
 			}
 			else {
 				currentNode = currentIterator.next();
