@@ -11,7 +11,10 @@ import java.util.RandomAccess;
  * Simple implementation of <tt>SortedList</tt> interface which
  * uses <tt>DynamicList</tt> as internal storage. <br>
  * Does <b>not</b> permit <i>null</i> element.<br>
- * Supports more than <tt>Integer.MAX_VALUE</tt> elements.
+ * Supports more than <tt>Integer.MAX_VALUE</tt> elements.<br>
+ * Insertion on elements is stable.
+ * Formally speaking: if two equal elements a and b inserted in this list,
+ * and a inserted before b then index of a will be less that index of b.
  * 
  * @param <E> the type of elements in this list
  * 
@@ -70,6 +73,10 @@ public class SortedDynamicList<E> extends AbstractCollection<E> implements Sorte
 		return farAccess;
 	}
 
+	public Comparator<? super E> comparator() {
+		return comparator;
+	}
+	
     /**
      * Returns the number of elements in this sorted list.<br>
      * If this sorted list  contains more than <tt>Integer.MAX_VALUE</tt> elements,
@@ -82,7 +89,7 @@ public class SortedDynamicList<E> extends AbstractCollection<E> implements Sorte
 	}
 
 	// - returns index of position right after last element which is less than method argument
-	// - if list contains given object, returned value is equal to position, otherwise it's equal to -(position+1)
+	// - if list contains given object, returned value is equal to position, otherwise it's equal to binary inverse of the position
 	private long binarySearch(Object o) {
 		if (o == null)
 			throw new NullPointerException();
@@ -119,11 +126,11 @@ public class SortedDynamicList<E> extends AbstractCollection<E> implements Sorte
 			}
 			lastCmp = comparator.compare(e, storage.get(low));
 		}
-		return (lastCmp < 0) ? -(low+1) : (lastCmp == 0) ? low : -(low+2);
+		return (lastCmp < 0) ? ~low : (lastCmp == 0) ? low : ~(low+1);
 	}
 	
 	// - returns index of position right after last element which is less or equal to method argument
-	// - if list contains given object, returned value is equal to position, otherwise it's equal to -(position+1)
+	// - if list contains given object, returned value is equal to position, otherwise it's equal to binary inverse of the position
 	private long binarySearchNext(Object o) {
 		if (o == null)
 			throw new NullPointerException();
@@ -168,7 +175,7 @@ public class SortedDynamicList<E> extends AbstractCollection<E> implements Sorte
 			}
 			lastCmp = comparator.compare(e, storage.get(low));
 		}
-		return (lastCmp < 0) ? -(low+1) : (lastCmp == 0) ? low+1 : -(low+2);
+		return (lastCmp < 0) ? ~low : (lastCmp == 0) ? low+1 : ~(low+1);
 	}
 	
     /**
@@ -264,7 +271,7 @@ public class SortedDynamicList<E> extends AbstractCollection<E> implements Sorte
 	public boolean add(E e) {
 		long i = binarySearchNext(e);
 		if (i < 0)
-			i = -(i+1);
+			i = ~i;
 		data.far().add(i, e);
 		return true;
 	}

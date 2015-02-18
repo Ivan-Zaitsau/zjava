@@ -2,6 +2,7 @@ package zjava.collection;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.Iterator;
 
 
@@ -17,6 +18,17 @@ import java.util.Iterator;
  * @see java.util.List List
  */
 public interface SortedList<E> extends Collection<E> {
+	
+    /**
+     * Returns the comparator used to order the elements in this list,
+     * or <tt>null</tt> if this list uses the {@linkplain Comparable
+     * natural ordering} of its elements.
+     *
+     * @return the comparator used to order the elements in this list,
+     *         or <tt>null</tt> if this list uses the natural ordering
+     *         of its elements
+     */
+    Comparator<? super E> comparator();
 
     /**
      * Returns the number of elements in this list.  If this list contains
