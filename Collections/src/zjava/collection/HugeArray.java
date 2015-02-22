@@ -60,7 +60,7 @@ public class HugeArray<E> implements Cloneable, java.io.Serializable {
 		
 		// - initializes data array
 		int blockBitsize = 10;
-		while (MAX_ARRAY_SIZE <= (this.length-1) >>> blockBitsize)
+		while (MAX_ARRAY_SIZE <= (this.length-1) >> blockBitsize)
 			blockBitsize++;
 		this.blockBitsize = blockBitsize;
 		this.blockMask = (1 << blockBitsize) - 1;

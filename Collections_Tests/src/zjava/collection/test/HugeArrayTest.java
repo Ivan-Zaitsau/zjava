@@ -47,6 +47,34 @@ public class HugeArrayTest {
 		assertNotNull(actual.toString());
 	}
 	
+	@Test//(timeout=200)
+	public void outOfBoundsTest02() {
+		actual = new HugeArray<>(0);
+		boolean catched;
+		catched = false;
+		try {
+			actual.get(0);
+		}
+		catch(IndexOutOfBoundsException e) {
+			catched = true;
+		}
+		catch (Throwable t) {
+			fail();
+		}		
+		assertTrue(catched);
+		catched = false;
+		try {
+			actual.get(1);
+		}
+		catch(IndexOutOfBoundsException e) {
+			catched = true;
+		}
+		catch (Throwable t) {
+			fail();
+		}		
+		assertTrue(catched);
+	}
+	
 	// - basic operations tests
 	
 	@Test(timeout=200)
