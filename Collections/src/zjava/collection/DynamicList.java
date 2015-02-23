@@ -696,6 +696,30 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeCapa
 	}
 
     /**
+     * Removes all of this collection's elements that are also contained in the
+     * specified collection. After this call returns, this collection will contain
+     * no elements in common with the specified collection. 
+     *
+     * @param c collection containing elements to be retained in this collection
+     * 
+     * @return <tt>true</tt> if this collection changed as a result of the call
+     * 
+     * @throws NullPointerException if this collection contains one or more
+     *         <tt>null</tt> elements and the specified collection does not permit
+     *         <tt>null</tt> elements, or if the specified collection is <tt>null</tt>
+     */
+	public boolean removeAll(Collection<?> c) {
+		boolean modified = false;
+		for (long i = size-1; i >= 0; i--) {
+			if (c.contains(fastGet(i))) {
+				fastRemove(i);
+				modified = true;
+			}
+		}
+		return modified;
+	}
+	
+    /**
      * Retains only the elements in this collection that are contained in the
      * specified collection. In other words, removes from this collection all
      * of its elements that are not contained in the specified collection.
@@ -704,8 +728,8 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeCapa
      * 
      * @return <tt>true</tt> if this collection changed as a result of the call
      * @throws NullPointerException if this collection contains one or more
-     *         null elements and the specified collection does not permit null
-     *         elements
+     *         <tt>null</tt> elements and the specified collection does not permit <tt>null</tt>
+     *         elements, or if the specified collection is <tt>null</tt>
      */
 	public boolean retainAll(Collection<?> c) {
 		boolean modified = false;
