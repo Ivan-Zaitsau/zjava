@@ -35,14 +35,12 @@ public class SortedDynamicList<E> extends AbstractCollection<E> implements Sorte
 	
 	private final class FarAccess implements FarListAccess<E> {
 		
-		private final FarListAccess<E> farDataAccess = data.far();
-		
 		public long size() {
-			return farDataAccess.size();
+			return data.far().size();
 		}
 
 		public E get(long index) {
-			return farDataAccess.get(index);
+			return data.far().get(index);
 		}
 
 		public E set(long index, E element) {
@@ -54,7 +52,7 @@ public class SortedDynamicList<E> extends AbstractCollection<E> implements Sorte
 		}
 
 		public E remove(long index) {
-			return farDataAccess.remove(index);
+			return data.far().remove(index);
 		}
 	};
 	
@@ -94,7 +92,7 @@ public class SortedDynamicList<E> extends AbstractCollection<E> implements Sorte
 		if (o == null)
 			throw new NullPointerException();
 		
-		FarListAccess<E> storage = far();
+		FarListAccess<E> storage = data.far();
 
 		long size = storage.size();
 		if (size == 0)
@@ -104,7 +102,7 @@ public class SortedDynamicList<E> extends AbstractCollection<E> implements Sorte
 		int lastCmp;
 		if (comparator == null) {
 			@SuppressWarnings("unchecked")
-			Comparable<? super E> e = (Comparable<? super E>) o;
+			Comparable<E> e = (Comparable<E>) o;
 			while (low < high) {
 				long i = (low + high) >>> 1;
 				if (e.compareTo(storage.get(i)) <= 0)
@@ -135,7 +133,7 @@ public class SortedDynamicList<E> extends AbstractCollection<E> implements Sorte
 		if (o == null)
 			throw new NullPointerException();
 		
-		FarListAccess<E> storage = far();
+		FarListAccess<E> storage = data.far();
 
 		long size = storage.size();
 		if (size == 0)
@@ -145,7 +143,7 @@ public class SortedDynamicList<E> extends AbstractCollection<E> implements Sorte
 		int lastCmp;
 		if (comparator == null) {
 			@SuppressWarnings("unchecked")
-			Comparable<? super E> e = (Comparable<? super E>) o;
+			Comparable<E> e = (Comparable<E>) o;
 			if (e.compareTo(storage.get(high)) >= 0)
 				return -(size+1);
 			else

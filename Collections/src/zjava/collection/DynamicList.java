@@ -10,7 +10,7 @@ import java.util.NoSuchElementException;
 import java.util.RandomAccess;
 
 /**
- * Resizable array implementation of the <tt>List</tt> interface.  Implements
+ * Resizable array implementation of the <tt>List</tt> interface. Implements
  * all optional list operations, and permits all elements, including
  * <tt>null</tt>.
  *
