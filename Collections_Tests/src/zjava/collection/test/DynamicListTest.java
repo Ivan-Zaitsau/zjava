@@ -225,6 +225,12 @@ public class DynamicListTest {
 		expected.addAll(50, sample4);
 		actual.addAll(50, sample4);
 		assertEquals(expected, actual);
+		expected.removeAll(sample4);
+		actual.removeAll(sample4);
+		assertEquals(expected, actual);
+		expected.retainAll(sample3);
+		actual.retainAll(sample3);
+		assertEquals(expected, actual);
 	}
 	
 	@Test(timeout = 200)

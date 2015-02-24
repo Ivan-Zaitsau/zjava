@@ -446,7 +446,9 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeCapa
      *         {@code toIndex} is out of range
      */
 	protected void removeRange(int fromIndex, int toIndex) {
-		int fromBlock = (int) (((long)fromIndex + (1 << blockBitsize) - 1) >>> blockBitsize);
+		rangeCheck(fromIndex);
+		rangeCheckForAdd(toIndex);
+		int fromBlock = (1 + ((fromIndex - 1) >> blockBitsize));
 		int toBlock = (toIndex >>> blockBitsize);
 		int d = toBlock - fromBlock;
 		if (d > 0) {
@@ -562,7 +564,7 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeCapa
     /**
      * Appends all of the elements in the specified collection to the end of
      * this list, in the order that they are returned by the
-     * specified collection's Iterator.
+     * specified collection's <tt>toArray</tt> method.
      *
      * @param c collection containing elements to be added to this list
      * @return <tt>true</tt> if this list changed as a result of the call
@@ -694,7 +696,7 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeCapa
 			compact();
 		return removed;
 	}
-
+	
     /**
      * Removes all of this collection's elements that are also contained in the
      * specified collection. After this call returns, this collection will contain
@@ -709,14 +711,7 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeCapa
      *         <tt>null</tt> elements, or if the specified collection is <tt>null</tt>
      */
 	public boolean removeAll(Collection<?> c) {
-		boolean modified = false;
-		for (long i = size-1; i >= 0; i--) {
-			if (c.contains(fastGet(i))) {
-				fastRemove(i);
-				modified = true;
-			}
-		}
-		return modified;
+		return removeOrRetainAll(c, false);
 	}
 	
     /**
@@ -732,14 +727,30 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeCapa
      *         elements, or if the specified collection is <tt>null</tt>
      */
 	public boolean retainAll(Collection<?> c) {
+		return removeOrRetainAll(c, true);
+	}
+	
+	// - removes or retains all elements that belong to specified collection
+	// - dependent on specified boolean flag (remove = false, retain = true)
+	private boolean removeOrRetainAll(Collection<?> c, boolean retain) {
+		if (isEmpty())
+			return false;
+		if (c == this) {
+			if (retain)
+				return false;
+			else {
+				clear();
+				return true;
+			}
+		}
 		boolean modified = false;
 		for (long i = size-1; i >= 0; i--) {
-			if (!c.contains(fastGet(i))) {
+			if (c.contains(fastGet(i)) ^ retain) {
 				fastRemove(i);
 				modified = true;
 			}
 		}
-		return modified;
+		return modified;		
 	}
 	
 	/**
