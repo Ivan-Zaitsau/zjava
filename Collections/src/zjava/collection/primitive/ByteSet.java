@@ -64,7 +64,7 @@ public class ByteSet {
 	public boolean removeAll(byte... values) {
 		boolean result = false;
 		for (byte v : values)
-			result |= add(v);
+			result |= remove(v);
 		return result;
 	}
 

@@ -70,7 +70,7 @@ public class CompactSortedSet<E> extends AbstractSet<E> implements Set<E> {
 
 	@Override
 	public boolean removeAll(Collection<?> c) {
-		return data.retainAll(c);
+		return data.removeAll(c);
 	}
 
 	@Override
