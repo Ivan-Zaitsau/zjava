@@ -9,6 +9,8 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.RandomAccess;
 
+import static zjava.collection.Const.MAX_ARRAY_SIZE;
+
 /**
  * Resizable array implementation of the <tt>List</tt> interface. Implements
  * all optional list operations, and permits all elements, including
@@ -43,14 +45,6 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeCapa
 	/** This coefficient used to check if reduction of block size and amount of blocks is required.
 	 * <br> <b>Note:</b> Must be no less than 4. Needs to be no less than 8 for amortized performance estimations to hold */
 	static private final int REDUCTION_COEFFICIENT = 12;
-
-    /**
-     * The maximum size of array to allocate.<br>
-     * Some VMs reserve some header words in an array.
-     * Attempts to allocate larger arrays may result in
-     * OutOfMemoryError: Requested array size exceeds VM limit
-     */
-	static private final int MAX_ARRAY_SIZE = Integer.MAX_VALUE - 8;
 
     /**
 	 * Internal storage block.<br>
@@ -738,10 +732,8 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeCapa
 		if (c == this) {
 			if (retain)
 				return false;
-			else {
-				clear();
-				return true;
-			}
+			clear();
+			return true;
 		}
 		boolean modified = false;
 		for (long i = size-1; i >= 0; i--) {

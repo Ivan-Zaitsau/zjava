@@ -12,8 +12,8 @@ public class BooleanArray implements Cloneable, java.io.Serializable {
 
 	private static final long serialVersionUID = 2014_12_03_1500L;
 
-	private static int ADDRESS_BITS = 5;
-	private static int MASK = (1 << ADDRESS_BITS) - 1;
+	private static final int ADDRESS_BITS = 5;
+	private static final int MASK = (1 << ADDRESS_BITS) - 1;
 	
 	private final int length;
 	private int[] data;
@@ -29,7 +29,7 @@ public class BooleanArray implements Cloneable, java.io.Serializable {
         if (size < 0)
             throw new NegativeArraySizeException("size < 0: " + size);
 		this.length = size;
-		this.data = new int[1 + ((size-1) >>> ADDRESS_BITS)];
+		this.data = new int[1 + ((size-1) >> ADDRESS_BITS)];
 	}
 
     private String outOfBoundsMsg(int index) {

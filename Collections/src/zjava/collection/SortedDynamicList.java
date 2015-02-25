@@ -102,9 +102,9 @@ public class SortedDynamicList<E> extends AbstractCollection<E> implements Sorte
 		int lastCmp;
 		if (comparator == null) {
 			@SuppressWarnings("unchecked")
-			Comparable<E> e = (Comparable<E>) o;
+			Comparable<? super E> e = (Comparable<? super E>) o;
 			while (low < high) {
-				long i = (low + high) >>> 1;
+				long i = (low + high) / 2;
 				if (e.compareTo(storage.get(i)) <= 0)
 					high = i;
 				else
@@ -116,7 +116,7 @@ public class SortedDynamicList<E> extends AbstractCollection<E> implements Sorte
 			@SuppressWarnings("unchecked")
 			E e = (E) o;
 			while (low < high) {
-				long i = (low + high) >>> 1;
+				long i = (low + high) / 2;
 				if (comparator.compare(e, storage.get(i)) <= 0)
 					high = i;
 				else
@@ -143,13 +143,13 @@ public class SortedDynamicList<E> extends AbstractCollection<E> implements Sorte
 		int lastCmp;
 		if (comparator == null) {
 			@SuppressWarnings("unchecked")
-			Comparable<E> e = (Comparable<E>) o;
+			Comparable<? super E> e = (Comparable<? super E>) o;
 			if (e.compareTo(storage.get(high)) >= 0)
 				return -(size+1);
 			else
 				high--;
 			while (low < high) {
-				long i = (low + high + 1) >>> 1;
+				long i = (low + high + 1) / 2;
 				if (e.compareTo(storage.get(i)) < 0)
 					high = i - 1;
 				else
@@ -165,7 +165,7 @@ public class SortedDynamicList<E> extends AbstractCollection<E> implements Sorte
 			else
 				high--;
 			while (low < high) {
-				long i = (low + high + 1) >>> 1;
+				long i = (low + high + 1) / 2;
 				if (comparator.compare(e, storage.get(i)) < 0)
 					high = i - 1;
 				else
@@ -360,6 +360,7 @@ public class SortedDynamicList<E> extends AbstractCollection<E> implements Sorte
      * @return <tt>true</tt> if this list changed as a result of the call
      * 
      * @throws NullPointerException if the specified collection is null
+     * 
      * @see #remove(Object)
      * @see #contains(Object)
      */

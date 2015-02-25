@@ -2,6 +2,8 @@ package zjava.collection;
 
 import java.util.Arrays;
 
+import static zjava.collection.Const.MAX_ARRAY_SIZE;
+
 /**
  * Array which supports more than Integer.MAX_VALUE elements
  * 
@@ -36,14 +38,6 @@ public class HugeArray<E> implements Cloneable, java.io.Serializable {
 	}
 
     /**
-     * The maximum size of array to allocate.<br>
-     * Some VMs reserve some header words in an array.
-     * Attempts to allocate larger arrays may result in
-     * OutOfMemoryError: Requested array size exceeds VM limit
-     */
-	static private final int MAX_ARRAY_SIZE = Integer.MAX_VALUE - 8;
-
-    /**
      * Constructs a HugeArray with the specified size.
      *
      * @param  size size of the HugeArray
@@ -56,15 +50,15 @@ public class HugeArray<E> implements Cloneable, java.io.Serializable {
             throw new NegativeArraySizeException("size < 0: " + size);
         if (size > (long)MAX_ARRAY_SIZE << 30)
         	throw new OutOfMemoryError("Required array size too large");
-		this.length = size;
+		length = size;
 		
 		// - initializes data array
 		int blockBitsize = 10;
-		while (MAX_ARRAY_SIZE <= (this.length-1) >> blockBitsize)
+		while (MAX_ARRAY_SIZE <= (length-1) >> blockBitsize)
 			blockBitsize++;
 		this.blockBitsize = blockBitsize;
-		this.blockMask = (1 << blockBitsize) - 1;
-		data = (E[][]) new Object[(int)((this.length + this.blockMask) >>> blockBitsize)][];
+		blockMask = (1 << this.blockBitsize) - 1;
+		data = (E[][]) new Object[(int)((length + blockMask) >>> this.blockBitsize)][];
 		if ((this.length & blockMask) > 0)
 			data[data.length-1] = (E[]) new Object[(int)(this.length & blockMask)];
 	}
