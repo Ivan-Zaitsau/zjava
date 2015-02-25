@@ -52,11 +52,11 @@ final public class Trees {
 
 		private Stack<Iterator<T>> iteratorsStack;
 		private T currentNode;		
-		private NodeFilter<T> filter;
+		private NodeFilter<? super T> filter;
 		private boolean filterApplied;
 		private boolean iterationDone;
 
-		private DfsIterator(T root, NodeFilter<T> filter) {
+		private DfsIterator(T root, NodeFilter<? super T> filter) {
 			iteratorsStack = new Stack<>();
 			currentNode = root;
 			this.filter = filter;
@@ -132,7 +132,7 @@ final public class Trees {
 	 * @return <tt>Iterable</tt> which navigates root node and it's successors
 	 * in depth-first search order.
 	 */	
-	public static <T extends Node<T>> Iterable<T> depthFirstSearch(T root, NodeFilter<T> filter) {
+	public static <T extends Node<T>> Iterable<T> depthFirstSearch(T root, NodeFilter<? super T> filter) {
 		return new DfsIterator<T>(root, filter);
 	}
 	
@@ -146,11 +146,11 @@ final public class Trees {
 		private Iterator<T> currentIterator;
 		private final Queue<T> nodesQueue = new LinkedList<>();
 		private T currentNode;		
-		private NodeFilter<T> filter;
+		private NodeFilter<? super T> filter;
 		private boolean filterApplied;
 		private boolean iterationDone;
 
-		private BfsIterator(T root, NodeFilter<T> filter) {
+		private BfsIterator(T root, NodeFilter<? super T> filter) {
 			currentIterator = Collections.emptyIterator();
 			currentNode = root;
 			this.filter = filter;
@@ -223,7 +223,7 @@ final public class Trees {
 	 * @return <tt>Iterable</tt> which navigates root node and it's successors
 	 * in breadth-first search order.
 	 */
-	public static <T extends Node<T>> Iterable<T> breadthFirstSearch(T root, NodeFilter<T> filter) {
+	public static <T extends Node<T>> Iterable<T> breadthFirstSearch(T root, NodeFilter<? super T> filter) {
 		return new BfsIterator<T>(root, filter);
 	}
 	
