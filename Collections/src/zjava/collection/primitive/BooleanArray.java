@@ -2,18 +2,21 @@ package zjava.collection.primitive;
 
 import java.util.Arrays;
 
+import zjava.system.Const;
+
 /**
  * Simple implementation of array of boolean values which
- * requires only 1 bit of memory per boolean value
+ * requires only 1 bit of memory per boolean value (rounded up to 32).
+ * 
+ * @since Zjava 1.0
  * 
  * @author Ivan Zaitsau
  */
 public class BooleanArray implements Cloneable, java.io.Serializable {
 
-	private static final long serialVersionUID = 2014_12_03_1500L;
+	private static final long serialVersionUID = 201412031500L;
 
-	private static final int ADDRESS_BITS = 5;
-	private static final int MASK = (1 << ADDRESS_BITS) - 1;
+	private static final int ADDRESS_BITS = Const.ADDRESS_BITS_PER_INT;
 	
 	private final int length;
 	private int[] data;
@@ -49,7 +52,7 @@ public class BooleanArray implements Cloneable, java.io.Serializable {
      */
 	public void setTrue(int index) {
 		rangeCheck(index);
-		data[index >>> ADDRESS_BITS] |= 1 << (index & MASK);
+		data[index >>> ADDRESS_BITS] = PrimitiveBitSet.add(data[index >>> ADDRESS_BITS], index);
 	}
 
 	/**
@@ -60,7 +63,7 @@ public class BooleanArray implements Cloneable, java.io.Serializable {
      */
 	public void setFalse(int index) {
 		rangeCheck(index);
-		data[index >>> ADDRESS_BITS] &= ~(1 << (index & MASK));
+		data[index >>> ADDRESS_BITS] = PrimitiveBitSet.remove(data[index >>> ADDRESS_BITS], index);
 	}
 	
 	/**
@@ -86,7 +89,7 @@ public class BooleanArray implements Cloneable, java.io.Serializable {
      */	
 	public boolean get(int index) {
 		rangeCheck(index);
-		return (data[index >>> ADDRESS_BITS] & (1 << (index & MASK))) != 0;
+		return PrimitiveBitSet.contains(data[index >>> ADDRESS_BITS], index);
 	}
 	
 	/**

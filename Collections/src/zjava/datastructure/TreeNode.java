@@ -8,6 +8,8 @@ import java.util.List;
  * 
  * @param <E> element contained at a node
  * 
+ * @since Zjava 1.0
+ * 
  * @author Ivan Zaitsau
  */
 public class TreeNode<E> implements Node<TreeNode<E>> {
@@ -23,13 +25,13 @@ public class TreeNode<E> implements Node<TreeNode<E>> {
 	 * 
 	 */
 	public static <E> TreeNode<E> createNode(TreeNode<E> parent, E value) {
-		TreeNode<E> node = new TreeNode<>(parent, value);
+		TreeNode<E> node = new TreeNode<E>(parent, value);
 		parent.getChildren().add(node);
 		return node;
 	}
 	
 	private TreeNode<E> parent;
-	private final List<TreeNode<E>> children = new ArrayList<>(2);
+	private final List<TreeNode<E>> children = new ArrayList<TreeNode<E>>(2);
 	private E value;
 	
 	/**
@@ -91,7 +93,7 @@ public class TreeNode<E> implements Node<TreeNode<E>> {
 	 * in depth-first search order.
 	 */
 	public Iterable<TreeNode<E>> depthFirstSearch() {
-		return Trees.depthFirstSearch(this);
+		return Treez.depthFirstSearch(this);
 	}
 
 	/**
@@ -102,6 +104,6 @@ public class TreeNode<E> implements Node<TreeNode<E>> {
 	 * in breadth-first search order.
 	 */
 	public Iterable<TreeNode<E>> breadthFirstSearch() {
-		return Trees.breadthFirstSearch(this);
+		return Treez.breadthFirstSearch(this);
 	}
 }

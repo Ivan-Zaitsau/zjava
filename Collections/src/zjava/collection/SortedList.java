@@ -5,13 +5,14 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.Iterator;
 
-
 /**
  * An ordered collection (also known as a <i>sequence</i>).<br>
  * This interface mimics List interface with regard to the fact
  * that elements in this list are sorted.
  * 
  * @param <E> the type of elements in this list
+ * 
+ * @since Zjava 1.0
  * 
  * @author Ivan Zaitsau
  * @see Collection

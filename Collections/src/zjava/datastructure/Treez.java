@@ -1,6 +1,5 @@
 package zjava.datastructure;
 
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.NoSuchElementException;
@@ -10,9 +9,11 @@ import java.util.Stack;
 /**
  * This class contains useful methods and classes to work with trees (data structures) and tree-nodes
  * 
+ * @since Zjava 1.0
+ * 
  * @author Ivan Zaitsau
  */
-final public class Trees {
+final public class Treez {
 	
 	/**
 	 * NodeFilter defines conditions for ignoring nodes during tree traversal<br>
@@ -57,16 +58,19 @@ final public class Trees {
 		private boolean iterationDone;
 
 		private DfsIterator(T root, NodeFilter<? super T> filter) {
-			iteratorsStack = new Stack<>();
+			iteratorsStack = new Stack<Iterator<T>>();
 			currentNode = root;
 			this.filter = filter;
 		}
 		
+		// - moves to next element regardless of the filter logic
 		private void moveToNext() {
 			while (!iteratorsStack.empty() && !iteratorsStack.peek().hasNext())
 				iteratorsStack.pop();
 			if (iteratorsStack.isEmpty()) {
 				iterationDone = true;
+				iteratorsStack = null;
+				currentNode = null;
 				filter = null;
 			}
 			else {
@@ -144,23 +148,31 @@ final public class Trees {
 	private static class BfsIterator<T extends Node<T>> implements Iterator<T>, Iterable<T> {
 
 		private Iterator<T> currentIterator;
-		private final Queue<T> nodesQueue = new LinkedList<>();
+		private Queue<T> nodesQueue = new LinkedList<T>();
 		private T currentNode;		
 		private NodeFilter<? super T> filter;
 		private boolean filterApplied;
 		private boolean iterationDone;
 
 		private BfsIterator(T root, NodeFilter<? super T> filter) {
-			currentIterator = Collections.emptyIterator();
+			currentIterator = new Iterator<T>() {
+				public boolean hasNext() {return false;}
+				public T next() {throw new NoSuchElementException();}
+				public void remove() {throw new IllegalStateException();}
+			};
 			currentNode = root;
 			this.filter = filter;
 		}
 		
+		// - moves to next element regardless of the filter logic
 		private void moveToNext() {
 			while (!currentIterator.hasNext() && !nodesQueue.isEmpty())
 				currentIterator = nodesQueue.poll().getChildren().iterator();
 			if (!currentIterator.hasNext()) {
 				iterationDone = true;
+				currentIterator = null;
+				nodesQueue = null;
+				currentNode = null;
 				filter = null;
 			}
 			else {
@@ -227,5 +239,7 @@ final public class Trees {
 		return new BfsIterator<T>(root, filter);
 	}
 	
-	private Trees() {};
+	private Treez() {
+		throw new AssertionError("Instantiaion of utility class " + getClass().getName() + " is prohibited");
+	};
 }

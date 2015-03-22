@@ -10,17 +10,17 @@ import java.util.NoSuchElementException;
 import org.junit.Test;
 
 import zjava.datastructure.TreeNode;
-import zjava.datastructure.Trees;
+import zjava.datastructure.Treez;
 
 public class NodeTest {
 	
 	// - edge cases
 
 	@Test(timeout = 200)
-	public void iteratorAtEndDfs01() {
-		TreeNode<Integer> node01 = new TreeNode<>(1);
+	public void dfsIteratorAtEnd() {
+		TreeNode<Integer> node01 = new TreeNode<Integer>(1);
 		Iterator<TreeNode<Integer>> dfsIter = node01.depthFirstSearch().iterator();
-		assertEquals(Integer.valueOf(1), dfsIter.next().getValue());
+		assertEquals((Integer) 1, dfsIter.next().getValue());
 		boolean noSuchElement = false;
 		try {
 			dfsIter.next();
@@ -32,10 +32,10 @@ public class NodeTest {
 	}
 
 	@Test(timeout = 200)
-	public void iteratorAtEndBfs01() {
-		TreeNode<Integer> node01 = new TreeNode<>(1);
+	public void bfsIteratorAtEnd() {
+		TreeNode<Integer> node01 = new TreeNode<Integer>(1);
 		Iterator<TreeNode<Integer>> bfsIter = node01.breadthFirstSearch().iterator();
-		assertEquals(Integer.valueOf(1), bfsIter.next().getValue());
+		assertEquals((Integer) 1, bfsIter.next().getValue());
 		boolean noSuchElement = false;
 		try {
 			bfsIter.next();
@@ -49,8 +49,8 @@ public class NodeTest {
 	@Test(timeout = 200)
 	@SuppressWarnings("unused")
 	public void testEarlyRewindDfs01() {
-		TreeNode<Integer> node01 = new TreeNode<>(1);
-		Iterator<TreeNode<Integer>> dfsIter = Trees.depthFirstSearch(node01, new Trees.NodeFilter<TreeNode<Integer>>() {
+		TreeNode<Integer> node01 = new TreeNode<Integer>(1);
+		Iterator<TreeNode<Integer>> dfsIter = Treez.depthFirstSearch(node01, new Treez.NodeFilter<TreeNode<Integer>>() {
 			public boolean isIgnored(TreeNode<Integer> node) {
 				return (node.getValue() & 1) == 0;
 			}
@@ -72,8 +72,8 @@ public class NodeTest {
 	@Test(timeout = 200)
 	@SuppressWarnings("unused")
 	public void testEarlyRewindBfs01() {
-		TreeNode<Integer> node01 = new TreeNode<>(1);
-		Iterator<TreeNode<Integer>> bfsIter = Trees.breadthFirstSearch(node01, new Trees.NodeFilter<TreeNode<Integer>>() {
+		TreeNode<Integer> node01 = new TreeNode<Integer>(1);
+		Iterator<TreeNode<Integer>> bfsIter = Treez.breadthFirstSearch(node01, new Treez.NodeFilter<TreeNode<Integer>>() {
 			public boolean isIgnored(TreeNode<Integer> node) {
 				return (node.getValue() & 1) == 0;
 			}
@@ -95,7 +95,7 @@ public class NodeTest {
 	// - basic tests
 	
 	private <E> Object[] toArray(Iterable<TreeNode<E>> iterable) {
-		List<E> values = new ArrayList<>();
+		List<E> values = new ArrayList<E>();
 		for (TreeNode<E> node : iterable)
 			values.add(node.getValue());
 		return values.toArray();
@@ -103,7 +103,7 @@ public class NodeTest {
 
 	@Test(timeout = 200)
 	public void testDfs01() {
-		TreeNode<Integer> node01 = new TreeNode<>(1);
+		TreeNode<Integer> node01 = new TreeNode<Integer>(1);
 		assertArrayEquals(new Integer[] {1}, toArray(node01.depthFirstSearch()));
 		
 		TreeNode<Integer>
@@ -133,7 +133,7 @@ public class NodeTest {
 	
 	@Test(timeout = 200)
 	public void testBfs01() {
-		TreeNode<Integer> node01 = new TreeNode<>(1);
+		TreeNode<Integer> node01 = new TreeNode<Integer>(1);
 		assertArrayEquals(new Integer[] {1}, toArray(node01.breadthFirstSearch()));
 
 		TreeNode<Integer>

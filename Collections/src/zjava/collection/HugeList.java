@@ -1,17 +1,17 @@
 package zjava.collection;
 
 /**
- * The <tt>FarListAccess</tt> interface provides number of methods to access
+ * The <tt>HugeList</tt> interface provides number of methods to access
  * list elements beyond <tt>Integer.MAX_VALUE</tt> limit.<br>
+ * 
+ * @since Zjava 1.0
  * 
  * @author Ivan Zaitsau
  */
-public interface FarListAccess<E> {
+public interface HugeList<E> extends HugeArray<E> {
 	
 	/**
 	 * Returns the number of elements in the backing list
-	 * 
-	 * @return 
 	 */
 	long size();
 	

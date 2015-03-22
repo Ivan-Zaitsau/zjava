@@ -187,7 +187,7 @@ public class DynamicListTest {
 		List<Integer> sample1 = Arrays.asList(1, 2, 1, 2, 1, 2, 1, 2);
 		List<Integer> sample2 = Arrays.asList(3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19);
 		List<Integer> sample3 = Arrays.asList(85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99);
-		List<Integer> sample4 = new ArrayList<>();
+		List<Integer> sample4 = new ArrayList<Integer>();
 		for (int i = 100; i < 200; i++) sample4.add(i);
 		expected.add(null);
 		actual.add(null);

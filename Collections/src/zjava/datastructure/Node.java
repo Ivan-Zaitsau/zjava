@@ -7,6 +7,8 @@ import java.util.List;
  * 
  * @param <T> actual node type
  * 
+ * @since Zjava 1.0
+ * 
  * @author Ivan Zaitsau
  */
 public interface Node<T extends Node<T>> {

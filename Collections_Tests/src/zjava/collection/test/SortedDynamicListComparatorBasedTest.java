@@ -52,6 +52,7 @@ public class SortedDynamicListComparatorBasedTest {
 		catch (NullPointerException npe) {
 			exceptionsCount++;
 		};
+		assertTrue(actual.isEmpty());
 		try {
 			actual.contains(null);
 		}

@@ -1,11 +1,13 @@
 package zjava.collection.primitive;
 
+import zjava.system.Const;
+
 /**
- * Early draft of ByteSet
+ * ByteSet represents set of primitive byte values.<br>
+ * Implemented as a bitmap (where each possible value is mapped to one bit).<br>
+ * All operations on this set complete in constant time.
  * 
- * Implemented as a Bitmap 
- * 
- * TODO javadoc
+ * @since Zjava 1.0
  * 
  * @author Ivan Zaitsau
  * 
@@ -13,78 +15,93 @@ package zjava.collection.primitive;
 public class ByteSet {
 	
 	private static final int WORDS = 4;
-	private static final int WORD_BITSIZE = 6;
-	private static final int WORD_MASK = (1 << WORD_BITSIZE) - 1;
+	private static final int ADDRESS_BITS_PER_WORD = Const.ADDRESS_BITS_PER_LONG;
+	private static final int BIT_INDEX_MASK = (1 << ADDRESS_BITS_PER_WORD) - 1;
 	
 	private int size;
-	private long[] bits = new long[4];
+	private long[] words = new long[WORDS];
 	
+	/**
+	 * Returns number of elements in this set (it's size).
+	 * 
+	 * @return number of elements in this set
+	 */
 	public int size() {
 		return size;
 	}
 
-	public boolean isEmpty() {
-		return size() == 0;
-	}
-
+	/**
+	 * Returns true if this set contains specified value.
+	 * 
+	 * @param value - value whose presence needs to be checked
+	 * @return {@code true} if the set contains given value
+	 */
 	public boolean contains(byte v) {
 		final int i = (int) v - Byte.MIN_VALUE;
-		return (bits[i >>> WORD_BITSIZE] & (1L << (i & WORD_MASK))) != 0;
+		return PrimitiveBitSet.contains(words[i >>> ADDRESS_BITS_PER_WORD], i);
 	}
 
+    /**
+     * Adds the specified value to this set if it is not already present.<br>
+     * 
+     * If this set already contains the element, the call leaves the set
+     * unchanged and returns {@code false}.
+     *
+     * @param v element to be added to this set
+     * @return {@code true} if this set did not already contain the specified
+     *         element
+     */
 	public boolean add(byte v) {
 		final int i = (int) v - Byte.MIN_VALUE;
-		final int wi = i >>> WORD_BITSIZE;
-		final long bit = 1L << (i & WORD_MASK);
-		if ((bits[wi] & bit) == 0) {
-			bits[wi] |= bit;
-			return true;
-		}
-		else return false;
+		final int wi = i >>> ADDRESS_BITS_PER_WORD;
+		long beforeUpdate = words[wi];
+		words[wi] = PrimitiveBitSet.add(beforeUpdate, i);
+		return words[wi] != beforeUpdate;
 	}
 
+    /**
+     * Removes the specified value from this set if it is present.
+     * Returns {@code true} if this set contained the element (or
+     * equivalently, if this set changed as a result of the call).<br>
+     * This set will not contain the element once the call returns.
+     *
+     * @param value element to be removed from this set, if present
+     * @return {@code true} if this set contained the specified element
+     */
 	public boolean remove(byte v) {
 		final int i = (int) v - Byte.MIN_VALUE;
-		final int wi = i >>> WORD_BITSIZE;
-		final long bit = 1L << (i & WORD_MASK);
-		if ((bits[wi] & bit) != 0) {
-			bits[wi] &= ~bit;
-			return true;
-		}
-		else return false;
+		final int wi = i >>> ADDRESS_BITS_PER_WORD;
+		long beforeUpdate = words[wi];
+		words[wi] = PrimitiveBitSet.remove(beforeUpdate, i);
+		return words[wi] != beforeUpdate;
 	}
 
-	public boolean addAll(byte... values) {
-		boolean result = false;
-		for (byte v : values)
-			result |= add(v);
-		return result;
-	}
-
-	public boolean removeAll(byte... values) {
-		boolean result = false;
-		for (byte v : values)
-			result |= remove(v);
-		return result;
-	}
-
+    /**
+     * Removes all of the elements from this set.
+     * The set will be empty after this call returns.
+     */
 	public void clear() {
 		size = 0;
-		for (int i = 0; i < WORDS; i++) bits[i] = 0;
+		for (int i = 0; i < WORDS; i++) words[i] = 0;
 	}
 
-	public byte[] toArray() {
+	/**
+	 * Returns array which contains this set elements in increasing order.
+	 * 
+	 * @return array of this set elements in increasing order
+	 */
+	public byte[] toPrimitiveArray() {
 		int arrSize = 0;
-		for (int i = 0; i < WORDS; i++) arrSize += Long.bitCount(bits[i]);
+		for (int i = 0; i < WORDS; i++) arrSize += PrimitiveBitSet.size(words[i]);
 		byte[] arr = new byte[arrSize];
 		
 		int ai = 0;
 		for (int i = 0; i < WORDS; i++) {
-			long w = bits[i];
+			long w = words[i];
 			if (w > 0)
-				for (int j = 0; j <= WORD_MASK; j++)
+				for (int j = 0; j <= BIT_INDEX_MASK; j++)
 					if ((w & (1L << j)) != 0)
-						arr[ai++] = (byte) (Byte.MIN_VALUE + (i << WORD_BITSIZE) + j);
+						arr[ai++] = (byte) (Byte.MIN_VALUE + (i << ADDRESS_BITS_PER_WORD) + j);
 		}
 		return arr;
 	}

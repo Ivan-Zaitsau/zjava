@@ -9,12 +9,12 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.RandomAccess;
 
-import static zjava.collection.Const.MAX_ARRAY_SIZE;
+import static zjava.system.Const.MAX_ARRAY_SIZE;
 
 /**
- * Resizable array implementation of the <tt>List</tt> interface. Implements
- * all optional list operations, and permits all elements, including
- * <tt>null</tt>.
+ * Resizable dynamic array implementation of the <tt>List</tt> interface.
+ * Implements all optional list operations, and permits all elements,
+ * including <tt>null</tt>.
  *
  * <p>The <tt>size</tt>, <tt>isEmpty</tt>, <tt>get</tt>, <tt>set</tt>,
  * <tt>iterator</tt>, and <tt>listIterator</tt> operations run in constant
@@ -27,16 +27,20 @@ import static zjava.collection.Const.MAX_ARRAY_SIZE;
  *
  * @param <E> the type of elements in this list
  * 
+ * @since Zjava 1.0
+ *  
  * @author Ivan Zaitsau
+ * 
  * @see     Collection
  * @see     List
+ * 
  */
-public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeCapacityList<E>, RandomAccess, Cloneable, java.io.Serializable {
+public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeListAccess<E>, RandomAccess, Cloneable, java.io.Serializable {
 
-	static private final long serialVersionUID = 2015_02_12_1200L;
+	static private final long serialVersionUID = 201503121600L;
 	
-	/** Actual initial block size is 2<sup>INITIAL_BLOCK_BITSIZE</sup> */
-	static private final int INITIAL_BLOCK_BITSIZE = 5;
+	/** Actual initial block size is 2<sup>INITIAL_BLOCK_ADDRESS_BITS</sup> */
+	static private final int INITIAL_BLOCK_ADDRESS_BITS = 5;
 	
 	/** Number of blocks on DynamicList initialization.
 	 * <br> <b>Note:</b> Must be even number due to some simplifications and assumptions made in the code*/
@@ -61,7 +65,7 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeCapa
 	 */
 	static final private class Block<E> implements Cloneable, java.io.Serializable {
 		
-		private static final long serialVersionUID = 2015_02_12_1200L;
+		private static final long serialVersionUID = 201503121600L;
 		
 		// - merges two blocks of equal capacities into block with doubled capacity
 		static <E> Block<E> merge(Block<E> block1, Block<E> block2) {
@@ -111,7 +115,7 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeCapa
 
 		@SuppressWarnings("unchecked")
 		Block(int capacity) {
-			// - capacity must be even power of 2
+			// - capacity must be power of 2 and greater than one
 			assert((capacity & (capacity-1)) == 0 && capacity > 1);
 			
 			this.offset = 0;
@@ -125,6 +129,7 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeCapa
 			size = length;
 		}
 		
+		// - copies "count" values of this block starting from "srcPos" to array starting from "trgPos" index
 		int copyToArray(Object[] array, int trgPos, int srcPos, int count) {
 			if (srcPos >= values.length | count <= 0)
 				return 0;
@@ -142,6 +147,7 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeCapa
 			return count;
 		}
 
+		// - copies all values of this block to given array starting from "pos" index
 		int copyToArray(Object[] array, int pos) {
 			return copyToArray(array, pos, 0, size);
 		}
@@ -150,8 +156,14 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeCapa
 			return size;
 		}
 		
-		E addFirst(E value) {
-			offset = (offset - 1) & (values.length-1);
+		// - returns "physical" index for given "logical" position
+		int index(final int pos) {
+			return (offset + pos) & (values.length - 1);
+		}
+		
+		// - appends given value to the beginning of the block
+		E addFirst(final E value) {
+			offset = index(-1);
 			E last = values[offset];
 			values[offset] = value;
 			if (size < values.length) {
@@ -160,82 +172,88 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeCapa
 			return last;
 		}
 		
-		void addLast(E value) {
+		// - appends given value to the end of the block
+		void addLast(final E value) {
 			if (size == values.length)
 				return;
-			values[(offset + size) & (values.length-1)] = value;
+			values[index(size)] = value;
 			size++;
 		}
 		
-		E add(int index, E value) {
+		// - inserts given value at given position
+		E add(final int pos, final E value) {
 			// - range check
-			assert(index >= 0 && index <= size);
+			assert(pos >= 0 && pos <= size);
 			
-			E last = (size == values.length) ? values[(offset - 1) & (values.length-1)] : null;
-			if (2*index < size) {
-				offset = (offset - 1) & (values.length-1);
-				for (int i = 0; i < index; i++) {
-					values[(offset + i) & (values.length-1)] = values[(offset + i + 1) & (values.length-1)];
+			E last = (size == values.length) ? values[index(-1)] : null;
+			if (pos + pos < size) {
+				offset = index(-1);
+				for (int i = 0; i < pos; i++) {
+					values[index(i)] = values[index(i+1)];
 				}
 			}
 			else {
-				for (int i = (size == values.length) ? size-1 : size; i > index; i--) {
-					values[(offset + i) & (values.length-1)] = values[(offset + i - 1) & (values.length-1)];
+				for (int i = (size == values.length) ? size-1 : size; i > pos; i--) {
+					values[index(i)] = values[index(i-1)];
 				}
 			}
-			values[(offset + index) & (values.length-1)] = value;
+			values[index(pos)] = value;
 			if (size < values.length) size++;
 			return last;
 		}
 
-		E set(int index, E value) {
+		// - replaces element at given position with given value
+		E set(final int pos, final E value) {
 			// - range check
-			assert(index >= 0 && index < size);
+			assert(pos >= 0 && pos < size);
 			
-			int i = (offset + index) & (values.length-1);
+			int i = index(pos);
 			E replaced = values[i];
 			values[i] = value;
 			return replaced;
 		}
 		
+		// - removes first element of the block
 		E removeFirst() {
 			// - range check
 			assert(size > 0);
 			
 			E removed = values[offset];
 			values[offset] = null;
-			offset = (offset + 1) & (values.length-1);
+			offset = index(1);
 			size--;
 			return removed;
 		}
 		
-		E remove(int index) {
+		// - removes element at given position
+		E remove(final int pos) {
 			// - range check
-			assert(index >= 0 && index < size);
+			assert(pos >= 0 && pos < size);
 			
-			E removed = values[(offset + index) & (values.length-1)];
-			if (2*index < size) {
-				for (int i = index; i > 0; i--) {
-					values[(offset + i) & (values.length-1)] = values[(offset + i - 1) & (values.length-1)];					
+			E removed = values[index(pos)];
+			if (pos + pos < size) {
+				for (int i = pos; i > 0; i--) {
+					values[index(i)] = values[index(i-1)];					
 				}
 				values[offset] = null;
-				offset = (offset + 1) & (values.length-1);
+				offset = index(1);
 			}
 			else {
-				for (int i = index + 1; i < size; i++) {
-					values[(offset + i - 1) & (values.length-1)] = values[(offset + i) & (values.length-1)];
+				for (int i = pos + 1; i < size; i++) {
+					values[index(i-1)] = values[index(i)];
 				}
-				values[(offset + size - 1) & (values.length-1)] = null;
+				values[index(size-1)] = null;
 			}
 			size--;
 			return removed;
 		}
 		
-		E get(int index) {
+		// - returns element at given position
+		E get(final int pos) {
 			// - range check
-			assert(index >= 0 && index < size);
+			assert(pos >= 0 && pos < size);
 			
-			return values[(offset + index) & (values.length-1)];
+			return values[index(pos)];
 		}
 		
 		public Object clone() {
@@ -252,116 +270,25 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeCapa
 	}
 
 	private long size;
-	private int blockBitsize;
+	private int blockAddressBits;
 	private Block<E>[] data;
 	
-	private transient FarListAccess<E> farAccess;
+	private transient HugeList<E> hugeView;
 	
-	private class FarAccess implements FarListAccess<E> {
-		
-		public long size() {
-			return size;
-		}
-
-		public E get(long index) {
-			rangeCheck(index);
-			return fastGet(index);
-		}
-
-		public E set(long index, E element) {
-			rangeCheck(index);
-			return fastSet(index, element);
-		}
-
-		public void add(long index, E element) {
-			rangeCheckForAdd(index);
-			ensureCapacity(size + 1);
-			fastAdd(index, element);
-		}
-
-		public E remove(long index) {
-			rangeCheck(index);
-			return fastRemove(index);
-		}
-	};
-
-	private class Iter implements Iterator<E> {
-
-		/**
-		 * Cursor position
-		 */
-		private long i = 0;
-		
-		/**
-		 * Current (last returned) element index or -1 if element is not defined (or has been removed)
-		 */
-		private long last = -1;
-		
-		/**
-		 * Expected version (modifications count) of the backing List 
-		 */
-		int expectedModCount = modCount;
-		
-		public boolean hasNext() {
-			return i < size;
-		}
-
-        public E next() {
-            checkForComodification();
-            try {
-                rangeCheck(i);
-                E next = fastGet(i);
-                last = i++;
-                return next;
-            }
-            catch (IndexOutOfBoundsException e) {
-                checkForComodification();
-                throw new NoSuchElementException();
-            }
-        }
-
-        public void remove() {
-            if (last < 0)
-                throw new IllegalStateException();
-            checkForComodification();
-            
-            try {
-                rangeCheck(last);
-            	fastRemove(last);
-                if (last < i) i--;
-                last = -1;
-                expectedModCount = modCount;
-            } catch (IndexOutOfBoundsException e) {
-                throw new ConcurrentModificationException();
-            }
-        }
-	
-		void checkForComodification() {
-			if (expectedModCount != modCount)
-				throw new ConcurrentModificationException();
-		}
-	}
-	
-	public FarListAccess<E> far() {
-		if (farAccess == null)
-			farAccess = new FarAccess();
-		return farAccess;
-	}
-
 	/** Null-safe access to data block with initialization.*/
 	private Block<E> data(int index) {
 		if (data[index] == null)
-			data[index] = new Block<E>(1 << blockBitsize);
+			data[index] = new Block<E>(1 << blockAddressBits);
 		return data[index];
 	}
 	
 	private void ensureCapacity(long requiredCapacity) {
-		long capacity = (long) data.length << blockBitsize;
+		long capacity = (long) data.length << blockAddressBits;
 		while (requiredCapacity > capacity) {
 			// - double number of blocks and their size
 			@SuppressWarnings("unchecked")
 			Block<E>[] newData = new Block[2*data.length];
-			int newBlockBitsize = blockBitsize+1;
+			int newBlockBitsize = blockAddressBits+1;
 			for (int i = 1, j = 0; i < data.length; i += 2, j++) {
 				newData[j] = Block.merge(data[i-1], data[i]);
 				if (newData[j] == null)
@@ -373,19 +300,19 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeCapa
 			assert (data.length & 1) == 0;
 			
 			data = newData;
-			blockBitsize = newBlockBitsize;
-			capacity = (long) data.length << blockBitsize;
+			blockAddressBits = newBlockBitsize;
+			capacity = (long) data.length << blockAddressBits;
 		}
 	}
 	
 	private void compact() {
 		if (data.length <= INITIAL_BLOCKS_COUNT)
 			return;
-		if (size * REDUCTION_COEFFICIENT <= (long) data.length << blockBitsize) {
+		if (size * REDUCTION_COEFFICIENT <= (long) data.length << blockAddressBits) {
 			// - decrease number of blocks and their size by half
 			@SuppressWarnings("unchecked")
 			Block<E>[] newData = new Block[(data.length+1)/2];
-			int newBlockBitsize = blockBitsize-1;
+			int newBlockBitsize = blockAddressBits-1;
 			main:
 			for (int i = 0; ; i++) {
 				Block<E>[] splitBlock = Block.split(data[i]);
@@ -396,7 +323,7 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeCapa
 				}
 			}
 			data = newData;
-			blockBitsize = newBlockBitsize;
+			blockAddressBits = newBlockBitsize;
 			modCount++;
 		}
 	}
@@ -422,11 +349,11 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeCapa
 	@SuppressWarnings("unchecked")
 	private void init(long initialCapacity) {
 		size = 0;
-		blockBitsize = INITIAL_BLOCK_BITSIZE;
+		blockAddressBits = INITIAL_BLOCK_ADDRESS_BITS;
 		int blocksCount = INITIAL_BLOCKS_COUNT;
-		while ((long)blocksCount << blockBitsize < initialCapacity) {
+		while ((long)blocksCount << blockAddressBits < initialCapacity) {
 			blocksCount += blocksCount;
-			blockBitsize++;
+			blockAddressBits++;
 		}
 		data = new Block[blocksCount];
 	}
@@ -442,16 +369,16 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeCapa
 	protected void removeRange(int fromIndex, int toIndex) {
 		rangeCheck(fromIndex);
 		rangeCheckForAdd(toIndex);
-		int fromBlock = (1 + ((fromIndex - 1) >> blockBitsize));
-		int toBlock = (toIndex >>> blockBitsize);
+		int fromBlock = (1 + ((fromIndex - 1) >> blockAddressBits));
+		int toBlock = (toIndex >>> blockAddressBits);
 		int d = toBlock - fromBlock;
 		if (d > 0) {
 			for (int i = toBlock; i < data.length && data[i] != null && data[i].size() > 0; i++) {
 				data[i-d] = data[i];
 				data[i] = null;
 			}
-			size -= d << blockBitsize;
-			toIndex -= d << blockBitsize;
+			size -= d << blockAddressBits;
+			toIndex -= d << blockAddressBits;
 		}
 		for (int i = fromIndex; i < toIndex; i++)
 			fastRemove(fromIndex);
@@ -511,12 +438,12 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeCapa
     /**
      * Appends the specified element to the end of this list.
      *
-     * @param e element to be appended to this list
+     * @param element element to be appended to this list
      * @return <tt>true</tt> (as specified by {@link Collection#add})
      */
 	public boolean add(E element) {
 		ensureCapacity(size + 1);
-		int blockIndex = (int) (size >>> blockBitsize);
+		int blockIndex = (int) (size >>> blockAddressBits);
 		data(blockIndex).addLast(element);
 		size++;
 		return true;
@@ -531,17 +458,17 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeCapa
      * @param element element to be inserted
      * @throws IndexOutOfBoundsException {@inheritDoc}
      */
-	public void add(int index, E element) {
+	public void add(final int index, E element) {
 		rangeCheckForAdd(index);
 		ensureCapacity(size + 1);
 		fastAdd(index, element);
 	}
 
-	private void fastAdd(long index, E element) {
+	private void fastAdd(final long index, E element) {
 		modCount++;
-		int blockIndex = (int) (index >>> blockBitsize);
-		int valueIndex = (int) (index & (-1L >>> -blockBitsize));
-		int blockSize = 1 << blockBitsize;
+		int blockIndex = (int) (index >>> blockAddressBits);
+		int valueIndex = (int) (index & (-1L >>> -blockAddressBits));
+		int blockSize = 1 << blockAddressBits;
 		if (data(blockIndex).size() < blockSize) {
 			data[blockIndex].add(valueIndex, element);
 		}
@@ -560,13 +487,13 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeCapa
      * this list, in the order that they are returned by the
      * specified collection's <tt>toArray</tt> method.
      *
-     * @param c collection containing elements to be added to this list
+     * @param collection collection containing elements to be added to this list
      * @return <tt>true</tt> if this list changed as a result of the call
      * @throws NullPointerException if the specified collection is null
      */
-    public boolean addAll(Collection<? extends E> c) {
+    public boolean addAll(Collection<? extends E> collection) {
 		@SuppressWarnings("unchecked")
-		E[] values = (E[]) c.toArray();
+		E[] values = (E[]) collection.toArray();
     	if (values.length == 0)
     		return false;
     	for (E value : values)
@@ -584,31 +511,31 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeCapa
      *
      * @param index index at which to insert the first element from the
      *              specified collection
-     * @param c collection containing elements to be added to this list
+     * @param collection collection containing elements to be added to this list
      * @return <tt>true</tt> if this list changed as a result of the call
      * @throws IndexOutOfBoundsException {@inheritDoc}
      * @throws NullPointerException if the specified collection is null
      */
-	public boolean addAll(int index, Collection<? extends E> c) {
+	public boolean addAll(final int index, Collection<? extends E> collection) {
     	rangeCheckForAdd(index);
     	@SuppressWarnings("unchecked")
-		E[] values = (E[]) c.toArray();
+		E[] values = (E[]) collection.toArray();
     	if (values.length == 0)
     		return false;
     	ensureCapacity(size + values.length);
-    	int blockSize = 1 << blockBitsize;
-    	int mask = (1 << blockBitsize) - 1;
+    	int blockSize = 1 << blockAddressBits;
+    	int mask = (1 << blockAddressBits) - 1;
     	int i = 0;
 		while (i < values.length && ((index + i) & mask) > 0) {
     		fastAdd((long)index + i, values[i]);
     		i++;
 		}
     	while (i < values.length - blockSize) {
-    		int fromBlock = (int) (((long)index + i) >>> blockBitsize);
-    		int toBlock = (int) ((size + mask) >>> blockBitsize);
+    		int fromBlock = (int) (((long)index + i) >>> blockAddressBits);
+    		int toBlock = (int) ((size + mask) >>> blockAddressBits);
     		for (int j = toBlock; j > fromBlock; j--)
     			data[j] = data[j-1];
-    		data[fromBlock] = new Block<>(blockSize, values, i, blockSize);
+    		data[fromBlock] = new Block<E>(blockSize, values, i, blockSize);
     		i += blockSize;
     		size += blockSize;
     	}
@@ -626,14 +553,14 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeCapa
      * @return the element at the specified position in this list
      * @throws IndexOutOfBoundsException {@inheritDoc}
      */
-	public E get(int index) {
+	public E get(final int index) {
 		rangeCheck(index);
 		return fastGet(index);
 	}
 
-	private E fastGet(long index) {
-		int blockIndex = (int) (index >>> blockBitsize);
-		int valueIndex = (int) (index & (-1L >>> -blockBitsize));
+	private E fastGet(final long index) {
+		int blockIndex = (int) (index >>> blockAddressBits);
+		int valueIndex = (int) (index & (-1L >>> -blockAddressBits));
 		return data[blockIndex].get(valueIndex);
 	}
 	
@@ -646,14 +573,14 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeCapa
      * @return the element previously at the specified position
      * @throws IndexOutOfBoundsException {@inheritDoc}
      */
-	public E set(int index, E element) {
+	public E set(final int index, E element) {
 		rangeCheck(index);
 		return fastSet(index, element);
 	}
 
 	private E fastSet(long index, E element) {
-		int blockIndex = (int) (index >>> blockBitsize);
-		int valueIndex = (int) (index & (-1L >>> -blockBitsize));
+		int blockIndex = (int) (index >>> blockAddressBits);
+		int valueIndex = (int) (index & (-1L >>> -blockAddressBits));
 		return data[blockIndex].set(valueIndex, element);
 	}
 	
@@ -666,15 +593,15 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeCapa
      * @return the element that was removed from the list
      * @throws IndexOutOfBoundsException {@inheritDoc}
      */
-	public E remove(int index) {
+	public E remove(final int index) {
 		rangeCheck(index);
 		return fastRemove(index);
 	}
 
-	private E fastRemove(long index) {
+	private E fastRemove(final long index) {
 		modCount++;
-		int blockIndex = (int) (index >>> blockBitsize);
-		int valueIndex = (int) (index & (-1L >>> -blockBitsize));
+		int blockIndex = (int) (index >>> blockAddressBits);
+		int valueIndex = (int) (index & (-1L >>> -blockAddressBits));
 		E removed = data[blockIndex].remove(valueIndex);
 		while (++blockIndex < data.length && data[blockIndex] != null && data[blockIndex].size() > 0) {
 			data[blockIndex-1].addLast(data[blockIndex].removeFirst());
@@ -766,9 +693,97 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeCapa
      * @return an iterator over the elements in this list in proper sequence
      */
 	public Iterator<E> iterator() {
-		return new Iter();
+		return new Iterator<E>() {
+
+			/**
+			 * Cursor position
+			 */
+			private long i = 0;
+			
+			/**
+			 * Current (last returned) element index or -1 if element is not defined (or has been removed)
+			 */
+			private long last = -1;
+			
+			/**
+			 * Expected version (modifications count) of the backing List 
+			 */
+			int expectedModCount = modCount;
+			
+			public boolean hasNext() {
+				return i < size;
+			}
+
+	        public E next() {
+	            checkForComodification();
+	            try {
+	                rangeCheck(i);
+	                E e = fastGet(i);
+	                last = i++;
+	                return e;
+	            }
+	            catch (IndexOutOfBoundsException e) {
+	                checkForComodification();
+	                throw new NoSuchElementException();
+	            }
+	        }
+
+	        public void remove() {
+	            if (last < 0)
+	                throw new IllegalStateException();
+	            checkForComodification();
+	            
+	            try {
+	                rangeCheck(last);
+	            	fastRemove(last);
+	                if (last < i) i--;
+	                last = -1;
+	                expectedModCount = modCount;
+	            } catch (IndexOutOfBoundsException e) {
+	                throw new ConcurrentModificationException();
+	            }
+	        }
+		
+			void checkForComodification() {
+				if (expectedModCount != modCount)
+					throw new ConcurrentModificationException();
+			}
+		};
 	}
 	
+	public HugeList<E> hugeView() {
+		if (hugeView == null) {
+			hugeView = new HugeList<E>() {
+				
+				public long size() {
+					return size;
+				}
+
+				public E get(long index) {
+					rangeCheck(index);
+					return fastGet(index);
+				}
+
+				public E set(long index, E element) {
+					rangeCheck(index);
+					return fastSet(index, element);
+				}
+
+				public void add(long index, E element) {
+					rangeCheckForAdd(index);
+					ensureCapacity(size + 1);
+					fastAdd(index, element);
+				}
+
+				public E remove(long index) {
+					rangeCheck(index);
+					return fastRemove(index);
+				}
+			};
+		}
+		return hugeView;
+	}
+
     /**
      * Returns an array containing all of the elements in this list
      * in proper sequence (from first to last element).
@@ -847,7 +862,7 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeCapa
 	public Object clone() {
     	try {
 			DynamicList<E> clone = (DynamicList<E>) super.clone();
-			clone.farAccess = null;
+			clone.hugeView = null;
 			clone.data = new Block[data.length];
     		for (int i = 0; i < data.length && data[i] != null; i++) {
     			clone.data[i] = (Block<E>) data[i].clone();
@@ -861,12 +876,14 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeCapa
     }
 
     /**
-     * Returns a string representation of this list. The string representation
-     * consists of a list of the collection's elements separated by commas
-     * in the order they are returned by its iterator. List enclosed in square
-     * brackets (<tt>"[]"</tt>).<br>
+     * Returns a string representation of this list.<br>
+     * The string representation consists of a list of the elements separated
+     * by commas in the index increasing order.<br>
+     * List is enclosed in square brackets (<tt>"[]"</tt>).<br>
      * If list is too large, only first elements will be shown, followed by
      * three-dot (<tt>"..."</tt>).
+     * 
+     * @return a string representation of this list
      */
 	public String toString() {
         if (isEmpty())

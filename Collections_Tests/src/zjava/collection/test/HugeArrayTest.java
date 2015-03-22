@@ -6,6 +6,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import zjava.collection.HugeArray;
+import zjava.collection.SparseHugeArray;
 
 public class HugeArrayTest {
 
@@ -19,8 +20,8 @@ public class HugeArrayTest {
 	// - edge cases
 	
 	@Test(timeout=200)
-	public void outOfBoundsTest01() {
-		actual = new HugeArray<>(8000000001L);
+	public void outOfBounds01() {
+		actual = new SparseHugeArray<Integer>(8000000001L);
 		assertNull(actual.get(8000000000L));
 		int exceptionsCount = 0;
 		try {
@@ -47,9 +48,9 @@ public class HugeArrayTest {
 		assertNotNull(actual.toString());
 	}
 	
-	@Test//(timeout=200)
-	public void outOfBoundsTest02() {
-		actual = new HugeArray<>(0);
+	@Test(timeout=200)
+	public void outOfBounds02() {
+		actual = new SparseHugeArray<Integer>(0);
 		boolean catched;
 		catched = false;
 		try {
@@ -79,7 +80,7 @@ public class HugeArrayTest {
 	
 	@Test(timeout=200)
 	public void getsetTest01() {
-		actual = new HugeArray<>(8000000001L);
+		actual = new SparseHugeArray<Integer>(8000000001L);
 		actual.set(8000000000L, 1);
 		assertEquals(actual.get(8000000000L), (Integer) 1);
 		actual.set(2049854082, 1489230);

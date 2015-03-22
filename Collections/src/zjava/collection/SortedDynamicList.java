@@ -7,54 +7,36 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.RandomAccess;
 
+import zjava.common.Objectz;
+
 /**
  * Simple implementation of <tt>SortedList</tt> interface which
  * uses <tt>DynamicList</tt> as internal storage. <br>
  * Does <b>not</b> permit <i>null</i> element.<br>
  * Supports more than <tt>Integer.MAX_VALUE</tt> elements.<br>
- * Insertion on elements is stable.
- * Formally speaking: if two equal elements a and b inserted in this list,
- * and a inserted before b then index of a will be less that index of b.
+ * Sorting/insertion of elements is stable (formally speaking: if
+ * two equal elements a and b are inserted in this list, and a is
+ * inserted before b then index of a will be less that index of b).
  * 
  * @param <E> the type of elements in this list
  * 
+ * @since Zjava 1.0
+ * 
  * @author Ivan Zaitsau
+ * 
  * @see Collection
  * @see java.util.List List
  * @see SortedList
  * @see DynamicList
  */
-public class SortedDynamicList<E> extends AbstractCollection<E> implements SortedList<E>, HugeCapacityList<E>, RandomAccess, Cloneable, java.io.Serializable {
+public class SortedDynamicList<E> extends AbstractCollection<E> implements SortedList<E>, HugeListAccess<E>, RandomAccess, Cloneable, java.io.Serializable {
 
-	static private final long serialVersionUID = 2015_02_12_1200L;
+	static private final long serialVersionUID = 201502121200L;
 
 	private DynamicList<E> data;
 	private Comparator<? super E> comparator;
 	
-	private transient FarListAccess<E> farAccess;
-	
-	private final class FarAccess implements FarListAccess<E> {
-		
-		public long size() {
-			return data.far().size();
-		}
-
-		public E get(long index) {
-			return data.far().get(index);
-		}
-
-		public E set(long index, E element) {
-			throw new UnsupportedOperationException();
-		}
-
-		public void add(long index, E element) {
-			throw new UnsupportedOperationException();
-		}
-
-		public E remove(long index) {
-			return data.far().remove(index);
-		}
-	};
+	private transient HugeList<E> hugeView;
 	
 	public SortedDynamicList() {
 		data = new DynamicList<E>();
@@ -63,16 +45,6 @@ public class SortedDynamicList<E> extends AbstractCollection<E> implements Sorte
 	public SortedDynamicList(Comparator<? super E> comparator) {
 		this();
 		this.comparator = comparator;
-	}
-
-	public FarListAccess<E> far() {
-		if (farAccess == null)
-			farAccess = new FarAccess();
-		return farAccess;
-	}
-
-	public Comparator<? super E> comparator() {
-		return comparator;
 	}
 	
     /**
@@ -86,96 +58,28 @@ public class SortedDynamicList<E> extends AbstractCollection<E> implements Sorte
 		return data.size();
 	}
 
-	// - returns index of position right after last element which is less than method argument
-	// - if list contains given object, returned value is equal to position, otherwise it's equal to binary inverse of the position
+	/*
+	 * Returns index of position right after last element which is less
+	 * than method argument.
+	 * If list contains given object, returned value is equal to position,
+	 * otherwise it's equal to binary inverse of the position.
+	 */
+	@SuppressWarnings("unchecked")
 	private long binarySearch(Object o) {
-		if (o == null)
-			throw new NullPointerException();
-		
-		FarListAccess<E> storage = data.far();
-
-		long size = storage.size();
-		if (size == 0)
-			return -1;
-		
-		long low = 0, high = size - 1;
-		int lastCmp;
-		if (comparator == null) {
-			@SuppressWarnings("unchecked")
-			Comparable<? super E> e = (Comparable<? super E>) o;
-			while (low < high) {
-				long i = (low + high) / 2;
-				if (e.compareTo(storage.get(i)) <= 0)
-					high = i;
-				else
-					low = i + 1;
-			}
-			lastCmp = e.compareTo(storage.get(low));
-		}
-		else {
-			@SuppressWarnings("unchecked")
-			E e = (E) o;
-			while (low < high) {
-				long i = (low + high) / 2;
-				if (comparator.compare(e, storage.get(i)) <= 0)
-					high = i;
-				else
-					low = i + 1;
-			}
-			lastCmp = comparator.compare(e, storage.get(low));
-		}
-		return (lastCmp < 0) ? ~low : (lastCmp == 0) ? low : ~(low+1);
+		return Collectionz.binarySearch(data.hugeView(), (E) o, comparator);
 	}
-	
-	// - returns index of position right after last element which is less or equal to method argument
-	// - if list contains given object, returned value is equal to position, otherwise it's equal to binary inverse of the position
+
+	/*
+	 * Returns index of position right after last element which is less
+	 * or equal to method argument.
+	 * If list contains given object, returned value is equal to position,
+	 * otherwise it's equal to binary inverse of the position.
+	 */
+	@SuppressWarnings("unchecked")
 	private long binarySearchNext(Object o) {
-		if (o == null)
-			throw new NullPointerException();
-		
-		FarListAccess<E> storage = data.far();
-
-		long size = storage.size();
-		if (size == 0)
-			return -1;
-		
-		long low = 0, high = size - 1;
-		int lastCmp;
-		if (comparator == null) {
-			@SuppressWarnings("unchecked")
-			Comparable<? super E> e = (Comparable<? super E>) o;
-			if (e.compareTo(storage.get(high)) >= 0)
-				return -(size+1);
-			else
-				high--;
-			while (low < high) {
-				long i = (low + high + 1) / 2;
-				if (e.compareTo(storage.get(i)) < 0)
-					high = i - 1;
-				else
-					low = i;
-			}
-			lastCmp = e.compareTo(storage.get(low));
-		}
-		else {
-			@SuppressWarnings("unchecked")
-			E e = (E) o;
-			if (comparator.compare(e, storage.get(high)) >= 0)
-				return -(size+1);
-			else
-				high--;
-			while (low < high) {
-				long i = (low + high + 1) / 2;
-				if (comparator.compare(e, storage.get(i)) < 0)
-					high = i - 1;
-				else
-					low = i;
-			}
-			lastCmp = comparator.compare(e, storage.get(low));
-		}
-		return (lastCmp < 0) ? ~low : (lastCmp == 0) ? low+1 : ~(low+1);
+		return Collectionz.binarySearchNext(data.hugeView(), (E) o, comparator);
 	}
-	
+
     /**
      * Returns the index of the first occurrence of the specified element
      * in this list, or -1 if this list does not contain the element.
@@ -194,6 +98,8 @@ public class SortedDynamicList<E> extends AbstractCollection<E> implements Sorte
      * @throws NullPointerException if the specified element is null
      */
 	public int indexOf(Object o) {
+		if (o == null)
+			throw new NullPointerException();
 		long i = binarySearch(o);
 		if (i < 0)
 			return -1;
@@ -221,6 +127,8 @@ public class SortedDynamicList<E> extends AbstractCollection<E> implements Sorte
      * @throws NullPointerException if the specified element is null
      */
 	public int lastIndexOf(Object o) {
+		if (o == null)
+			throw new NullPointerException();
 		long i = binarySearchNext(o);
 		if (i < 0)
 			return -1;
@@ -228,7 +136,7 @@ public class SortedDynamicList<E> extends AbstractCollection<E> implements Sorte
 		if (i <= Integer.MAX_VALUE)
 			return (int) i;
 		else
-			return (o.equals(data.get(Integer.MAX_VALUE))) ? Integer.MAX_VALUE : -1;
+			return (binarySearch(o) < Integer.MAX_VALUE) ? Integer.MAX_VALUE : -1;
 	}
 
     /**
@@ -242,6 +150,8 @@ public class SortedDynamicList<E> extends AbstractCollection<E> implements Sorte
      * @throws NullPointerException if the specified element is null
      */
 	public boolean contains(Object o) {
+		if (o == null)
+			throw new NullPointerException();
 		return binarySearch(o) >= 0;
 	}
 
@@ -260,28 +170,18 @@ public class SortedDynamicList<E> extends AbstractCollection<E> implements Sorte
     /**
      * Inserts the specified element in this list in such way that it remains sorted.
      *
-     * <p>This list doesn't permit <tt>null</tt> element.
-     *
      * @param e element to be added to this list
      * @return <tt>true</tt> (as specified by {@link Collection#add})
      * @throws NullPointerException if the specified element is null
      */
 	public boolean add(E e) {
+		if (e == null)
+			throw new NullPointerException();
 		long i = binarySearchNext(e);
 		if (i < 0)
 			i = ~i;
-		data.far().add(i, e);
+		data.hugeView().add(i, e);
 		return true;
-	}
-
-	private void checkForNull(Collection<?> c) {
-		boolean hasNull = false;
-		try {
-			hasNull = c.contains(null);
-		}
-		catch (NullPointerException ignore) {};
-		if (hasNull)
-			throw new NullPointerException();
 	}
 	
     /**
@@ -302,7 +202,8 @@ public class SortedDynamicList<E> extends AbstractCollection<E> implements Sorte
      * @see #add(Object)
      */
 	public boolean addAll(Collection<? extends E> c) {
-		checkForNull(c);
+		if (Collectionz.containsNull(c))
+			throw new NullPointerException();
         boolean modified = false;
         for (E e : c)
             if (add(e))
@@ -323,10 +224,12 @@ public class SortedDynamicList<E> extends AbstractCollection<E> implements Sorte
      * @throws NullPointerException if the specified element is null 
      */
 	public boolean remove(Object o) {
+		if (o == null)
+			throw new NullPointerException();
 		long i = binarySearch(o);
 		if (i < 0)
 			return false;
-		data.far().remove(i);
+		data.hugeView().remove(i);
 		return true;
 	}
 
@@ -450,6 +353,44 @@ public class SortedDynamicList<E> extends AbstractCollection<E> implements Sorte
 		return data.toArray(a);
 	}
 	
+	public Comparator<? super E> comparator() {
+		return comparator;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * <p> Returned <tt>HugeList</tt> doesn't support {@link HugeList#set(long, E) set(long, E)}
+	 * and {@link HugeList#add(long, E) add(long, E)} operations.
+	 */
+	public HugeList<E> hugeView() {
+		if (hugeView == null) {
+			hugeView = new HugeList<E>() {
+				
+				public long size() {
+					return data.hugeView().size();
+				}
+	
+				public E get(long index) {
+					return data.hugeView().get(index);
+				}
+	
+				public E set(long index, E element) {
+					throw new UnsupportedOperationException();
+				}
+	
+				public void add(long index, E element) {
+					throw new UnsupportedOperationException();
+				}
+	
+				public E remove(long index) {
+					return data.hugeView().remove(index);
+				}
+			};
+		}
+		return hugeView;
+	}
+	
     /**
      * Returns a shallow copy of this <tt>SortedDynamicList</tt> instance.
      * (The elements themselves are not cloned).
@@ -460,7 +401,7 @@ public class SortedDynamicList<E> extends AbstractCollection<E> implements Sorte
 	public Object clone() {
     	try {
 			SortedDynamicList<E> clone = (SortedDynamicList<E>) super.clone();
-			clone.farAccess = null;
+			clone.hugeView = null;
 			clone.data = (DynamicList<E>) data.clone();
     		return clone;
 		}
@@ -491,9 +432,7 @@ public class SortedDynamicList<E> extends AbstractCollection<E> implements Sorte
 		Iterator<E> thisIter = this.iterator();
 		Iterator<?> otherIter = other.iterator();
 		while(thisIter.hasNext() & otherIter.hasNext()) {
-			E thisElement = thisIter.next();
-			Object otherElement = otherIter.next();
-			if (!thisElement.equals(otherElement))
+			if (!Objectz.equals(thisIter.next(), otherIter.next()))
 				return false;
 		}
 		return !thisIter.hasNext() & !otherIter.hasNext();
@@ -503,16 +442,15 @@ public class SortedDynamicList<E> extends AbstractCollection<E> implements Sorte
      * Returns the hash code value for this list.
      *
      * <p>This implementation uses exactly the code that is used to define the
-     * list hash function in the documentation for the {@link SortedList#hashCode}
-     * method with null-value check omitted.
+     * list hash function in the documentation for the {@link SortedList#hashCode}.
      *
      * @return the hash code value for this list
      */
     public int hashCode() {
-        int hashCode = 1;
-        for (E e : this)
-            hashCode = 31*hashCode + e.hashCode();
-        return hashCode;
+		int hashCode = 1;
+		for (E e : this)
+			hashCode = 31 * hashCode + (e == null ? 0 : e.hashCode());
+		return hashCode;
     }
     
     /**
@@ -524,4 +462,5 @@ public class SortedDynamicList<E> extends AbstractCollection<E> implements Sorte
 	public String toString() {
 		return data.toString();
 	}
+
 }

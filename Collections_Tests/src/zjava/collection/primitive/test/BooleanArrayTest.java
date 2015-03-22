@@ -13,7 +13,7 @@ public class BooleanArrayTest {
 	// - edge cases
 	
 	@Test(timeout=200)
-	public void outOfBoundsTest01() {
+	public void outOfBounds01() {
 		BooleanArray actual = new BooleanArray(1000);
 		int exceptionsCount = 0;
 		try {
@@ -34,7 +34,7 @@ public class BooleanArrayTest {
 	
 	// - basic operations tests
 	
-	@Test//(timeout=200)
+	@Test(timeout=200)
 	public void basicTest01() {
 		BooleanArray actual = new BooleanArray(1000);
 		actual.set(31, true);
