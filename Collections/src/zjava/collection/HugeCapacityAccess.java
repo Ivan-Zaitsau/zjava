@@ -14,7 +14,7 @@ package zjava.collection;
 public interface HugeCapacityAccess {
 
 	/**
-	 * Provides means of querying size of huge collections (which have more than
+	 * Provides means of querying real size of huge collections (which have more than
 	 * <tt>Integer.MAX_VALUE</tt> elements).
 	 * 
 	 * @return <tt>HugeCapacity</tt> object, used to query real size of the underlying collection.

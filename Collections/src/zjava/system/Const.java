@@ -3,10 +3,9 @@ package zjava.system;
 /**
  * This class contains general JVM level constants.
  * 
- * @author Ivan Zaitsau
- * 
  * @since Zjava 1.0
  *
+ * @author Ivan Zaitsau
  */
 final public class Const {
 	

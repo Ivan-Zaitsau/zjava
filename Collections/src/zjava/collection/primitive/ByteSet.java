@@ -77,7 +77,7 @@ public class ByteSet {
 	}
 
     /**
-     * Removes all of the elements from this set.
+     * Removes all the elements from this set.
      * The set will be empty after this call returns.
      */
 	public void clear() {

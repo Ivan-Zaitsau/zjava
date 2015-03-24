@@ -73,11 +73,13 @@ public class CompactSortedSet<E> extends AbstractSet<E> implements SortedSet<E>,
 				return comparator.compare(e1, e2);
 		}
 		
+		// - checks if given element falls in [fromElement; toElement) range
 		boolean inRange(E element) {
 			return (fromElement == null || compare(fromElement, element) <= 0)
 					&& (toElement == null || compare(element, toElement) < 0);
 		}
 
+		// - returns index of given element in data array
 		long index(E element) {
 			long index = binarySearch(element);
 			return index < 0 ? ~index : index;
@@ -90,9 +92,10 @@ public class CompactSortedSet<E> extends AbstractSet<E> implements SortedSet<E>,
 			return (size < Integer.MAX_VALUE) ? (int) size : Integer.MAX_VALUE;
 		}
 
-		@SuppressWarnings("unchecked")
 		public boolean contains(Object o) {
-			return (inRange((E) o)) ? CompactSortedSet.this.contains(o) : false;
+			@SuppressWarnings("unchecked")
+			E e = (E) o;
+			return inRange(e) ? CompactSortedSet.this.contains(o) : false;
 		}
 
 	    /**
@@ -343,7 +346,7 @@ public class CompactSortedSet<E> extends AbstractSet<E> implements SortedSet<E>,
 	}
 
     /**
-     * Removes all of the elements from this set.
+     * Removes all the elements from this set.
      * The set will be empty after this call returns.
      */
 	public void clear() {

@@ -7,7 +7,7 @@ import zjava.system.Const;
 /**
  * LongSet represents set of primitive long values.<br>
  * Elements of this set are sorted.<br>
- * (Supports signed/unsigned and increasing/decreasing order of it's elements).
+ * (Supports signed/unsigned and ascending/descending order of it's elements).
  * 
  * <p>This implementation provides guaranteed log(n) time cost for {@code contains},
  * {@code add} and {@code remove} operations.
@@ -316,7 +316,7 @@ public class LongSet {
 	}
 
     /**
-     * Removes all of the elements from this set.
+     * Removes all the elements from this set.
      * The set will be empty after this call returns.
      */
 	public void clear() {
