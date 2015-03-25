@@ -66,7 +66,7 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeList
 	static final private class Block<E> implements Cloneable, java.io.Serializable {
 		
 		private static final long serialVersionUID = 201503121600L;
-		
+
 		// - merges two blocks of equal capacities into block with doubled capacity
 		static <E> Block<E> merge(Block<E> block1, Block<E> block2) {
 			if ((block1 == null || block1.size() == 0) && (block2 == null || block2.size() == 0))
@@ -111,16 +111,15 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeList
 		
 		private int offset;
 		private int size;
-		private E[] values;
-
-		@SuppressWarnings("unchecked")
+		private Object[] values;
+		
 		Block(int capacity) {
 			// - capacity must be power of 2 and greater than one
 			assert((capacity & (capacity-1)) == 0 && capacity > 1);
 			
 			this.offset = 0;
 			this.size = 0;
-			this.values = (E[]) new Object[capacity];
+			this.values = new Object[capacity];
 		}
 
 		Block(int capacity, E[] values, int pos, int length) {
@@ -164,7 +163,8 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeList
 		// - appends given value to the beginning of the block
 		E addFirst(final E value) {
 			offset = index(-1);
-			E last = values[offset];
+			@SuppressWarnings("unchecked")
+			E last = (E) values[offset];
 			values[offset] = value;
 			if (size < values.length) {
 				size++;
@@ -185,7 +185,8 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeList
 			// - range check
 			assert(pos >= 0 && pos <= size);
 			
-			E last = (size == values.length) ? values[index(-1)] : null;
+			@SuppressWarnings("unchecked")
+			E last = (E) ((size == values.length) ? values[index(-1)] : null);
 			if (pos + pos < size) {
 				offset = index(-1);
 				for (int i = 0; i < pos; i++) {
@@ -208,7 +209,8 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeList
 			assert(pos >= 0 && pos < size);
 			
 			int i = index(pos);
-			E replaced = values[i];
+			@SuppressWarnings("unchecked")
+			E replaced = (E) values[i];
 			values[i] = value;
 			return replaced;
 		}
@@ -218,7 +220,8 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeList
 			// - range check
 			assert(size > 0);
 			
-			E removed = values[offset];
+			@SuppressWarnings("unchecked")
+			E removed = (E) values[offset];
 			values[offset] = null;
 			offset = index(1);
 			size--;
@@ -230,7 +233,8 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeList
 			// - range check
 			assert(pos >= 0 && pos < size);
 			
-			E removed = values[index(pos)];
+			@SuppressWarnings("unchecked")
+			E removed = (E) values[index(pos)];
 			if (pos + pos < size) {
 				for (int i = pos; i > 0; i--) {
 					values[index(i)] = values[index(i-1)];					
@@ -249,11 +253,12 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeList
 		}
 		
 		// - returns element at given position
+		@SuppressWarnings("unchecked")
 		E get(final int pos) {
 			// - range check
 			assert(pos >= 0 && pos < size);
 			
-			return values[index(pos)];
+			return (E) values[index(pos)];
 		}
 		
 		public Object clone() {
