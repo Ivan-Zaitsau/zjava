@@ -8,7 +8,7 @@ import static zjava.system.Const.MAX_ARRAY_SIZE;
  * Array which supports more than Integer.MAX_VALUE elements
  * and allocates memory blocks dynamically when needed.
  * 
- * @param <E> the type of elements in this array
+ * @param <E> - the type of elements in this array
  *
  * @since Zjava 1.0
  *

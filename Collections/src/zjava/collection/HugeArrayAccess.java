@@ -9,7 +9,7 @@ package zjava.collection;
  * 
  * @author Ivan Zaitsau
  * 
- * @see HugeList
+ * @see HugeArray
  */
 public interface HugeArrayAccess<E> extends HugeCapacityAccess {
 

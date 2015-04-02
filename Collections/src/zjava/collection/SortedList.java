@@ -10,7 +10,7 @@ import java.util.Iterator;
  * This interface mimics List interface with regard to the fact
  * that elements in this list are sorted.
  * 
- * @param <E> the type of elements in this list
+ * @param <E> - the type of elements in this list
  * 
  * @since Zjava 1.0
  * 

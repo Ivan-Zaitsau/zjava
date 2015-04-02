@@ -247,6 +247,6 @@ final public class Collectionz {
 	}
 	
 	private Collectionz() {
-		throw new AssertionError("Instantiaion of utility class " + getClass().getName() + " is prohibited");
+		throw new AssertionError("Instantiation of utility class " + getClass().getName() + " is prohibited");
 	};
 }

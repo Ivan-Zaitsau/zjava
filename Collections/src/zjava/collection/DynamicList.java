@@ -25,15 +25,14 @@ import static zjava.system.Const.MAX_ARRAY_SIZE;
  * {@link java.util.ArrayList ArrayList} implementation and require just
  * O(sqrt(n)) of additional memory.
  *
- * @param <E> the type of elements in this list
+ * @param <E> - the type of elements in this list
  * 
  * @since Zjava 1.0
  *  
  * @author Ivan Zaitsau
  * 
  * @see     Collection
- * @see     List
- * 
+ * @see     List 
  */
 public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeListAccess<E>, RandomAccess, Cloneable, java.io.Serializable {
 
@@ -741,7 +740,7 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeList
 	            try {
 	                rangeCheck(last);
 	            	fastRemove(last);
-	                if (last < i) i--;
+	                i--;
 	                last = -1;
 	                expectedModCount = modCount;
 	            } catch (IndexOutOfBoundsException e) {
@@ -867,6 +866,7 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeList
 	public Object clone() {
     	try {
 			DynamicList<E> clone = (DynamicList<E>) super.clone();
+			clone.modCount = 0;
 			clone.hugeView = null;
 			clone.data = new Block[data.length];
     		for (int i = 0; i < data.length && data[i] != null; i++) {

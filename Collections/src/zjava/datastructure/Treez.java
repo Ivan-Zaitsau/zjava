@@ -240,6 +240,6 @@ final public class Treez {
 	}
 	
 	private Treez() {
-		throw new AssertionError("Instantiaion of utility class " + getClass().getName() + " is prohibited");
+		throw new AssertionError("Instantiation of utility class " + getClass().getName() + " is prohibited");
 	};
 }

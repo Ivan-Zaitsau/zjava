@@ -37,6 +37,6 @@ final public class Objectz {
 	}
 	
 	private Objectz() {
-		throw new AssertionError("Instantiaion of utility class " + getClass().getName() + " is prohibited");
+		throw new AssertionError("Instantiation of utility class " + getClass().getName() + " is prohibited");
 	}
 }

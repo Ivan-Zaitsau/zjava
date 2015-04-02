@@ -27,6 +27,6 @@ final public class Const {
 	static public final int ADDRESS_BITS_PER_LONG  = 6;
 
 	private Const() {
-		throw new AssertionError("Instantiaion of utility class " + getClass().getName() + " is prohibited");
+		throw new AssertionError("Instantiation of utility class " + getClass().getName() + " is prohibited");
 	}
 }

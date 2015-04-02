@@ -37,12 +37,11 @@ import java.util.SortedSet;
  * <i>is</i> well-defined even if its ordering is inconsistent with equals; it
  * just fails to obey the general contract of the {@code Set} interface.
  *
- * 
+ * @param <E> - the type of elements in this set
+ *  
  * @since Zjava 1.0
  * 
  * @author Ivan Zaitsau
- *
- * @param <E> the type of elements in this set
  */
 public class CompactSortedSet<E> extends AbstractSet<E> implements SortedSet<E>, HugeCapacityAccess, Cloneable, java.io.Serializable {
 

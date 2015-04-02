@@ -6,7 +6,7 @@ import java.util.List;
 /**
  * <tt>TreeNode</tt> class represents a single node in a tree with some value assigned.<br>
  * 
- * @param <E> element contained at a node
+ * @param <E> - the element contained at a node
  * 
  * @since Zjava 1.0
  * 

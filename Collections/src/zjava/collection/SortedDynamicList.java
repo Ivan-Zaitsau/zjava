@@ -18,7 +18,7 @@ import zjava.common.Objectz;
  * two equal elements a and b are inserted in this list, and a is
  * inserted before b then index of a will be less that index of b).
  * 
- * @param <E> the type of elements in this list
+ * @param <E> - the type of elements in this list
  * 
  * @since Zjava 1.0
  * 
@@ -385,6 +385,10 @@ public class SortedDynamicList<E> extends AbstractCollection<E> implements Sorte
 	
 				public E remove(long index) {
 					return data.hugeView().remove(index);
+				}
+
+				public Iterator<E> iterator() {
+					return data.iterator();
 				}
 			};
 		}

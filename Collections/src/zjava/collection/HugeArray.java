@@ -7,6 +7,8 @@ package zjava.collection;
  * These methods operate on <tt>long</tt> indexes and are able to access
  * elements beyond <tt>Integer.MAX_VALUE</tt> limit.<br>
  * 
+ * @param <E> - the type of elements in this array
+ * 
  * @since Zjava 1.0
  * 
  * @author Ivan Zaitsau
