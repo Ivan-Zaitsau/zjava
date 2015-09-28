@@ -75,7 +75,27 @@ public class ByteSet {
 		words[wi] = PrimitiveBitSet.remove(beforeUpdate, i);
 		return words[wi] != beforeUpdate;
 	}
-
+	
+	/**
+	 * Returns next value after method argument <tt>v</tt> or <tt>v</tt> itself
+	 * if such value doesn't exist in this set.
+	 * 
+	 * @param v - value to get next for
+	 * @return value next to method parameter
+	 */
+	public byte next(byte v) {
+		int i = (int) v - Byte.MIN_VALUE + 1;
+		for (int wi = i >>> ADDRESS_BITS_PER_WORD; wi < WORDS; wi++) {
+			long w = words[i];
+			if (w > 0)
+				for (int j = i; j <= BIT_INDEX_MASK; j++)
+					if (PrimitiveBitSet.contains(w, j))
+						return (byte) (Byte.MIN_VALUE + (wi << ADDRESS_BITS_PER_WORD) + j);
+			i = 0;
+		}
+		return v;
+	}
+	
     /**
      * Removes all the elements from this set.
      * The set will be empty after this call returns.
@@ -96,12 +116,12 @@ public class ByteSet {
 		byte[] arr = new byte[arrSize];
 		
 		int ai = 0;
-		for (int i = 0; i < WORDS; i++) {
-			long w = words[i];
+		for (int wi = 0; wi < WORDS; wi++) {
+			long w = words[wi];
 			if (w > 0)
 				for (int j = 0; j <= BIT_INDEX_MASK; j++)
-					if ((w & (1L << j)) != 0)
-						arr[ai++] = (byte) (Byte.MIN_VALUE + (i << ADDRESS_BITS_PER_WORD) + j);
+					if (PrimitiveBitSet.contains(w, j))
+						arr[ai++] = (byte) (Byte.MIN_VALUE + (wi << ADDRESS_BITS_PER_WORD) + j);
 		}
 		return arr;
 	}

@@ -25,27 +25,6 @@ import zjava.collection.primitive.ShortList;
 final public class Wrapperz {
 
 	/**
-	 * Wrapper of {@code null} value.<br>
-	 * Equal to {@code null} and any other object which is equal to {@code null}.
-	 */
-	public static final Object NULL = new java.io.Serializable() {
-		private static final long serialVersionUID = 201503220000L;
-		public boolean equals(Object o) {
-			return o == null || o.equals(null);
-		}
-		public int hashCode() {
-			return 0;
-		}
-		public String toString() {
-			return "null";
-		}
-		// - required to preserve singleton property during serialization
-		private Object readResolve() {
-			return NULL;
-		}
-	};
-	
-	/**
 	 * Root class for wrappers of lists of primitives.
 	 * 
 	 * @since Zjava 1.0
@@ -56,42 +35,42 @@ final public class Wrapperz {
 		
 		transient HugeList<E> hugeView;
 		
-		abstract long _size();
+		abstract long getSize();
 		
-		abstract E _get(long index);
+		abstract E doGet(long index);
 		
-		abstract E _set(long index, E element);
+		abstract E doSet(long index, E element);
 
-		abstract void _add(E element);
+		abstract void doAdd(E element);
 		
-		abstract void _add(long index, E element);
+		abstract void doAdd(long index, E element);
 
-		abstract E _remove(long index);
+		abstract E doRemove(long index);
 
 		public int size() {
-			long size = _size();
+			long size = getSize();
 			return size < Integer.MAX_VALUE ? (int) size : Integer.MAX_VALUE;
 		}
 
 		public E get(int index) {
-			return _get(index);
+			return doGet(index);
 		}
 
 		public E set(int index, E element) {
-			return _set(index, element);
+			return doSet(index, element);
 		}
 
 		public boolean add(E e) {
-			_add(e);
+			doAdd(e);
 			return true;
 		}
 
 		public void add(int index, E element) {
-			_add(index, element);
+			doAdd(index, element);
 		}
 
 		public E remove(int index) {
-			return _remove(index);
+			return doRemove(index);
 		}
 
 		public Iterator<E> iterator() {
@@ -113,13 +92,13 @@ final public class Wrapperz {
 				int expectedModCount = modCount;
 				
 				public boolean hasNext() {
-					return i < _size();
+					return i < getSize();
 				}
 
 		        public E next() {
 		            checkForComodification();
 		            try {
-		            	E e = _get(i);
+		            	E e = doGet(i);
 		                last = i++;
 		                return e;
 		            }
@@ -135,7 +114,7 @@ final public class Wrapperz {
 		            checkForComodification();
 		            
 		            try {
-		            	_remove(last);
+		            	doRemove(last);
 		                i--;
 		                last = -1;
 		                expectedModCount = modCount;
@@ -155,19 +134,19 @@ final public class Wrapperz {
 			if (hugeView == null) {
 				hugeView = new HugeList<E>() {
 					public long size() {
-						return _size();
+						return getSize();
 					}
 					public E get(long index) {
-						return _get(index);
+						return doGet(index);
 					}
 					public E set(long index, E element) {
-						return _set(index, element);
+						return doSet(index, element);
 					}
 					public void add(long index, E element) {
-						_add(index, element);
+						doAdd(index, element);
 					}
 					public E remove(long index) {
-						return _remove(index);
+						return doRemove(index);
 					}
 				};
 			}
@@ -179,33 +158,33 @@ final public class Wrapperz {
 
 		private static final long serialVersionUID = 201504020400L;
 
-		ByteList list;
+		private ByteList list;
 		
-		ByteListWrapper(ByteList list) {
+		private ByteListWrapper(ByteList list) {
 			this.list = list;
 		}
 		
-		long _size() {
+		long getSize() {
 			return list.size();
 		}
 
-		Byte _get(long index) {
+		Byte doGet(long index) {
 			return list.get(index);
 		}
 
-		Byte _set(long index, Byte element) {
+		Byte doSet(long index, Byte element) {
 			return list.set(index, element);
 		}
 
-		void _add(Byte e) {
+		void doAdd(Byte e) {
 			list.add(e);
 		}
 		
-		void _add(long index, Byte element) {
+		void doAdd(long index, Byte element) {
 			list.add(index, element);
 		}
 
-		Byte _remove(long index) {
+		Byte doRemove(long index) {
 			return list.remove(index);
 		}
 
@@ -232,33 +211,33 @@ final public class Wrapperz {
 
 		private static final long serialVersionUID = 201504020400L;
 
-		CharList list;
+		private CharList list;
 		
-		CharListWrapper(CharList list) {
+		private CharListWrapper(CharList list) {
 			this.list = list;
 		}
 		
-		long _size() {
+		long getSize() {
 			return list.size();
 		}
 
-		Character _get(long index) {
+		Character doGet(long index) {
 			return list.get(index);
 		}
 
-		Character _set(long index, Character element) {
+		Character doSet(long index, Character element) {
 			return list.set(index, element);
 		}
 
-		void _add(Character e) {
+		void doAdd(Character e) {
 			list.add(e);
 		}
 
-		void _add(long index, Character element) {
+		void doAdd(long index, Character element) {
 			list.add(index, element);
 		}
 
-		Character _remove(long index) {
+		Character doRemove(long index) {
 			return list.remove(index);
 		}
 
@@ -285,33 +264,33 @@ final public class Wrapperz {
 
 		private static final long serialVersionUID = 201504020400L;
 
-		DoubleList list;
+		private DoubleList list;
 		
-		DoubleListWrapper(DoubleList list) {
+		private DoubleListWrapper(DoubleList list) {
 			this.list = list;
 		}
 		
-		long _size() {
+		long getSize() {
 			return list.size();
 		}
 
-		Double _get(long index) {
+		Double doGet(long index) {
 			return list.get(index);
 		}
 
-		Double _set(long index, Double element) {
+		Double doSet(long index, Double element) {
 			return list.set(index, element);
 		}
 
-		void _add(Double e) {
+		void doAdd(Double e) {
 			list.add(e);
 		}
 
-		void _add(long index, Double element) {
+		void doAdd(long index, Double element) {
 			list.add(index, element);
 		}
 
-		Double _remove(long index) {
+		Double doRemove(long index) {
 			return list.remove(index);
 		}
 
@@ -338,33 +317,33 @@ final public class Wrapperz {
 
 		private static final long serialVersionUID = 201504020400L;
 
-		FloatList list;
+		private FloatList list;
 		
-		FloatListWrapper(FloatList list) {
+		private FloatListWrapper(FloatList list) {
 			this.list = list;
 		}
 		
-		long _size() {
+		long getSize() {
 			return list.size();
 		}
 
-		Float _get(long index) {
+		Float doGet(long index) {
 			return list.get(index);
 		}
 
-		Float _set(long index, Float element) {
+		Float doSet(long index, Float element) {
 			return list.set(index, element);
 		}
 
-		void _add(Float e) {
+		void doAdd(Float e) {
 			list.add(e);
 		}
 
-		void _add(long index, Float element) {
+		void doAdd(long index, Float element) {
 			list.add(index, element);
 		}
 
-		Float _remove(long index) {
+		Float doRemove(long index) {
 			return list.remove(index);
 		}
 
@@ -391,33 +370,33 @@ final public class Wrapperz {
 
 		private static final long serialVersionUID = 201504020400L;
 
-		IntList list;
+		private IntList list;
 		
-		IntListWrapper(IntList list) {
+		private IntListWrapper(IntList list) {
 			this.list = list;
 		}
 		
-		long _size() {
+		long getSize() {
 			return list.size();
 		}
 
-		Integer _get(long index) {
+		Integer doGet(long index) {
 			return list.get(index);
 		}
 
-		Integer _set(long index, Integer element) {
+		Integer doSet(long index, Integer element) {
 			return list.set(index, element);
 		}
 
-		void _add(Integer e) {
+		void doAdd(Integer e) {
 			list.add(e);
 		}
 
-		void _add(long index, Integer element) {
+		void doAdd(long index, Integer element) {
 			list.add(index, element);
 		}
 
-		Integer _remove(long index) {
+		Integer doRemove(long index) {
 			return list.remove(index);
 		}
 
@@ -444,33 +423,33 @@ final public class Wrapperz {
 
 		private static final long serialVersionUID = 201504020400L;
 
-		LongList list;
+		private LongList list;
 		
-		LongListWrapper(LongList list) {
+		private LongListWrapper(LongList list) {
 			this.list = list;
 		}
 		
-		long _size() {
+		long getSize() {
 			return list.size();
 		}
 
-		Long _get(long index) {
+		Long doGet(long index) {
 			return list.get(index);
 		}
 
-		Long _set(long index, Long element) {
+		Long doSet(long index, Long element) {
 			return list.set(index, element);
 		}
 
-		void _add(Long e) {
+		void doAdd(Long e) {
 			list.add(e);
 		}
 
-		void _add(long index, Long element) {
+		void doAdd(long index, Long element) {
 			list.add(index, element);
 		}
 
-		Long _remove(long index) {
+		Long doRemove(long index) {
 			return list.remove(index);
 		}
 
@@ -497,33 +476,33 @@ final public class Wrapperz {
 
 		private static final long serialVersionUID = 201504020400L;
 
-		ShortList list;
+		private ShortList list;
 		
-		ShortListWrapper(ShortList list) {
+		private ShortListWrapper(ShortList list) {
 			this.list = list;
 		}
 		
-		long _size() {
+		long getSize() {
 			return list.size();
 		}
 
-		Short _get(long index) {
+		Short doGet(long index) {
 			return list.get(index);
 		}
 
-		Short _set(long index, Short element) {
+		Short doSet(long index, Short element) {
 			return list.set(index, element);
 		}
 
-		void _add(Short e) {
+		void doAdd(Short e) {
 			list.add(e);
 		}
 
-		void _add(long index, Short element) {
+		void doAdd(long index, Short element) {
 			list.add(index, element);
 		}
 
-		Short _remove(long index) {
+		Short doRemove(long index) {
 			return list.remove(index);
 		}
 

@@ -12,12 +12,12 @@ import zjava.system.Const;
  * <p>This implementation provides guaranteed log(n) time cost for {@code contains},
  * {@code add} and {@code remove} operations.
  * 
- * <p>Memory usage per element varies from approximately 2 bits to 16 bytes per value,
- * depending on their degree of randomness.
+ * <p>Memory usage varies from approximately 2 bits to 32 bytes per value, depending
+ * on average distance between two numbers.
  * 
- * <p>Implemented as a Radix Tree. There are two types of nodes: Branch and Leaf nodes.<br>
- * Branch node represents 6-bit radix of long value.<br>
- * Leaf node represents last 10-bit radix.
+ * <p>Implemented as a Radix Tree. There are two types of nodes: <tt>Branch</tt> and <tt>Leaf</tt> nodes.<br>
+ * <tt>Branch</tt> node represents 6-bit radix of long value.<br>
+ * <tt>Leaf</tt> node represents last 10-bit radix.
  * 
  * @since Zjava 1.0
  * 
@@ -70,7 +70,7 @@ public class LongSet {
 		public boolean add(final int startingBit, final long value) {
 			// - special case: value is stored in "used" itself
 			if (children == null) {
-				if (used == 0) {
+				if (used == 0 & value != 0) {
 					used = value;
 					return true;
 				}
@@ -226,14 +226,10 @@ public class LongSet {
 		}
 	}
 	
-	private static final class Mode {
-		static private final long ASCENDING  = 0x0000000000000000L;
-		static private final long DESCENDING = 0xFFFFFFFFFFFFFFFFL;
-		static private final long SIGNED     = 0x8000000000000000L;
-		static private final long UNSIGNED   = 0x0000000000000000L;
-		
-		private Mode() {}
-	}
+	static private final long MODE_ASCENDING  = 0x0000000000000000L;
+	static private final long MODE_DESCENDING = 0xFFFFFFFFFFFFFFFFL;
+	static private final long MODE_SIGNED     = 0x8000000000000000L;
+	static private final long MODE_UNSIGNED   = 0x0000000000000000L;
 	
 	private final long mode;
 	private long size;
@@ -244,8 +240,8 @@ public class LongSet {
 	}
 	
 	public LongSet(boolean ascending, boolean signed) {
-		mode = (ascending ? Mode.ASCENDING : Mode.DESCENDING)
-				^ (signed ? Mode.SIGNED : Mode.UNSIGNED);
+		mode = (ascending ? MODE_ASCENDING : MODE_DESCENDING)
+				^ (signed ? MODE_SIGNED : MODE_UNSIGNED);
 	}
 	
 	private long applyMode(long value) {
@@ -296,7 +292,7 @@ public class LongSet {
 		return true;
 	}
 
-    /**
+	/**
      * Removes the specified value from this set if it is present.
      * Returns {@code true} if this set contained the element (or
      * equivalently, if this set changed as a result of the call).<br>
@@ -313,6 +309,18 @@ public class LongSet {
 		if (size == 0)
 			root = null;
 		return true;
+	}
+
+
+	/**
+	 * Returns next value after method argument <tt>v</tt> or <tt>v</tt> itself
+	 * if such value doesn't exist in this set.
+	 * 
+	 * @param v - value to get next for
+	 * @return value next to method parameter
+	 */
+	public void next() {
+		// - FIXME implementation is missing
 	}
 
     /**

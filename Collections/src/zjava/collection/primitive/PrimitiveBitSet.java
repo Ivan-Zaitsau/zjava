@@ -1,5 +1,7 @@
 package zjava.collection.primitive;
 
+import zjava.system.Const;
+
 /**
  * This class contains number of methods to operate on
  * primitives as if they are sets of numbers between <tt>0</tt>
@@ -71,6 +73,19 @@ final public class PrimitiveBitSet {
 		return Integer.bitCount(set & ((1 << value) - 1));
 	}
 	
+	/**
+	 * Returns next element after method argument <tt>value</tt>
+	 * or <tt>value</tt> itself if such element doesn't exist in this set.
+	 * 
+	 * @param set - given set
+	 * @param value - value to get next for
+	 * @return value next to method parameter
+	 */
+	static public int next(int set, int value) {
+		int trailingZeroes = Integer.numberOfTrailingZeros(set & ~(((1 << value) << 1) - 1));
+		return (trailingZeroes < Const.BITS_PER_INT) ? trailingZeroes : value;
+	}
+
 	// - "long" related methods
 	
 	/**
@@ -128,5 +143,20 @@ final public class PrimitiveBitSet {
 		return Long.bitCount(set & ((1L << value) - 1));
 	}
 	
-	private PrimitiveBitSet() {};
+	/**
+	 * Returns next element after method argument <tt>value</tt>
+	 * or <tt>value</tt> itself if such element doesn't exist in this set.
+	 * 
+	 * @param set - given set
+	 * @param value - value to get next for
+	 * @return value next to method parameter
+	 */
+	static public long next(long set, long value) {
+		int trailingZeroes = Long.numberOfTrailingZeros(set & ~(((1L << value) << 1) - 1));
+		return (trailingZeroes < Const.BITS_PER_LONG) ? trailingZeroes : value;
+	}
+
+	private PrimitiveBitSet() {
+		throw new AssertionError("Instantiation of utility class " + getClass().getName() + " is prohibited");
+	};
 }
