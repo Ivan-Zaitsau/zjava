@@ -5,7 +5,7 @@ import java.util.Arrays;
 /**
  * Resizable dynamic array of primitive short values.
  *
- * <p>The <tt>size</tt>, , <tt>get</tt>, <tt>set</tt> operations run in
+ * <p>The <tt>size</tt>, <tt>get</tt>, <tt>set</tt> operations run in
  * constant time. The <tt>add</tt> operation runs in <i>amortized constant
  * time</i>, that is, adding n elements requires O(n) time. Removal and
  * insertion of elements at arbitrary index runs in <i>O(sqrt(n)) amortized
