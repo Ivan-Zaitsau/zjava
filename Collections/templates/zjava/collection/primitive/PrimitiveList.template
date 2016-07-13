@@ -15,7 +15,7 @@ import java.util.Arrays;
  * <li>Resizable implementation which requires only O(sqrt(n)) of additional
  * memory.</li>
  * <li>Faster insertions at random positions.</li>
- * <li>Support for arrays of more than {@code Integer.MAX_VALUE} elements.</li>
+ * <li>Support for more than {@code Integer.MAX_VALUE} elements.</li>
  * 
  * @since Zjava 1.0
  *  
