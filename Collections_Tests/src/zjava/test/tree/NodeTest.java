@@ -1,4 +1,4 @@
-package zjava.tree.test;
+package zjava.test.tree;
 
 import static org.junit.Assert.*;
 
@@ -17,9 +17,8 @@ public class NodeTest {
 	// - edge cases
 
 	@Test(timeout = 200)
-	public void dfsIteratorAtEnd() {
-		TreeNode<Integer> node01 = new TreeNode<Integer>(1);
-		Iterator<TreeNode<Integer>> dfsIter = node01.depthFirstSearch().iterator();
+	public void dfsIteratorAtEndThrowsNoSuchElementException() {
+		Iterator<TreeNode<Integer>> dfsIter = new TreeNode<Integer>(1).depthFirstSearch().iterator();
 		assertEquals((Integer) 1, dfsIter.next().getValue());
 		boolean noSuchElement = false;
 		try {
@@ -32,7 +31,7 @@ public class NodeTest {
 	}
 
 	@Test(timeout = 200)
-	public void bfsIteratorAtEnd() {
+	public void bfsIteratorAtEndThrowsNoSuchElementException() {
 		TreeNode<Integer> node01 = new TreeNode<Integer>(1);
 		Iterator<TreeNode<Integer>> bfsIter = node01.breadthFirstSearch().iterator();
 		assertEquals((Integer) 1, bfsIter.next().getValue());
@@ -48,7 +47,7 @@ public class NodeTest {
 	
 	@Test(timeout = 200)
 	@SuppressWarnings("unused")
-	public void testEarlyRewindDfs01() {
+	public void dfsIteratorDoesNotMoveToNextElementPrematurely() {
 		TreeNode<Integer> node01 = new TreeNode<Integer>(1);
 		Iterator<TreeNode<Integer>> dfsIter = Treez.depthFirstSearch(node01, new Treez.NodeFilter<TreeNode<Integer>>() {
 			public boolean isIgnored(TreeNode<Integer> node) {
@@ -71,7 +70,7 @@ public class NodeTest {
 	
 	@Test(timeout = 200)
 	@SuppressWarnings("unused")
-	public void testEarlyRewindBfs01() {
+	public void bfsIteratorDoesNotMoveToNextElementPrematurely() {
 		TreeNode<Integer> node01 = new TreeNode<Integer>(1);
 		Iterator<TreeNode<Integer>> bfsIter = Treez.breadthFirstSearch(node01, new Treez.NodeFilter<TreeNode<Integer>>() {
 			public boolean isIgnored(TreeNode<Integer> node) {
@@ -102,7 +101,7 @@ public class NodeTest {
 	}
 
 	@Test(timeout = 200)
-	public void testDfs01() {
+	public void dfsIteratorTraversesNodesInRightOrder() {
 		TreeNode<Integer> node01 = new TreeNode<Integer>(1);
 		assertArrayEquals(new Integer[] {1}, toArray(node01.depthFirstSearch()));
 		
@@ -132,7 +131,7 @@ public class NodeTest {
 	}
 	
 	@Test(timeout = 200)
-	public void testBfs01() {
+	public void bfsIteratorTraversesNodesInRightOrder() {
 		TreeNode<Integer> node01 = new TreeNode<Integer>(1);
 		assertArrayEquals(new Integer[] {1}, toArray(node01.breadthFirstSearch()));
 

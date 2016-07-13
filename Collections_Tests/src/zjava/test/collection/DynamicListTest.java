@@ -1,4 +1,4 @@
-package zjava.collection.test;
+package zjava.test.collection;
 
 import static org.junit.Assert.*;
 

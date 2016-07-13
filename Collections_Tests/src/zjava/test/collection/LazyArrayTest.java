@@ -1,4 +1,4 @@
-package zjava.collection.test;
+package zjava.test.collection;
 
 import static org.junit.Assert.*;
 
@@ -6,9 +6,9 @@ import org.junit.Before;
 import org.junit.Test;
 
 import zjava.collection.HugeArray;
-import zjava.collection.SparseHugeArray;
+import zjava.collection.LazyArray;
 
-public class HugeArrayTest {
+public class LazyArrayTest {
 
 	HugeArray<Integer> actual;
 	
@@ -21,11 +21,11 @@ public class HugeArrayTest {
 	
 	@Test(timeout=200)
 	public void outOfBounds01() {
-		actual = new SparseHugeArray<Integer>(8000000001L);
-		assertNull(actual.get(8000000000L));
+		actual = new LazyArray<Integer>(2500000001L);
+		assertNull(actual.get(2500000000L));
 		int exceptionsCount = 0;
 		try {
-			actual.get(8000000001L);
+			actual.get(2500000001L);
 		}
 		catch(IndexOutOfBoundsException e) {
 			exceptionsCount++;
@@ -50,7 +50,7 @@ public class HugeArrayTest {
 	
 	@Test(timeout=200)
 	public void outOfBounds02() {
-		actual = new SparseHugeArray<Integer>(0);
+		actual = new LazyArray<Integer>(0);
 		boolean catched;
 		catched = false;
 		try {
@@ -80,9 +80,9 @@ public class HugeArrayTest {
 	
 	@Test(timeout=200)
 	public void getsetTest01() {
-		actual = new SparseHugeArray<Integer>(8000000001L);
-		actual.set(8000000000L, 1);
-		assertEquals(actual.get(8000000000L), (Integer) 1);
+		actual = new LazyArray<Integer>(2500000001L);
+		actual.set(2500000000L, 1);
+		assertEquals(actual.get(2500000000L), (Integer) 1);
 		actual.set(2049854082, 1489230);
 		assertEquals(actual.get(2049854082), (Integer) 1489230);
 		actual.set(0, 1489230);
