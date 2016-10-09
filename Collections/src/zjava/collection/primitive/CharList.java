@@ -15,7 +15,7 @@ import java.util.Arrays;
  * <li>Resizable implementation which requires only O(sqrt(n)) of additional
  * memory.</li>
  * <li>Faster insertions at random positions.</li>
- * <li>Support for arrays of more than {@code Integer.MAX_VALUE} elements.</li>
+ * <li>Support for more than {@code Integer.MAX_VALUE} elements.</li>
  * 
  * @since Zjava 1.0
  *  
@@ -137,12 +137,12 @@ public class CharList implements Cloneable, java.io.Serializable {
 		}
 		
 		// - returns "physical" index for given "logical" position
-		int index(final int pos) {
+		int index(int pos) {
 			return (offset + pos) & (values.length - 1);
 		}
 
 		// - appends given value to the beginning of the block
-		char addFirst(final char value) {
+		char addFirst(char value) {
 			offset = index(-1);
 			char last = values[offset];
 			values[offset] = value;
@@ -153,7 +153,7 @@ public class CharList implements Cloneable, java.io.Serializable {
 		}
 		
 		// - appends given value to the end of the block
-		void addLast(final char value) {
+		void addLast(char value) {
 			if (size == values.length)
 				return;
 			values[index(size)] = value;
@@ -161,7 +161,7 @@ public class CharList implements Cloneable, java.io.Serializable {
 		}
 		
 		// - inserts given value at given position
-		char add(final int pos, final char value) {
+		char add(int pos, char value) {
 			// - range check
 			assert(pos >= 0 && pos <= size);
 			
@@ -183,7 +183,7 @@ public class CharList implements Cloneable, java.io.Serializable {
 		}
 
 		// - replaces element at given position with given value
-		char set(final int pos, final char value) {
+		char set(int pos, char value) {
 			// - range check
 			assert(pos >= 0 && pos < size);
 			
@@ -205,7 +205,7 @@ public class CharList implements Cloneable, java.io.Serializable {
 		}
 		
 		// - removes element at given position
-		char remove(final int pos) {
+		char remove(int pos) {
 			// - range check
 			assert(pos >= 0 && pos < size);
 			
@@ -226,7 +226,7 @@ public class CharList implements Cloneable, java.io.Serializable {
 		}
 		
 		// - returns element at given position
-		char get(final int pos) {
+		char get(int pos) {
 			// - range check
 			assert(pos >= 0 && pos < size);
 			
@@ -360,7 +360,7 @@ public class CharList implements Cloneable, java.io.Serializable {
      * @throws IndexOutOfBoundsException if the index is out of range
      *         (<tt>index &lt; 0 || index &gt;= size()</tt>)
      */
-	public char get(final long index) {
+	public char get(long index) {
 		rangeCheck(index);
 		int blockIndex = (int) (index >>> blockAddressBits);
 		int valueIndex = (int) (index & (-1L >>> -blockAddressBits));
@@ -377,7 +377,7 @@ public class CharList implements Cloneable, java.io.Serializable {
      * @throws IndexOutOfBoundsException if the index is out of range
      *         (<tt>index &lt; 0 || index &gt;= size()</tt>)
      */
-	public char set(final long index, char value) {
+	public char set(long index, char value) {
 		rangeCheck(index);
 		int blockIndex = (int) (index >>> blockAddressBits);
 		int valueIndex = (int) (index & (-1L >>> -blockAddressBits));
@@ -406,7 +406,7 @@ public class CharList implements Cloneable, java.io.Serializable {
      * @throws IndexOutOfBoundsException if the index is out of range
      *         (<tt>index &lt; 0 || index &gt;= size()</tt>)
      */
-	public void add(final long index, char value) {
+	public void add(long index, char value) {
 		rangeCheckForAdd(index);
 		ensureCapacity(size + 1);
 		int blockIndex = (int) (index >>> blockAddressBits);
@@ -435,7 +435,7 @@ public class CharList implements Cloneable, java.io.Serializable {
      * @throws IndexOutOfBoundsException if the index is out of range
      *         (<tt>index &lt; 0 || index &gt;= size()</tt>)
      */
-	public char remove(final long index) {
+	public char remove(long index) {
 		rangeCheck(index);
 		int blockIndex = (int) (index >>> blockAddressBits);
 		int valueIndex = (int) (index & (-1L >>> -blockAddressBits));

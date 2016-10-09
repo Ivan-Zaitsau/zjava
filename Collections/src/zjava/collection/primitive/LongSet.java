@@ -13,7 +13,7 @@ import zjava.system.Const;
  * {@code add} and {@code remove} operations.
  * 
  * <p>Memory usage varies from approximately 2 bits to 32 bytes per value, depending
- * on average distance between two numbers.
+ * on numbers distribution.
  * 
  * <p>Implemented as a Radix Tree. There are two types of nodes: <tt>Branch</tt> and <tt>Leaf</tt> nodes.<br>
  * <tt>Branch</tt> node represents 6-bit radix of long value.<br>
@@ -52,11 +52,11 @@ public class LongSet {
 			used = value;
 		}
 
-		Node newEntry(final int startingBit, final long value) {
+		Node newEntry(int startingBit, long value) {
 			return (startingBit <= LEAF_RADIX) ? new Leaf(value) : new Branch(value);
 		}
 		
-		public boolean contains(final int startingBit, final long value) {
+		public boolean contains(int startingBit, long value) {
 			// - special case: value is stored in "used" itself
 			if (children == null)
 				return (value == used) & (used != 0);
@@ -67,7 +67,7 @@ public class LongSet {
 			return children[PrimitiveBitSet.indexOf(used, radix)].contains(startingBit - BRANCH_RADIX, value);
 		}
 
-		public boolean add(final int startingBit, final long value) {
+		public boolean add(int startingBit, long value) {
 			// - special case: value is stored in "used" itself
 			if (children == null) {
 				if (used == 0 & value != 0) {
@@ -94,7 +94,7 @@ public class LongSet {
 			return true;
 		}
 
-		public boolean remove(final int startingBit, final long value) {
+		public boolean remove(int startingBit, long value) {
 			// - special case: value is stored in "used" itself
 			if (children == null) {
 				if (used == 0 | value != used)
@@ -125,7 +125,7 @@ public class LongSet {
 			used = (1L << STORED_RADIXES_BITS) | (value & LEAF_RADIX_MASK);
 		}
 
-		public boolean contains(final int startingBit, final long value) {
+		public boolean contains(int startingBit, long value) {
 			long radix = value & LEAF_RADIX_MASK;
 			// - optimization: a few radixes stored in "used" itself
 			if (sets == null) {
@@ -158,7 +158,7 @@ public class LongSet {
 			}
 		}
 		
-		public boolean add(final int startingBit, final long value) {
+		public boolean add(int startingBit, long value) {
 			long radix = value & LEAF_RADIX_MASK;
 			// - optimization: a few radixes stored in "used" itself			
 			if (sets == null) {
@@ -194,7 +194,7 @@ public class LongSet {
 			return sets[setIndex] == beforeUpdate;
 		}
 		
-		public boolean remove(final int startingBit, final long value) {
+		public boolean remove(int startingBit, long value) {
 			long radix = value & LEAF_RADIX_MASK;
 			// - optimization: a few radixes stored in "used" itself
 			if (sets == null) {
@@ -248,6 +248,10 @@ public class LongSet {
 		return value ^ mode;
 	}
 	
+	private long reverseMode(long value) {
+		return value ^ mode;
+	}
+
 	/**
 	 * Returns number of elements in this set (it's size).
 	 * 
@@ -311,7 +315,6 @@ public class LongSet {
 		return true;
 	}
 
-
 	/**
 	 * Returns next value after method argument <tt>v</tt> or <tt>v</tt> itself
 	 * if such value doesn't exist in this set.
@@ -319,8 +322,12 @@ public class LongSet {
 	 * @param v - value to get next for
 	 * @return value next to method parameter
 	 */
-	public void next() {
+	public long next(long value) {
+		value = applyMode(value);
+		if (value == Long.MAX_VALUE)
+			return reverseMode(value);
 		// - FIXME implementation is missing
+		return reverseMode(value);
 	}
 
     /**
@@ -330,5 +337,21 @@ public class LongSet {
 	public void clear() {
 		root = null;
 		size = 0;
+	}
+	
+	/**
+	 * Returns comparison result with respect to this Set sort-order:<br>
+	 * - <tt>negative</tt> value if <tt>v1</tt> is located <tt>before</tt> <tt>v2</tt><br>
+	 * - <tt>0</tt> if <tt>v1</tt> is <tt>equal</tt> to <tt>v2</tt> <br>
+	 * - <tt>positive</tt> value if <tt>v1</tt> located <tt>after</tt> <tt>v2</tt> 
+	 * 
+	 * @param v1 - first value to be compared
+	 * @param v2 - second value to be compared
+	 * @return comparison result
+	 */
+	public int compare(long v1, long v2) {
+		v1 = applyMode(v1);
+		v2 = applyMode(v2);
+		return (v1 < v2) ? -1 : (v1 == v2) ? 0 : 1;
 	}
 }

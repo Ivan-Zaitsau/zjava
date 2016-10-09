@@ -15,7 +15,7 @@ import java.util.Arrays;
  * <li>Resizable implementation which requires only O(sqrt(n)) of additional
  * memory.</li>
  * <li>Faster insertions at random positions.</li>
- * <li>Support for arrays of more than {@code Integer.MAX_VALUE} elements.</li>
+ * <li>Support for more than {@code Integer.MAX_VALUE} elements.</li>
  * 
  * @since Zjava 1.0
  *  
@@ -137,12 +137,12 @@ public class ByteList implements Cloneable, java.io.Serializable {
 		}
 		
 		// - returns "physical" index for given "logical" position
-		int index(final int pos) {
+		int index(int pos) {
 			return (offset + pos) & (values.length - 1);
 		}
 
 		// - appends given value to the beginning of the block
-		byte addFirst(final byte value) {
+		byte addFirst(byte value) {
 			offset = index(-1);
 			byte last = values[offset];
 			values[offset] = value;
@@ -153,7 +153,7 @@ public class ByteList implements Cloneable, java.io.Serializable {
 		}
 		
 		// - appends given value to the end of the block
-		void addLast(final byte value) {
+		void addLast(byte value) {
 			if (size == values.length)
 				return;
 			values[index(size)] = value;
@@ -161,7 +161,7 @@ public class ByteList implements Cloneable, java.io.Serializable {
 		}
 		
 		// - inserts given value at given position
-		byte add(final int pos, final byte value) {
+		byte add(int pos, byte value) {
 			// - range check
 			assert(pos >= 0 && pos <= size);
 			
@@ -183,7 +183,7 @@ public class ByteList implements Cloneable, java.io.Serializable {
 		}
 
 		// - replaces element at given position with given value
-		byte set(final int pos, final byte value) {
+		byte set(int pos, byte value) {
 			// - range check
 			assert(pos >= 0 && pos < size);
 			
@@ -205,7 +205,7 @@ public class ByteList implements Cloneable, java.io.Serializable {
 		}
 		
 		// - removes element at given position
-		byte remove(final int pos) {
+		byte remove(int pos) {
 			// - range check
 			assert(pos >= 0 && pos < size);
 			
@@ -226,7 +226,7 @@ public class ByteList implements Cloneable, java.io.Serializable {
 		}
 		
 		// - returns element at given position
-		byte get(final int pos) {
+		byte get(int pos) {
 			// - range check
 			assert(pos >= 0 && pos < size);
 			
@@ -360,7 +360,7 @@ public class ByteList implements Cloneable, java.io.Serializable {
      * @throws IndexOutOfBoundsException if the index is out of range
      *         (<tt>index &lt; 0 || index &gt;= size()</tt>)
      */
-	public byte get(final long index) {
+	public byte get(long index) {
 		rangeCheck(index);
 		int blockIndex = (int) (index >>> blockAddressBits);
 		int valueIndex = (int) (index & (-1L >>> -blockAddressBits));
@@ -377,7 +377,7 @@ public class ByteList implements Cloneable, java.io.Serializable {
      * @throws IndexOutOfBoundsException if the index is out of range
      *         (<tt>index &lt; 0 || index &gt;= size()</tt>)
      */
-	public byte set(final long index, byte value) {
+	public byte set(long index, byte value) {
 		rangeCheck(index);
 		int blockIndex = (int) (index >>> blockAddressBits);
 		int valueIndex = (int) (index & (-1L >>> -blockAddressBits));
@@ -406,7 +406,7 @@ public class ByteList implements Cloneable, java.io.Serializable {
      * @throws IndexOutOfBoundsException if the index is out of range
      *         (<tt>index &lt; 0 || index &gt;= size()</tt>)
      */
-	public void add(final long index, byte value) {
+	public void add(long index, byte value) {
 		rangeCheckForAdd(index);
 		ensureCapacity(size + 1);
 		int blockIndex = (int) (index >>> blockAddressBits);
@@ -435,7 +435,7 @@ public class ByteList implements Cloneable, java.io.Serializable {
      * @throws IndexOutOfBoundsException if the index is out of range
      *         (<tt>index &lt; 0 || index &gt;= size()</tt>)
      */
-	public byte remove(final long index) {
+	public byte remove(long index) {
 		rangeCheck(index);
 		int blockIndex = (int) (index >>> blockAddressBits);
 		int valueIndex = (int) (index & (-1L >>> -blockAddressBits));

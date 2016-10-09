@@ -22,7 +22,7 @@ import static zjava.system.Const.MAX_ARRAY_SIZE;
  * that is, adding n elements requires O(n) time. Removal and insertion of
  * elements at arbitrary index runs in <i>O(sqrt(n)) amortized time</i>.<br>
  * In most cases this implementation is significantly faster than
- * {@link java.util.ArrayList ArrayList} implementation and require just
+ * {@link java.util.ArrayList ArrayList} implementation and requires just
  * O(sqrt(n)) of additional memory.
  *
  * @param <E> - the type of elements in this list
@@ -160,7 +160,7 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeList
 		}
 		
 		// - appends given value to the beginning of the block
-		E addFirst(final E value) {
+		E addFirst(E value) {
 			offset = index(-1);
 			@SuppressWarnings("unchecked")
 			E last = (E) values[offset];
@@ -172,7 +172,7 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeList
 		}
 		
 		// - appends given value to the end of the block
-		void addLast(final E value) {
+		void addLast(E value) {
 			if (size == values.length)
 				return;
 			values[index(size)] = value;
@@ -180,7 +180,7 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeList
 		}
 		
 		// - inserts given value at given position
-		E add(final int pos, final E value) {
+		E add(int pos, E value) {
 			// - range check
 			assert(pos >= 0 && pos <= size);
 			
@@ -203,7 +203,7 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeList
 		}
 
 		// - replaces element at given position with given value
-		E set(final int pos, final E value) {
+		E set(int pos, E value) {
 			// - range check
 			assert(pos >= 0 && pos < size);
 			
@@ -228,7 +228,7 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeList
 		}
 		
 		// - removes element at given position
-		E remove(final int pos) {
+		E remove(int pos) {
 			// - range check
 			assert(pos >= 0 && pos < size);
 			
@@ -253,7 +253,7 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeList
 		
 		// - returns element at given position
 		@SuppressWarnings("unchecked")
-		E get(final int pos) {
+		E get(int pos) {
 			// - range check
 			assert(pos >= 0 && pos < size);
 			
@@ -286,7 +286,14 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeList
 		return data[index];
 	}
 	
-	private void ensureCapacity(long requiredCapacity) {
+    /**
+     * Increases the capacity of this <tt>DynamicList</tt> instance, if
+     * necessary, to ensure that it can hold at least the number of elements
+     * specified by the required capacity argument.
+     *
+     * @param requiredCapacity the desired capacity
+     */
+	public void ensureCapacity(long requiredCapacity) {
 		long capacity = (long) data.length << blockAddressBits;
 		while (requiredCapacity > capacity) {
 			// - double number of blocks and their size
@@ -462,13 +469,14 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeList
      * @param element element to be inserted
      * @throws IndexOutOfBoundsException {@inheritDoc}
      */
-	public void add(final int index, E element) {
+	public void add(int index, E element) {
 		rangeCheckForAdd(index);
 		ensureCapacity(size + 1);
 		fastAdd(index, element);
 	}
 
-	private void fastAdd(final long index, E element) {
+	// - "add" method without range and capacity checks
+	private void fastAdd(long index, E element) {
 		modCount++;
 		int blockIndex = (int) (index >>> blockAddressBits);
 		int valueIndex = (int) (index & (-1L >>> -blockAddressBits));
@@ -520,7 +528,7 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeList
      * @throws IndexOutOfBoundsException {@inheritDoc}
      * @throws NullPointerException if the specified collection is null
      */
-	public boolean addAll(final int index, Collection<? extends E> collection) {
+	public boolean addAll(int index, Collection<? extends E> collection) {
     	rangeCheckForAdd(index);
     	@SuppressWarnings("unchecked")
 		E[] values = (E[]) collection.toArray();
@@ -557,12 +565,13 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeList
      * @return the element at the specified position in this list
      * @throws IndexOutOfBoundsException {@inheritDoc}
      */
-	public E get(final int index) {
+	public E get(int index) {
 		rangeCheck(index);
 		return fastGet(index);
 	}
 
-	private E fastGet(final long index) {
+	// - "get" method without range check
+	private E fastGet(long index) {
 		int blockIndex = (int) (index >>> blockAddressBits);
 		int valueIndex = (int) (index & (-1L >>> -blockAddressBits));
 		return data[blockIndex].get(valueIndex);
@@ -577,11 +586,12 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeList
      * @return the element previously at the specified position
      * @throws IndexOutOfBoundsException {@inheritDoc}
      */
-	public E set(final int index, E element) {
+	public E set(int index, E element) {
 		rangeCheck(index);
 		return fastSet(index, element);
 	}
 
+	// - "add" method without range check
 	private E fastSet(long index, E element) {
 		int blockIndex = (int) (index >>> blockAddressBits);
 		int valueIndex = (int) (index & (-1L >>> -blockAddressBits));
@@ -597,12 +607,13 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeList
      * @return the element that was removed from the list
      * @throws IndexOutOfBoundsException {@inheritDoc}
      */
-	public E remove(final int index) {
+	public E remove(int index) {
 		rangeCheck(index);
 		return fastRemove(index);
 	}
 
-	private E fastRemove(final long index) {
+	// - "remove" method without range check
+	private E fastRemove(long index) {
 		modCount++;
 		int blockIndex = (int) (index >>> blockAddressBits);
 		int valueIndex = (int) (index & (-1L >>> -blockAddressBits));

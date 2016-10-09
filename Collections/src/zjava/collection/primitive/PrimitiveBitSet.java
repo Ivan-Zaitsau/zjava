@@ -16,6 +16,9 @@ import zjava.system.Const;
  */
 final public class PrimitiveBitSet {
 
+	/** Value which denotes empty set */
+	static public final int EMPTY_SET = 0;
+	
 	// - "int" related methods
 	
 	/**
@@ -154,6 +157,28 @@ final public class PrimitiveBitSet {
 	static public long next(long set, long value) {
 		int trailingZeroes = Long.numberOfTrailingZeros(set & ~(((1L << value) << 1) - 1));
 		return (trailingZeroes < Const.BITS_PER_LONG) ? trailingZeroes : value;
+	}
+	
+	/**
+	 * Returns string representation of the set passed as method argument
+	 * 
+	 * @param set - given set
+	 * @return string representation of the given set
+	 */
+	static public String toString(long set) {
+		StringBuilder sb = new StringBuilder();
+		sb.append('[');
+		boolean isSeparatorPending = false;
+		for (int i = 0; i < Const.BITS_PER_LONG; i++) {
+			if (((1L << i) & set) != 0) {
+				if (isSeparatorPending)
+					sb.append(',').append(' ');
+				sb.append(i);
+				isSeparatorPending = true;
+			}
+		}
+		sb.append(']');
+		return sb.toString();
 	}
 
 	private PrimitiveBitSet() {
