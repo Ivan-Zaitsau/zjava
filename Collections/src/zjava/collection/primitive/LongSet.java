@@ -28,6 +28,7 @@ public class LongSet {
 	
 	static private final int ADDRESS_BITS_PER_WORD = Const.ADDRESS_BITS_PER_LONG;
 	static private final int BITS_PER_WORD = 1 << ADDRESS_BITS_PER_WORD;
+	
 	static private final int BRANCH_RADIX = ADDRESS_BITS_PER_WORD;
 	static private final int BRANCH_RADIX_MASK = (1 << BRANCH_RADIX) - 1;
 	static private final int LEAF_RADIX = 10;
@@ -37,6 +38,7 @@ public class LongSet {
 		boolean contains(int startingBit, long value);
 		boolean add(int startingBit, long value);
 		boolean remove(int startingBit, long value);
+		Long next(int startingBit, long value);
 	}
 	
 	// - each branch node is assigned to BRANCH_RADIX-bit radix
@@ -109,20 +111,47 @@ public class LongSet {
 				return false;
 			return children[PrimitiveBitSet.indexOf(used, radix)].remove(startingBit - BRANCH_RADIX, value);
 		}
+
+		public Long next(int startingBit, long value) {
+			// - special case: value is stored in "used" itself
+			if (children == null) {
+				if (used != 0 & value <= used)
+					return used;
+				else
+					return null;
+			}
+			// - general case
+			long radix = (value >>> startingBit) & BRANCH_RADIX_MASK;
+			int i = PrimitiveBitSet.indexOf(used, (radix));
+			if (PrimitiveBitSet.contains(used, radix)) {
+				Long next = children[i++].next(startingBit - BRANCH_RADIX, value);
+				if (next != null)
+					return next;
+			}
+			for (radix = radix+1; radix <= BRANCH_RADIX_MASK; radix++)
+				if (PrimitiveBitSet.contains(used, radix)) {
+					long updatedValue = (((value >>> (startingBit + BRANCH_RADIX)) << BRANCH_RADIX) + radix) << startingBit;
+					Long next = children[i++].next(startingBit - BRANCH_RADIX, updatedValue);
+					if (next != null)
+						return next;
+				}
+			return null;
+		}
 	}
 	
 	// - leaf node is assigned to last LEAF_RADIX bits of a number
 	static private class Leaf implements Node {
 		
 		static final int INITIAL_NUM_OF_SETS = 4;
-		static final int STORED_RADIXES = 6;
-		static final int STORED_RADIXES_BITS = STORED_RADIXES * LEAF_RADIX;
+		static final int MAXIMUM_NUM_OF_SETS = 1 << (LEAF_RADIX - ADDRESS_BITS_PER_WORD);
+		static final int COMPRESSED_RADIXES = 6;
+		static final int COMPRESSED_RADIXES_BITS = COMPRESSED_RADIXES * LEAF_RADIX;
 		
 		long used;
 		long[] sets;
 
 		Leaf(long value) {
-			used = (1L << STORED_RADIXES_BITS) | (value & LEAF_RADIX_MASK);
+			used = (1L << COMPRESSED_RADIXES_BITS) | (value & LEAF_RADIX_MASK);
 		}
 
 		public boolean contains(int startingBit, long value) {
@@ -130,7 +159,7 @@ public class LongSet {
 			// - optimization: a few radixes stored in "used" itself
 			if (sets == null) {
 				long bits = used;
-				int i = (int) (used >>> STORED_RADIXES_BITS);
+				int i = (int) (used >>> COMPRESSED_RADIXES_BITS);
 				while (i > 0) {
 					if (radix == (bits & LEAF_RADIX_MASK))
 						return true;
@@ -148,7 +177,7 @@ public class LongSet {
 		
 		void transform() {
 			long bits = used;
-			int entries = (int) (used >>> STORED_RADIXES_BITS);
+			int entries = (int) (used >>> COMPRESSED_RADIXES_BITS);
 			used = 0;
 			sets = new long[INITIAL_NUM_OF_SETS];
 			while (entries > 0) {
@@ -163,15 +192,15 @@ public class LongSet {
 			// - optimization: a few radixes stored in "used" itself			
 			if (sets == null) {
 				long bits = used;
-				int entries = (int) (used >>> STORED_RADIXES_BITS);
+				int entries = (int) (used >>> COMPRESSED_RADIXES_BITS);
 				for (int i = 0; i < entries; i++) {
 					if (radix == (bits & LEAF_RADIX_MASK))
 						return false;
 					bits >>>= LEAF_RADIX;					
 				}
-				if (entries < STORED_RADIXES) {
+				if (entries < COMPRESSED_RADIXES) {
 					entries++;
-					used = (entries << STORED_RADIXES_BITS) | (used << LEAF_RADIX) | radix;
+					used = (entries << COMPRESSED_RADIXES_BITS) | (used << LEAF_RADIX) | radix;
 					return true;
 				}
 				transform();
@@ -201,7 +230,7 @@ public class LongSet {
 				long bits = used;
 				long updatedBits = 0;
 				boolean modified = false;
-				int entries = (int) (used >>> STORED_RADIXES_BITS);
+				int entries = (int) (used >>> COMPRESSED_RADIXES_BITS);
 				for (int i = 0; i < entries; i++) {
 					if (radix == (bits & LEAF_RADIX_MASK))
 						modified = true;
@@ -211,7 +240,7 @@ public class LongSet {
 				}
 				if (modified) {
 					entries--;
-					used = (entries << STORED_RADIXES_BITS) + updatedBits;
+					used = (entries << COMPRESSED_RADIXES_BITS) + updatedBits;
 				}
 				return modified;
 			}
@@ -223,6 +252,44 @@ public class LongSet {
 			long beforeUpdate = sets[setIndex];
 			sets[setIndex] = PrimitiveBitSet.remove(beforeUpdate, radix);
 			return sets[setIndex] != beforeUpdate;
+		}
+
+		public Long next(int startingBit, long value) {
+			long radix = value & LEAF_RADIX_MASK;
+			// - optimization: a few radixes stored in "used" itself
+			if (sets == null) {
+				long next = Long.MAX_VALUE;
+				long bits = used;
+				int i = (int) (used >>> COMPRESSED_RADIXES_BITS);
+				while (i > 0) {
+					if (radix <= (bits & LEAF_RADIX_MASK) & (bits & LEAF_RADIX_MASK) < next)
+						next = (bits & LEAF_RADIX_MASK);
+					bits >>>= LEAF_RADIX;
+					i--;
+				}
+				if (next == Long.MAX_VALUE)
+					return null;
+				else
+					return (value & ~(long)LEAF_RADIX_MASK) + next;
+			}
+			// - general code
+			int setId = (int)(radix >>> ADDRESS_BITS_PER_WORD);
+			int setIndex = PrimitiveBitSet.indexOf(used, setId);
+			if (PrimitiveBitSet.contains(used, setId)) {
+				long next = PrimitiveBitSet.next(sets[setIndex++], value);
+				if ((next & value) != next)
+					return ((value >>> LEAF_RADIX) << LEAF_RADIX) + (setId << BITS_PER_WORD) + next;
+					
+			}
+			for (setId = setId+1; setId < MAXIMUM_NUM_OF_SETS & setIndex < sets.length; setIndex++)
+				if (PrimitiveBitSet.contains(used, setId) && sets[setIndex++] != PrimitiveBitSet.EMPTY_SET) {
+					long set = sets[setIndex-1];
+					long next = ((value >>> LEAF_RADIX) << LEAF_RADIX) + (setId << BITS_PER_WORD);
+					if (!PrimitiveBitSet.contains(set, 0))
+						next += PrimitiveBitSet.next(set, 0);
+					return next;
+				}
+			return null;
 		}
 	}
 	
@@ -316,18 +383,18 @@ public class LongSet {
 	}
 
 	/**
-	 * Returns next value after method argument <tt>v</tt> or <tt>v</tt> itself
-	 * if such value doesn't exist in this set.
+	 * Returns value which is equal to or appears after method argument <tt>v</tt>
+	 * or <tt>null</tt> if such value doesn't exist in this set.
 	 * 
 	 * @param v - value to get next for
 	 * @return value next to method parameter
 	 */
-	public long next(long value) {
+	public Long next(long value) {
 		value = applyMode(value);
-		if (value == Long.MAX_VALUE)
-			return reverseMode(value);
-		// - FIXME implementation is missing
-		return reverseMode(value);
+		if (root == null)
+			return null;
+		Long next = root.next(BITS_PER_WORD - BRANCH_RADIX, value);
+		return (next == null) ? null : reverseMode(next);
 	}
 
     /**
@@ -340,7 +407,7 @@ public class LongSet {
 	}
 	
 	/**
-	 * Returns comparison result with respect to this Set sort-order:<br>
+	 * Returns comparison result with respect to this set sort-order:<br>
 	 * - <tt>negative</tt> value if <tt>v1</tt> is located <tt>before</tt> <tt>v2</tt><br>
 	 * - <tt>0</tt> if <tt>v1</tt> is <tt>equal</tt> to <tt>v2</tt> <br>
 	 * - <tt>positive</tt> value if <tt>v1</tt> located <tt>after</tt> <tt>v2</tt> 
