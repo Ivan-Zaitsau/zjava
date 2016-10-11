@@ -12,8 +12,10 @@ import zjava.system.Const;
  * <p>This implementation provides guaranteed log(n) time cost for {@code contains},
  * {@code add} and {@code remove} operations.
  * 
- * <p>Memory usage varies from approximately 2 bits to 32 bytes per value, depending
- * on numbers distribution.
+ * <p>Memory usage varies from approximately 2 bits to 80 bytes per value, depending
+ * on numbers distribution.<br>
+ * <i>Best case scenario:</i> a lot of numbers located close to each other.<br>
+ * <i>Worst case scenario:</i> Pairs of nearby numbers with huge intervals between them.
  * 
  * <p>Implemented as a Radix Tree. There are two types of nodes: <tt>Branch</tt> and <tt>Leaf</tt> nodes.<br>
  * <tt>Branch</tt> node represents 6-bit radix of long value.<br>
@@ -76,8 +78,10 @@ public class LongSet {
 					used = value;
 					return true;
 				}
+				long existingValue = used;
 				children = new Node[INITIAL_NUM_OF_CHILDREN];
-				add(startingBit, used);
+				used = 0;
+				add(startingBit, existingValue);
 				return add(startingBit, value);
 			}
 			// - general case
@@ -92,7 +96,7 @@ public class LongSet {
 			for (int i = childIndex; i < childrenAmount; i++)
 				children[i+1] = children[i];
 			children[childIndex] = newEntry(startingBit, value);
-			PrimitiveBitSet.add(used, radix);
+			used = PrimitiveBitSet.add(used, radix);
 			return true;
 		}
 
@@ -200,7 +204,7 @@ public class LongSet {
 				}
 				if (entries < COMPRESSED_RADIXES) {
 					entries++;
-					used = (entries << COMPRESSED_RADIXES_BITS) | (used << LEAF_RADIX) | radix;
+					used = ((long)entries << COMPRESSED_RADIXES_BITS) | (used << LEAF_RADIX) | radix;
 					return true;
 				}
 				transform();
@@ -215,12 +219,12 @@ public class LongSet {
 					sets = Arrays.copyOf(sets, 2 * sets.length);
 				for (int i = setIndex; i < setsAmount; i++)
 					sets[i+1] = sets[i];
-				sets[setIndex] = 0;
+				sets[setIndex] = PrimitiveBitSet.EMPTY_SET;
 				used = PrimitiveBitSet.add(used, setId);
 			}
 			long beforeUpdate = sets[setIndex];
 			sets[setIndex] = PrimitiveBitSet.add(beforeUpdate, radix);
-			return sets[setIndex] == beforeUpdate;
+			return sets[setIndex] != beforeUpdate;
 		}
 		
 		public boolean remove(int startingBit, long value) {
