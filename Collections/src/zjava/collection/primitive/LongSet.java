@@ -52,12 +52,19 @@ public class LongSet {
 		long used;
 		Node[] children;
 
-		Branch(long value) {
-			used = value;
+		Branch(int startingBit, long value) {
+			if (value == 0) {
+				used = 0;
+				children = new Node[INITIAL_NUM_OF_CHILDREN];
+				add(startingBit, value);
+			}
+			else {
+				used = value;
+			}
 		}
 
 		Node newEntry(int startingBit, long value) {
-			return (startingBit <= LEAF_RADIX) ? new Leaf(value) : new Branch(value);
+			return (startingBit < LEAF_RADIX) ? new Leaf(value) : new Branch(startingBit, value);
 		}
 		
 		public boolean contains(int startingBit, long value) {
@@ -93,9 +100,9 @@ public class LongSet {
 			int childIndex = PrimitiveBitSet.indexOf(used, radix);
 			if (childrenAmount >= children.length)
 				children = Arrays.copyOf(children, children.length + NUM_OF_CHILDREN_DELTA);
-			for (int i = childIndex; i < childrenAmount; i++)
+			for (int i = childrenAmount-1; i >= childIndex; i--)
 				children[i+1] = children[i];
-			children[childIndex] = newEntry(startingBit, value);
+			children[childIndex] = newEntry(startingBit - BRANCH_RADIX, value);
 			used = PrimitiveBitSet.add(used, radix);
 			return true;
 		}
@@ -217,7 +224,7 @@ public class LongSet {
 				int setsAmount = PrimitiveBitSet.size(used);
 				if (setsAmount == sets.length)
 					sets = Arrays.copyOf(sets, 2 * sets.length);
-				for (int i = setIndex; i < setsAmount; i++)
+				for (int i = setsAmount-1; i >= setIndex; i--)
 					sets[i+1] = sets[i];
 				sets[setIndex] = PrimitiveBitSet.EMPTY_SET;
 				used = PrimitiveBitSet.add(used, setId);
@@ -244,7 +251,7 @@ public class LongSet {
 				}
 				if (modified) {
 					entries--;
-					used = (entries << COMPRESSED_RADIXES_BITS) + updatedBits;
+					used = ((long)entries << COMPRESSED_RADIXES_BITS) + updatedBits;
 				}
 				return modified;
 			}
@@ -358,7 +365,8 @@ public class LongSet {
 	public boolean add(long value) {
 		value = applyMode(value);
 		if (root == null) {
-			root = new Branch(value);
+			root = new Branch(BITS_PER_WORD - BRANCH_RADIX, value);
+			size++;
 			return true;
 		}
 		if (!root.add(BITS_PER_WORD - BRANCH_RADIX, value))
