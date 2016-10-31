@@ -52,7 +52,7 @@ public class LongSetTest {
 		}
 	}
 	
-	@Test//(timeout = 200)
+	@Test(timeout = 200)
 	public void sizeIsUpdatedProperlyAfterAddRemoveClear() {
 		LongSet set = new LongSet();
 		long[] valuesToAdd = new long[] {0, 1, 3, 7, 11, 13, 6, 8, 64, 63, 61, 57, -1, -2, 1023, 1024, Long.MIN_VALUE, Long.MAX_VALUE};
@@ -75,5 +75,13 @@ public class LongSetTest {
 		}
 		set.clear();
 		assertEquals(0, set.size());
+	}
+	
+	@Test(timeout = 200)
+	public void basicNextCheck() {
+		LongSet set = new LongSet();
+		set.add(Long.MIN_VALUE);
+		assertEquals(Long.MIN_VALUE, (long) set.next(Long.MIN_VALUE));
+		assertEquals(null, set.next(Long.MIN_VALUE+1));
 	}
 }

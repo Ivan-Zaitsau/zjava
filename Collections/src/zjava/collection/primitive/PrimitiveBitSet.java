@@ -77,16 +77,16 @@ final public class PrimitiveBitSet {
 	}
 	
 	/**
-	 * Returns next element after method argument <tt>value</tt>
-	 * or <tt>value</tt> itself if such element doesn't exist in this set.
+	 * Returns next element on or after method argument <tt>value</tt>
+	 * or <tt>-1</tt> if such element doesn't exist in the set provided.
 	 * 
 	 * @param set - given set
 	 * @param value - value to get next for
 	 * @return value next to method parameter
 	 */
 	static public int next(int set, int value) {
-		int trailingZeroes = Integer.numberOfTrailingZeros(set & ~(((1 << value) << 1) - 1));
-		return (trailingZeroes < Const.BITS_PER_INT) ? trailingZeroes : value;
+		int trailingZeroes = Integer.numberOfTrailingZeros(set & ~((1 << value) - 1));
+		return (trailingZeroes < Const.BITS_PER_INT) ? trailingZeroes : -1;
 	}
 
 	// - "long" related methods
@@ -147,16 +147,16 @@ final public class PrimitiveBitSet {
 	}
 	
 	/**
-	 * Returns next element after method argument <tt>value</tt>
-	 * or <tt>value</tt> itself if such element doesn't exist in this set.
+	 * Returns next element on or after method argument <tt>value</tt>
+	 * or <tt>-1</tt> if such element doesn't exist in the set provided.
 	 * 
 	 * @param set - given set
 	 * @param value - value to get next for
 	 * @return value next to method parameter
 	 */
 	static public long next(long set, long value) {
-		int trailingZeroes = Long.numberOfTrailingZeros(set & ~(((1L << value) << 1) - 1));
-		return (trailingZeroes < Const.BITS_PER_LONG) ? trailingZeroes : value;
+		int trailingZeroes = Long.numberOfTrailingZeros(set & ~((1L << value) - 1));
+		return (trailingZeroes < Const.BITS_PER_LONG) ? trailingZeroes : -1;
 	}
 	
 	/**

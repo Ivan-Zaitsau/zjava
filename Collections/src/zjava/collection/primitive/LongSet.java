@@ -64,7 +64,7 @@ public class LongSet {
 		}
 
 		Node newEntry(int startingBit, long value) {
-			return (startingBit < LEAF_RADIX) ? new Leaf(value) : new Branch(startingBit, value);
+			return (startingBit <= LEAF_RADIX - BRANCH_RADIX) ? new Leaf(value) : new Branch(startingBit, value);
 		}
 		
 		public boolean contains(int startingBit, long value) {
@@ -288,16 +288,14 @@ public class LongSet {
 			int setIndex = PrimitiveBitSet.indexOf(used, setId);
 			if (PrimitiveBitSet.contains(used, setId)) {
 				long next = PrimitiveBitSet.next(sets[setIndex++], value);
-				if ((next & value) != next)
-					return ((value >>> LEAF_RADIX) << LEAF_RADIX) + (setId << BITS_PER_WORD) + next;
+				if (next != -1)
+					return ((value >>> LEAF_RADIX) << LEAF_RADIX) + (setId << ADDRESS_BITS_PER_WORD) + next;
 					
 			}
-			for (setId = setId+1; setId < MAXIMUM_NUM_OF_SETS & setIndex < sets.length; setIndex++)
+			for (setId = setId+1; setId < MAXIMUM_NUM_OF_SETS & setIndex < sets.length; setId++)
 				if (PrimitiveBitSet.contains(used, setId) && sets[setIndex++] != PrimitiveBitSet.EMPTY_SET) {
 					long set = sets[setIndex-1];
-					long next = ((value >>> LEAF_RADIX) << LEAF_RADIX) + (setId << BITS_PER_WORD);
-					if (!PrimitiveBitSet.contains(set, 0))
-						next += PrimitiveBitSet.next(set, 0);
+					long next = ((value >>> LEAF_RADIX) << LEAF_RADIX) + (setId << ADDRESS_BITS_PER_WORD) + PrimitiveBitSet.next(set, 0);
 					return next;
 				}
 			return null;
@@ -326,7 +324,7 @@ public class LongSet {
 		return value ^ mode;
 	}
 	
-	private long reverseMode(long value) {
+	private long revertMode(long value) {
 		return value ^ mode;
 	}
 
@@ -406,7 +404,7 @@ public class LongSet {
 		if (root == null)
 			return null;
 		Long next = root.next(BITS_PER_WORD - BRANCH_RADIX, value);
-		return (next == null) ? null : reverseMode(next);
+		return (next == null) ? null : revertMode(next);
 	}
 
     /**
