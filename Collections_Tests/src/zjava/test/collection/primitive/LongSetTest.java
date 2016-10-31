@@ -92,5 +92,23 @@ public class LongSetTest {
 		assertEquals((Long) 1L, set.next( 0));
 		assertEquals((Long) 1L, set.next( 1));
 		assertEquals((Long) Long.MAX_VALUE, set.next(2));
+		set.remove(Long.MAX_VALUE);
+		for (long v : new long[] {3, 63, 64, 1020, 1023, 1024})
+			set.add(v);
+		assertEquals((Long) 3L, set.next(2));	
+		assertEquals((Long) 63L, set.next(4));
+		assertEquals((Long) 64L, set.next(64));
+		assertEquals((Long) 1020L, set.next(65));
+		assertEquals((Long) 1023L, set.next(1021));
+		assertEquals((Long) 1024L, set.next(1024));
+		for (long v : new long[] {127, 130, 160, 199, 200})
+			set.add(v);
+		assertEquals((Long) 64L, set.next(64));
+		assertEquals((Long) 127L, set.next(65));
+		assertEquals((Long) 130L, set.next(129));
+		assertEquals((Long) 160L, set.next(131));
+		assertEquals((Long) 199L, set.next(180));
+		assertEquals((Long) 200L, set.next(200));
+		assertEquals(null, set.next(1025));
 	}
 }
