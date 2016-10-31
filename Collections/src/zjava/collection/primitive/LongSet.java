@@ -126,7 +126,7 @@ public class LongSet {
 		public Long next(int startingBit, long value) {
 			// - special case: value is stored in "used" itself
 			if (children == null) {
-				if (used != 0 & value <= used)
+				if (used != 0 & unsignedCompare(value, used) <= 0)
 					return used;
 				else
 					return null;
@@ -307,6 +307,18 @@ public class LongSet {
 	static private final long MODE_SIGNED     = 0x8000000000000000L;
 	static private final long MODE_UNSIGNED   = 0x0000000000000000L;
 	
+	/**
+	 * Compares two long values as if they were unsigned numbers
+	 * @param v1 - 1st value to be compared
+	 * @param v2 - 2nd value to be compared
+	 * @return comparison result
+	 */
+	private static int unsignedCompare(long v1, long v2) {
+		v1 ^= 0x8000000000000000L;
+		v2 ^= 0x8000000000000000L;
+		return (v1 < v2) ? -1 : (v1 == v2) ? 0 : 1;
+	}
+
 	private final long mode;
 	private long size;
 	private Node root;
@@ -429,6 +441,6 @@ public class LongSet {
 	public int compare(long v1, long v2) {
 		v1 = applyMode(v1);
 		v2 = applyMode(v2);
-		return (v1 < v2) ? -1 : (v1 == v2) ? 0 : 1;
+		return unsignedCompare(v1, v2);
 	}
 }

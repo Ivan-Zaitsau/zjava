@@ -81,7 +81,16 @@ public class LongSetTest {
 	public void basicNextCheck() {
 		LongSet set = new LongSet();
 		set.add(Long.MIN_VALUE);
-		assertEquals(Long.MIN_VALUE, (long) set.next(Long.MIN_VALUE));
+		assertEquals((Long) Long.MIN_VALUE, set.next(Long.MIN_VALUE));
 		assertEquals(null, set.next(Long.MIN_VALUE+1));
+		set.remove(Long.MIN_VALUE);
+		set.add(Long.MAX_VALUE);
+		assertEquals((Long) Long.MAX_VALUE, set.next(Long.MAX_VALUE));
+		assertEquals((Long) Long.MAX_VALUE, set.next(Long.MIN_VALUE));
+		set.add(1);
+		assertEquals((Long) 1L, set.next(-1));
+		assertEquals((Long) 1L, set.next( 0));
+		assertEquals((Long) 1L, set.next( 1));
+		assertEquals((Long) Long.MAX_VALUE, set.next(2));
 	}
 }
