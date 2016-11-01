@@ -2,6 +2,8 @@ package zjava.test.collection.primitive;
 
 import static org.junit.Assert.*;
 
+import java.util.Arrays;
+
 import org.junit.Test;
 
 import zjava.collection.primitive.LongSet;
@@ -110,5 +112,66 @@ public class LongSetTest {
 		assertEquals((Long) 199L, set.next(180));
 		assertEquals((Long) 200L, set.next(200));
 		assertEquals(null, set.next(1025));
+	}
+	
+	@Test(timeout = 200)
+	public void compareWorksAsExpectedInAscendingSignedSortMode() {
+		LongSet set = new LongSet(true, true);
+		assertTrue(set.compare(-1, 0) < 0);
+		assertTrue(set.compare(Long.MAX_VALUE, Long.MIN_VALUE) > 0);
+		assertTrue(set.compare(Long.MAX_VALUE, -1) > 0);
+		assertTrue(set.compare(77, 77) == 0);
+		assertTrue(set.compare(66, 77) < 0);		
+		assertTrue(set.compare(1, -1) > 0);
+	}
+	
+	@Test(timeout = 200)
+	public void compareWorksAsExpectedInDescendingSignedSortMode() {
+		LongSet set = new LongSet(false, true);
+		assertTrue(set.compare(-1, 0) > 0);
+		assertTrue(set.compare(Long.MAX_VALUE, Long.MIN_VALUE) < 0);
+		assertTrue(set.compare(Long.MAX_VALUE, -1) < 0);
+		assertTrue(set.compare(77, 77) == 0);
+		assertTrue(set.compare(67, 77) > 0);
+		assertTrue(set.compare(1, -1) < 0);
+	}
+	
+	@Test(timeout = 200)
+	public void compareWorksAsExpectedInAscendingUnsignedSortMode() {
+		LongSet set = new LongSet(true, false);
+		assertTrue(set.compare(-1, 0) > 0);
+		assertTrue(set.compare(Long.MAX_VALUE, Long.MIN_VALUE) < 0);
+		assertTrue(set.compare(Long.MAX_VALUE, -1) < 0);
+		assertTrue(set.compare(77, 77) == 0);
+		assertTrue(set.compare(67, 77) < 0);
+		assertTrue(set.compare(1, -1) < 0);
+	}
+	
+	@Test(timeout = 200)
+	public void compareWorksAsExpectedInDescendingUnsignedSortMode() {
+		LongSet set = new LongSet(false, false);
+		assertTrue(set.compare(-1, 0) < 0);
+		assertTrue(set.compare(Long.MAX_VALUE, Long.MIN_VALUE) > 0);
+		assertTrue(set.compare(Long.MAX_VALUE, -1) > 0);
+		assertTrue(set.compare(77, 77) == 0);
+		assertTrue(set.compare(67, 77) > 0);
+		assertTrue(set.compare(1, -1) > 0);
+	}
+	
+	@Test(timeout = 200)
+	public void checkNextOperationOnLongSetWithComplexInternalStructure() {
+		LongSet set = new LongSet();
+		long[] valuesToAdd = new long[] {-1025, -999, -995, -990, -639, -630, -625, 1025, 1200, 1300, 1425, 1500, 1777, 66000,
+				4100000, 4100005, 4100010, 4100011, 4100015, 4100019, 4100025, 4100030, 4100033, 4100037, 4100200, 4100201, 4200000};
+		for (long v : valuesToAdd)
+			set.add(v);
+		Arrays.sort(valuesToAdd);
+		long nv = Long.MIN_VALUE;
+		for (long v : valuesToAdd) {
+			nv = set.next(nv);
+			assertEquals(v, nv);
+			nv++;
+		}
+		assertEquals(null, set.next(nv));
 	}
 }

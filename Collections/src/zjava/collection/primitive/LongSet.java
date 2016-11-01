@@ -5,7 +5,11 @@ import java.util.Arrays;
 import zjava.system.Const;
 
 /**
- * LongSet represents set of primitive long values.<br>
+ * *** <b>WARNING!</b> *** <br>
+ * *** <b>Experimental Feature</b> *** <br>
+ * Can be changed or completely removed in the future.
+ * 
+ * <p>LongSet represents set of primitive long values.<br>
  * Elements of this set are sorted.<br>
  * (Supports signed/unsigned and ascending/descending order of it's elements).
  * 
