@@ -403,7 +403,7 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeList
 	}
 
 	/**
-     * Constructs an empty list with at least specified capacity.
+     * Constructs an empty list with at least specified initial capacity.
      */
 	public DynamicList(long initialCapacity) {
 		init(initialCapacity);

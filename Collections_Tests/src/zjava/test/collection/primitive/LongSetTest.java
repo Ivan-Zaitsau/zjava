@@ -161,10 +161,17 @@ public class LongSetTest {
 	@Test(timeout = 200)
 	public void checkNextOperationOnLongSetWithComplexInternalStructure() {
 		LongSet set = new LongSet();
-		long[] valuesToAdd = new long[] {-1025, -999, -995, -990, -639, -630, -625, 1025, 1200, 1300, 1425, 1500, 1777, 66000,
-				4100000, 4100005, 4100010, 4100011, 4100015, 4100019, 4100025, 4100030, 4100033, 4100037, 4100200, 4100201, 4200000};
+		long[] valuesToAdd = new long[] {
+				-1025, -999, -995, -990, -639, -630, -625,
+				1200, 1300, 1500, 1425, 1777, 1025, 66000,
+				4100000, 4100005, 4100010, 4100011, 4100015, 4100019,
+				4100025, 4100030, 4100033, 4100037, 4100200, 4100201, 4200000};
 		for (long v : valuesToAdd)
 			set.add(v);
+		long[] holes = new long[] {Long.MIN_VALUE, -100000, 2500, 4170000, 2000000000, Long.MAX_VALUE};
+		for (long v : holes) {
+			set.add(v); set.remove(v);
+		}
 		Arrays.sort(valuesToAdd);
 		long nv = Long.MIN_VALUE;
 		for (long v : valuesToAdd) {

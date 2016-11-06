@@ -186,6 +186,7 @@ final public class Collectionz {
 	 * Returns true if specified collection contains null.
 	 * 
 	 * @param c - collection to check for null
+	 * 
 	 * @return true if specified collection contains null
 	 */
 	public static boolean containsNull(Collection<?> c) {
@@ -208,6 +209,7 @@ final public class Collectionz {
 	 * @param c - given <tt>Iterable</tt>
 	 * @param onSelf - denotes string value assigned to <tt>Iterable</tt> itself
 	 *                 if it will be one of the <tt>Iterable</tt> elements.
+	 *                 
 	 * @return a string representation of the given <tt>Iterable</tt>
      */
 	public static String toString(Iterable<?> c, String onSelf) {

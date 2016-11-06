@@ -327,10 +327,22 @@ public class LongSet {
 	private long size;
 	private Node root;
 	
+	/**
+     * Constructs an empty set elements of which will be sorted
+     * in accordance with primitive <tt>long</tt> natural ordering.
+     */
 	public LongSet() {
 		this(true, true);
 	}
-	
+
+	/**
+     * Constructs an empty set with specific sorting setup.<br>
+     * If <tt>ascending</tt> set to <tt>true</tt>, elements of this set will
+     * be ordered from least to greatest, otherwise - from greatest to least.<br>
+     * If <tt>signed</tt> set to <tt>true</tt>, numbers you store in this set
+     * will be considered regular <tt>signed longs</tt>. In another case,
+     * numbers will be compared as if they were <tt>unsigned longs</tt>.
+     */
 	public LongSet(boolean ascending, boolean signed) {
 		mode = (ascending ? MODE_ASCENDING : MODE_DESCENDING)
 				^ (signed ? MODE_SIGNED : MODE_UNSIGNED);
