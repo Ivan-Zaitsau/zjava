@@ -279,8 +279,8 @@ public class DynamicListTest {
 	
 	// - performance tests
 	
-	@Test(timeout = 1500)
-	public void performanceTest01() {
+	@Test(timeout = 2000)
+	public void performanceTestInsertionsAndRemovalsAtTheBeginningAndTheMid() {
 		for (int i = 0; i < 1000; i++) {
 			actual.add(i);
 		}
@@ -297,7 +297,7 @@ public class DynamicListTest {
 	}
 	
 	@Test(timeout = 1000)
-	public void performanceTest02() {
+	public void performanceTestGetOperation() {
 		for (int i = 0; i < 65536; i++) {
 			actual.add(i & 63);
 		}
@@ -308,7 +308,7 @@ public class DynamicListTest {
 	}
 	
 	@Test(timeout = 1000)
-	public void performanceTest03() {
+	public void performanceTestAssureThatThereAreNoExcessiveMemoryThrashingDuringRemovalsAtTheEnd() {
 		for (int i = 0; i < 127; i++)
 			actual.add(i);
 		Integer zero = 0;

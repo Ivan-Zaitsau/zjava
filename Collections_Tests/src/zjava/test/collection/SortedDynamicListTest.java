@@ -3,6 +3,7 @@ package zjava.test.collection;
 import static org.junit.Assert.*;
 
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
@@ -104,51 +105,109 @@ public class SortedDynamicListTest {
 	}
 	
 	// - basic tests
+	
 	@Test(timeout = 200)
-	public void generalPurposeTest01() {
+	public void toArrayReturnsEmptyArray() {
+		assertEquals(actual.toArray().length, 0);
+	}
+	
+	@Test(timeout = 200)
+	public void addKeepsElementsInCorrectOrder() {
+		Integer[] elementsToAdd = new Integer[] {3, 2, 4, 1, -1, 0};
+		for (Integer v : elementsToAdd) {
+			actual.add(v);
+			for (int i = 1; i < actual.size(); i++)
+				assertTrue(actual.get(i) >= actual.get(i-1));
+		}
+	}
+	
+	@Test(timeout = 200)
+	public void addContainsCheck() {
+		Integer[] elementsToAdd = new Integer[] {3, 2, 4, 1, -1, 0};
+		for (Integer v : elementsToAdd) {
+			actual.add(v);
+			assertTrue(actual.contains(v));
+		}		
+	}
+
+	@Test(timeout = 200)
+	public void addReturnsCorrectValue() {
+		Integer[] elementsToAdd = new Integer[] {3, 2, 4, 1, -1, 0};
+		for (Integer v : elementsToAdd) {
+			assertTrue(actual.add(v));
+		}
+	}
+
+	@Test(timeout = 200)
+	public void indexOfCheck() {
 		assertTrue(actual.indexOf(1) == -1);
 		actual.add(1);
 		assertTrue(actual.indexOf(1) ==  0);
 		assertTrue(actual.indexOf(0) == -1);
-		assertTrue(actual.iterator().hasNext());
-		actual.addAll(Arrays.asList(0, 1, 2, 3, 0, 3, 4));
-		assertTrue(actual.indexOf(1) == 2);
-		assertTrue(actual.lastIndexOf(1) ==  3);
-		assertTrue(actual.lastIndexOf(5) == -1);
-		assertTrue(actual.remove((Integer) 3));
-		assertFalse(actual.remove((Integer) 5));
-		actual.removeAll(Arrays.asList(0));
-		assertFalse(actual.remove((Integer) 0));
-		actual.retainAll(Arrays.asList(1, 3, 4));
-		assertTrue(actual.get(0) == 1);
-		assertTrue(actual.get(1) == 1);
-		assertArrayEquals(actual.toArray(), new Integer[] {1, 1, 3, 4});
-		assertTrue(actual.contains(1));
-		assertTrue(actual.contains(3));
-		assertTrue(actual.contains(4));
-		actual.clear();
-		assertTrue(actual.size() == 0);
-		assertTrue(actual.isEmpty());
-		assertFalse(actual.iterator().hasNext());
-	}
-	
-	@Test(timeout = 200)
-	public void addRemoveGetContainsTest01() {
-		actual.addAll(Arrays.asList(new Integer[] {3, 2, 4, 1, 5, 1, 5, 6, 0}));
-		assertArrayEquals(actual.toArray(), new Integer[] {0, 1, 1, 2, 3, 4, 5, 5, 6});
-		assertTrue(actual.get(2) == 1);
-		assertTrue(actual.contains(6));
-		assertTrue(actual.remove((Integer) 5));
-		assertTrue(actual.contains(5));
-		assertTrue(actual.removeAll(Arrays.asList(1)));
-		assertFalse(actual.contains(1));
+		actual.add(-1);
+		assertTrue(actual.indexOf(1) ==  1);
 	}
 
 	@Test(timeout = 200)
-	public void cloneTest01() {
-		actual.addAll(Arrays.asList(new Integer[] {100, 200, 300, 500, 800, 1300, 2000, 3500, 5500}));
+	public void addAllCheck() {
+		actual.addAll(Arrays.asList(new Integer[] {-1, 3, 2, 4, 1, 5, 1, 5, 6, 0}));
+		assertArrayEquals(new Integer[] {-1, 0, 1, 1, 2, 3, 4, 5, 5, 6}, actual.toArray());
+	}
+
+	@Test(timeout = 200)
+	public void lastIndexOfCheck() {
+		actual.add(1);
+		actual.addAll(Arrays.asList(0, 1, 2, 3, 0, 3, 4));
+		assertTrue(actual.lastIndexOf(1) ==  3);
+		assertTrue(actual.lastIndexOf(5) == -1);
+	}
+	
+	@Test(timeout = 200)
+	public void removeCheck() {
+		actual.addAll(Arrays.asList(new Integer[] {3, 2, 4, 1, 5, 1, 5, 6, 0}));
+		actual.remove((Integer) 5);
+		actual.remove((Integer) 1);
+		actual.remove((Integer) 2);
+		actual.remove((Integer) 5);
+		assertArrayEquals(new Integer[] {0, 1, 3, 4, 6}, actual.toArray());
+	}
+	
+	@Test(timeout = 200)
+	public void getCheck() {
+		Integer[] valuesToAdd = new Integer[] {3, 2, 4, 1, 5, 1, 5, 6, 0};
+		actual.addAll(Arrays.asList(valuesToAdd));
+		Arrays.sort(valuesToAdd);
+		for (int i = 0; i < valuesToAdd.length; i++)
+			assertEquals(valuesToAdd[i], actual.get(i));
+	}
+	
+	@Test(timeout = 200)
+	public void removeAllCheck() {
+		actual.addAll(Arrays.asList(new Integer[] {3, 2, 4, 1, 5, 1, 5, 6, 0}));
+		actual.removeAll(Arrays.asList(1, 2, 5, 7));
+		assertArrayEquals(new Integer[] {0, 3, 4, 6}, actual.toArray());
+	}
+
+	@Test(timeout = 200)
+	public void isEmptyCheck() {
+		assertTrue(actual.isEmpty());
+		actual.add(1);
+		assertFalse(actual.isEmpty());
+		actual.remove((Integer) 1);
+		assertTrue(actual.isEmpty());		
+	}
+
+	@Test(timeout = 200)
+	public void cloneDoesNotReturnTheSameArray() {
+		actual.addAll(Arrays.asList(new Integer[] {-1000000, -10, 100, 200, 300, 500, 800, 1300, 2000, 3500, 5500}));
+		assertTrue(actual != actual.clone());
+	}
+
+	@Test(timeout = 200)
+	public void cloneReturnsShallowCopyOfArray() {
+		actual.addAll(Arrays.asList(new Integer[] {-1000000, -10, 100, 200, 300, 500, 800, 1300, 2000, 3500, 5500}));
 		@SuppressWarnings("unchecked")
-		SortedList<Integer> clone = (SortedList<Integer>) ((SortedDynamicList<?>) actual).clone();
+		SortedList<Integer> clone = (SortedList<Integer>) actual.clone();
 		assertTrue(actual.hashCode() == clone.hashCode());
 		assertTrue(actual.equals(clone) && clone.equals(actual));
 		Iterator<Integer> it1 = actual.iterator(), it2 = clone.iterator();
@@ -158,18 +217,70 @@ public class SortedDynamicListTest {
 		assertFalse(it1.hasNext() || it2.hasNext());
 	}
 	
+	@Test(timeout = 200)
+	public void cloneReturnsObjectOfCorrectTypeWhenSubclassed() {
+		assertTrue(actual.clone().getClass() == SortedDynamicList.class);
+		@SuppressWarnings("serial")
+		SortedDynamicList<Integer> subclassedList = new SortedDynamicList<Integer>() {};
+		assertTrue(subclassedList.clone().getClass() != SortedDynamicList.class);
+		assertTrue(SortedDynamicList.class.isAssignableFrom(subclassedList.clone().getClass()));
+	}
+	
+	@Test(timeout=200)
+	public void comparatorChangesSortOrderAccordingly() {
+		Comparator<Number> comparator = new Comparator<Number>() {
+			@Override
+			public int compare(Number o1, Number o2) {
+				long v1 = o1.longValue(), v2 = o2.longValue();
+				return (v1 < v2) ? 1 : (v1 == v2) ? 0 : -1;
+			}
+		};
+		actual = new SortedDynamicList<Integer>(comparator);
+		Integer[] itemsToCheck = new Integer[] {3, 2, 4, 1, 5, 1, 5, 6, 0, -1, -7, 9};
+		actual.addAll(Arrays.asList(itemsToCheck));
+		Arrays.sort(itemsToCheck, comparator);
+		assertArrayEquals(actual.toArray(), itemsToCheck);
+	}
+	
 	// - performance tests
 	
 	@Test(timeout = 500)
-	public void performanceCheckForAddingElementsInSortedOrder() {
+	public void performanceTestForAddingElementsInSortedOrder() {
 		Integer v = 1;
 		for (int i = 0; i < 2000000; i++)
 			assertTrue(actual.add(v));
 	}
 
 	@Test(timeout = 500)	
-	public void performanceCheckForAdditionOf100kElements() {
+	public void performanceTestForAdditionOf100kElements() {
 		for (int i = 0; i < 100000; i++)
 			assertTrue(actual.add(-i));
+	}
+
+	@Test(timeout = 500)
+	public void performanceTestForAddingElementsInSortedOrderUsingComparator() {
+		actual = new SortedDynamicList<Integer>(new Comparator<Number>() {
+			@Override
+			public int compare(Number o1, Number o2) {
+				long v1 = o1.longValue(), v2 = o2.longValue();
+				return (v1 < v2) ? 1 : (v1 == v2) ? 0 : -1;
+			}
+		});
+		Integer v = 1;
+		for (int i = 0; i < 2000000; i++)
+			assertTrue(actual.add(v));
+	}
+
+	@Test(timeout = 500)	
+	public void performanceTestForAdditionOf100kElementsUsingComparator() {
+		actual = new SortedDynamicList<Integer>(new Comparator<Number>() {
+			@Override
+			public int compare(Number o1, Number o2) {
+				long v1 = o1.longValue(), v2 = o2.longValue();
+				return (v1 < v2) ? 1 : (v1 == v2) ? 0 : -1;
+			}
+		});
+		for (int i = 0; i < 100000; i++)
+			assertTrue(actual.add(i));
 	}
 }

@@ -11,7 +11,7 @@ import zjava.collection.primitive.LongSet;
 public class LongSetTest {
 
 	@Test(timeout = 200)
-	public void basicAddContainsCheck() {
+	public void addContainsCheck() {
 		LongSet set = new LongSet();
 		long[] valuesToAdd = new long[] {0, 1, 3, 7, 11, 13, 6, 8, 64, 63, 61, 57, -1, -2, 1023, 1024, Long.MIN_VALUE, Long.MAX_VALUE};
 		for (long v : valuesToAdd) {
@@ -38,20 +38,37 @@ public class LongSetTest {
 	}
 	
 	@Test(timeout = 200)
-	public void basicRemoveCheck() {
+	public void removeCheck() {
 		LongSet set = new LongSet();
-		assertFalse(set.remove(0));
+		long[] valuesToAdd = new long[] {1, 3, 7, 13, 6, 8, 61, 57, -1};
+		long[] valuesToCheckRemoveOn = new long[] {11, 0, -2, 64, 63, 1023, 1024, Long.MIN_VALUE, Long.MAX_VALUE};
+		for (long v : valuesToAdd)
+			set.add(v);
+		for (long v : valuesToCheckRemoveOn)
+			set.add(v);
+
+		for (long v : valuesToCheckRemoveOn) {
+			set.remove(v);
+			assertFalse(set.contains(v));
+		}
+		
+		for (long v : valuesToAdd)
+			assertTrue(set.contains(v));
+	}
+	
+	@Test(timeout=200)
+	public void removeReturnsCorrectValue() {
+		LongSet set = new LongSet();
 		long[] valuesToAdd = new long[] {0, 1, 3, 7, 11, 13, 6, 8, 64, 63, 61, 57, -1, -2, 1023, 1024, Long.MIN_VALUE, Long.MAX_VALUE};
 		for (long v : valuesToAdd)
 			set.add(v);
-		assertFalse(set.remove(12));
-
-		long[] valuesToCheckRemoveOn = new long[] {11, 0, -2, 64, 63, 1023, 1024, Long.MIN_VALUE, Long.MAX_VALUE};
-		for (long v : valuesToCheckRemoveOn) {
-			assertTrue(set.remove(v));
-			assertFalse(set.contains(v));
+		long[] valuesNotInTheSet = new long[] {-5, -1024, -1025, -2000, -999, 62, 60, 59, 100};
+		for (long v : valuesNotInTheSet)
 			assertFalse(set.remove(v));
-		}
+		
+		long[] valuesToRemove = new long[] {1023, 0, 1024, Long.MIN_VALUE, Long.MAX_VALUE, -1, -2, 11, 13, 1, 3, 6, 7, 8};
+		for (long v : valuesToRemove)
+			assertTrue(set.remove(v));
 	}
 	
 	@Test(timeout = 200)
@@ -80,7 +97,7 @@ public class LongSetTest {
 	}
 	
 	@Test(timeout = 200)
-	public void basicNextCheck() {
+	public void nextCheck() {
 		LongSet set = new LongSet();
 		set.add(Long.MIN_VALUE);
 		assertEquals((Long) Long.MIN_VALUE, set.next(Long.MIN_VALUE));
@@ -159,7 +176,7 @@ public class LongSetTest {
 	}
 	
 	@Test(timeout = 200)
-	public void checkNextOperationOnLongSetWithComplexInternalStructure() {
+	public void checkNextOperationIterativelyOnLongSetWithComplexInternalStructure() {
 		LongSet set = new LongSet();
 		long[] valuesToAdd = new long[] {
 				-1025, -999, -995, -990, -639, -630, -625,
