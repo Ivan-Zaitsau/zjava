@@ -18,8 +18,8 @@ import java.util.SortedSet;
  * 
  * <p>This implementation of SortedSet interface is focused on lower memory footprint
  * rather than performance. However, it tends to outperform <tt>TreeSet</tt> for sets
- * of sizes up to 25.000 - 250.000 elements (depending on system architecture) due to
- * simplicity of operations.
+ * of sizes up to approximately 20.000 - 100.000 elements (depending on system architecture)
+ * due to simplicity of operations.
  * 
  * <p>This implementation provides guaranteed log(n) time cost for {@code contains}
  * operation and amortized sqrt(n) time cost for the operations {@code add} and

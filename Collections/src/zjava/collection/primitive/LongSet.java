@@ -227,7 +227,7 @@ public class LongSet {
 				// - add set
 				int setsAmount = PrimitiveBitSet.size(used);
 				if (setsAmount == sets.length)
-					sets = Arrays.copyOf(sets, 2 * sets.length);
+					sets = Arrays.copyOf(sets, 2*sets.length);
 				for (int i = setsAmount-1; i >= setIndex; i--)
 					sets[i+1] = sets[i];
 				sets[setIndex] = PrimitiveBitSet.EMPTY_SET;

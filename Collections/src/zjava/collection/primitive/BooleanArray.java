@@ -6,7 +6,7 @@ import zjava.system.Const;
 
 /**
  * Simple implementation of array of boolean values which
- * requires only 1 bit of memory per boolean value (rounded up to 32).
+ * requires only 1 bit of memory per boolean value (rounded up to multiple of 64).
  * 
  * @since Zjava 1.0
  * 
@@ -14,12 +14,13 @@ import zjava.system.Const;
  */
 public class BooleanArray implements Cloneable, java.io.Serializable {
 
-	private static final long serialVersionUID = 201412031500L;
+	private static final long serialVersionUID = 201611081745L;
 
-	private static final int ADDRESS_BITS = Const.ADDRESS_BITS_PER_INT;
+	private static final int ADDRESS_BITS = Const.ADDRESS_BITS_PER_LONG;
+	private static final long MAX_SIZE = (long) Const.MAX_ARRAY_SIZE << ADDRESS_BITS;
 	
-	private final int length;
-	private int[] data;
+	private final long length;
+	private long[] data;
 
     /**
      * Constructs a BooleanArray with the specified size.
@@ -28,18 +29,21 @@ public class BooleanArray implements Cloneable, java.io.Serializable {
      * @throws NegativeArraySizeException if the specified size
      *         is negative
      */
-	public BooleanArray(int size) {
+	public BooleanArray(long size) {
         if (size < 0)
             throw new NegativeArraySizeException("size < 0: " + size);
+		if (size > MAX_SIZE)
+			throw new OutOfMemoryError("Required array size too large");
+		
 		this.length = size;
-		this.data = new int[1 + ((size-1) >> ADDRESS_BITS)];
+		this.data = new long[(int)(1 + ((size-1) >> ADDRESS_BITS))];
 	}
 
-    private String outOfBoundsMsg(int index) {
+    private String outOfBoundsMsg(long index) {
         return "Index: " + index + ", Size: " + length;
     }
 	
-	private void rangeCheck(int index) {
+	private void rangeCheck(long index) {
 		if (index < 0 | index >= length)
 			throw new IndexOutOfBoundsException(outOfBoundsMsg(index));
 	}
@@ -50,9 +54,9 @@ public class BooleanArray implements Cloneable, java.io.Serializable {
 	 * @param index index of value to set to <b>true</b>
      * @throws IndexOutOfBoundsException if the index is out of range
      */
-	public void setTrue(int index) {
+	public void setTrue(long index) {
 		rangeCheck(index);
-		data[index >>> ADDRESS_BITS] = PrimitiveBitSet.add(data[index >>> ADDRESS_BITS], index);
+		data[(int)(index >>> ADDRESS_BITS)] = PrimitiveBitSet.add(data[(int)(index >>> ADDRESS_BITS)], index);
 	}
 
 	/**
@@ -61,9 +65,9 @@ public class BooleanArray implements Cloneable, java.io.Serializable {
 	 * @param index index of value to set to <b>false</b>
      * @throws IndexOutOfBoundsException if the index is out of range
      */
-	public void setFalse(int index) {
+	public void setFalse(long index) {
 		rangeCheck(index);
-		data[index >>> ADDRESS_BITS] = PrimitiveBitSet.remove(data[index >>> ADDRESS_BITS], index);
+		data[(int)(index >>> ADDRESS_BITS)] = PrimitiveBitSet.remove(data[(int)(index >>> ADDRESS_BITS)], index);
 	}
 	
 	/**
@@ -73,7 +77,7 @@ public class BooleanArray implements Cloneable, java.io.Serializable {
 	 * @param value new value
      * @throws IndexOutOfBoundsException if the index is out of range
 	 */
-	public void set(int index, boolean value) {
+	public void set(long index, boolean value) {
 		if (value)
 			setTrue(index);
 		else
@@ -87,9 +91,9 @@ public class BooleanArray implements Cloneable, java.io.Serializable {
 	 * @return value at specified position
      * @throws IndexOutOfBoundsException if the index is out of range
      */	
-	public boolean get(int index) {
+	public boolean get(long index) {
 		rangeCheck(index);
-		return PrimitiveBitSet.contains(data[index >>> ADDRESS_BITS], index);
+		return PrimitiveBitSet.contains(data[(int)(index >>> ADDRESS_BITS)], index);
 	}
 	
 	/**
@@ -97,7 +101,7 @@ public class BooleanArray implements Cloneable, java.io.Serializable {
 	 * 
 	 * @return size of the array
 	 */
-	public int length() {
+	public long length() {
 		return length;
 	}
 	

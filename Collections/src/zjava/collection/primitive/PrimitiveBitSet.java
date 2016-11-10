@@ -1,7 +1,5 @@
 package zjava.collection.primitive;
 
-import zjava.system.Const;
-
 /**
  * This class contains number of methods to operate on
  * primitives as if they are sets of numbers between <tt>0</tt>
@@ -86,7 +84,7 @@ final public class PrimitiveBitSet {
 	 */
 	static public int next(int set, int value) {
 		int trailingZeroes = Integer.numberOfTrailingZeros(set & ~((1 << value) - 1));
-		return (trailingZeroes < Const.BITS_PER_INT) ? trailingZeroes : -1;
+		return (trailingZeroes < Integer.SIZE) ? trailingZeroes : -1;
 	}
 
 	// - "long" related methods
@@ -156,7 +154,7 @@ final public class PrimitiveBitSet {
 	 */
 	static public long next(long set, long value) {
 		int trailingZeroes = Long.numberOfTrailingZeros(set & ~((1L << value) - 1));
-		return (trailingZeroes < Const.BITS_PER_LONG) ? trailingZeroes : -1;
+		return (trailingZeroes < Long.SIZE) ? trailingZeroes : -1;
 	}
 	
 	/**
@@ -169,7 +167,7 @@ final public class PrimitiveBitSet {
 		StringBuilder sb = new StringBuilder();
 		sb.append('[');
 		boolean isSeparatorPending = false;
-		for (int i = 0; i < Const.BITS_PER_LONG; i++) {
+		for (int i = 0; i < Long.SIZE; i++) {
 			if (((1L << i) & set) != 0) {
 				if (isSeparatorPending)
 					sb.append(',').append(' ');
