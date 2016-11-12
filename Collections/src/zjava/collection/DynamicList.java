@@ -160,7 +160,7 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeList
 		}
 		
 		// - appends given value to the beginning of the block
-		E addFirst(E value) {
+		E addFirst(final E value) {
 			offset = index(-1);
 			@SuppressWarnings("unchecked")
 			E last = (E) values[offset];
@@ -172,7 +172,7 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeList
 		}
 		
 		// - appends given value to the end of the block
-		void addLast(E value) {
+		void addLast(final E value) {
 			if (size == values.length)
 				return;
 			values[index(size)] = value;
@@ -180,7 +180,7 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeList
 		}
 		
 		// - inserts given value at given position
-		E add(int pos, E value) {
+		E add(final int pos, final E value) {
 			// - range check
 			assert(pos >= 0 && pos <= size);
 			
@@ -203,7 +203,7 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeList
 		}
 
 		// - replaces element at given position with given value
-		E set(int pos, E value) {
+		E set(final int pos, final E value) {
 			// - range check
 			assert(pos >= 0 && pos < size);
 			
@@ -228,7 +228,7 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeList
 		}
 		
 		// - removes element at given position
-		E remove(int pos) {
+		E remove(final int pos) {
 			// - range check
 			assert(pos >= 0 && pos < size);
 			
@@ -253,7 +253,7 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeList
 		
 		// - returns element at given position
 		@SuppressWarnings("unchecked")
-		E get(int pos) {
+		E get(final int pos) {
 			// - range check
 			assert(pos >= 0 && pos < size);
 			
@@ -476,7 +476,7 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeList
 	}
 
 	// - "add" method without range and capacity checks
-	private void fastAdd(long index, E element) {
+	private void fastAdd(final long index, E element) {
 		modCount++;
 		int blockIndex = (int) (index >>> blockAddressBits);
 		int valueIndex = (int) (index & (-1L >>> -blockAddressBits));
@@ -571,7 +571,7 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeList
 	}
 
 	// - "get" method without range check
-	private E fastGet(long index) {
+	private E fastGet(final long index) {
 		int blockIndex = (int) (index >>> blockAddressBits);
 		int valueIndex = (int) (index & (-1L >>> -blockAddressBits));
 		return data[blockIndex].get(valueIndex);
@@ -592,7 +592,7 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeList
 	}
 
 	// - "add" method without range check
-	private E fastSet(long index, E element) {
+	private E fastSet(final long index, E element) {
 		int blockIndex = (int) (index >>> blockAddressBits);
 		int valueIndex = (int) (index & (-1L >>> -blockAddressBits));
 		return data[blockIndex].set(valueIndex, element);
@@ -613,7 +613,7 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeList
 	}
 
 	// - "remove" method without range check
-	private E fastRemove(long index) {
+	private E fastRemove(final long index) {
 		modCount++;
 		int blockIndex = (int) (index >>> blockAddressBits);
 		int valueIndex = (int) (index & (-1L >>> -blockAddressBits));

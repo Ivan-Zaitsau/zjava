@@ -27,41 +27,7 @@ public class DynamicListTest {
 	// - edge cases
 	
 	@Test(timeout = 200)
-	@SuppressWarnings({ "unchecked", "rawtypes" })
-	public void containsItself01Test() {
-		// - 1st case : simple list containing itself
-		List list = new DynamicList();
-		list.addAll(Arrays.asList(0, list, 1));
-		
-		// - positional checks
-		assertTrue(list == list.get(1));
-		assertTrue(list.equals(list.get(1)));
-		assertEquals(list, list.toArray()[1]);
-		assertEquals(list, list.toArray(new Object[0])[1]);
-		assertEquals(list, list.toArray(new Object[3])[1]);
-		// - search operations
-		assertTrue(list.contains(list));
-		assertTrue(list.containsAll(list));
-		assertEquals(1, list.indexOf(list));
-		assertEquals(1, list.lastIndexOf(list));
-		// - clone testing
-		List clone = (List)((DynamicList)list).clone();
-		assertFalse(list == clone);
-		assertTrue(list.getClass() == clone.getClass());
-		assertTrue(list.equals(clone));
-		clone.add(0, -1);
-		assertFalse(list.equals(clone));
-		assertTrue(list.get(1) == clone.get(2));
-		// - basic Object methods
-		assertNotNull(list.toString());
-		// - check&remove operations
-		assertFalse(list.retainAll(list));
-		assertTrue(list.removeAll(list));
-		assertTrue(list.isEmpty());
-	}
-	
-	@Test(timeout = 200)
-	public void iteratorTest01() {
+	public void iteratorNextOnEmptyListThrowsNoSuchElementException() {
 		try {
 			actual.iterator().next();
 		}
@@ -73,65 +39,167 @@ public class DynamicListTest {
 	}
 	
 	@Test(timeout = 200)
-	public void nullTest01() {
-		int exceptionsCount = 0;
-		// - 1
+	public void ensureNullSupportForAllBasicOperations() {
 		try {
+			actual.add(null);
 			actual.add(null);
 		}
 		catch (NullPointerException npe) {
-			exceptionsCount++;
+			fail();
 		}
-		// - 2
 		try {
-			actual.addAll(Arrays.asList(1, null, 1));
+			actual.set(0, null);
 		}
 		catch (NullPointerException npe) {
-			exceptionsCount++;
+			fail();
 		}
-		// - 3
+		try {
+			actual.remove(null);
+		}
+		catch (NullPointerException npe) {
+			fail();
+		}
+		try {
+			assertNull(actual.get(0));
+		}
+		catch (NullPointerException npe) {
+			fail();
+		}
 		try {
 			assertTrue(actual.contains(null));
 		}
 		catch (NullPointerException npe) {
-			exceptionsCount++;
+			fail();
 		}
-		// - 4
+	}
+	
+	@Test(timeout = 200)
+	public void ensureNullSupportForAllPositionalOperations() {
 		try {
-			assertEquals(actual.indexOf(null), 0);
+			actual.add(null);
+			actual.add(null);
 		}
 		catch (NullPointerException npe) {
-			exceptionsCount++;
+			fail();
 		}
-		// - 5
 		try {
-			assertEquals(actual.lastIndexOf(null), 2);
+			assertEquals(0, actual.indexOf(null));
 		}
 		catch (NullPointerException npe) {
-			exceptionsCount++;
+			fail();
 		}
-		// - 6
 		try {
-			actual.retainAll(Arrays.asList((Integer)null));
+			assertEquals(1, actual.lastIndexOf(null));
 		}
 		catch (NullPointerException npe) {
-			exceptionsCount++;
+			fail();
 		}
-		// - 7
+	}
+
+	@Test(timeout = 200)
+	public void ensureNullSupportForAllBulkOperations() {
 		try {
-			actual.removeAll(Arrays.asList((Integer)null));
+			assertTrue(actual.addAll(Arrays.asList(null, null, 1)));
 		}
 		catch (NullPointerException npe) {
-			exceptionsCount++;
+			fail();
 		}
-		assertTrue(actual.isEmpty());
-		assertTrue(exceptionsCount == 0 || exceptionsCount == 7);
+		try {
+			assertTrue(actual.containsAll(Arrays.asList(null, 1)));
+		}
+		catch (NullPointerException npe) {
+			fail();
+		}
+		try {
+			assertTrue(actual.removeAll(Arrays.asList(null, 2)));
+		}
+		catch (NullPointerException npe) {
+			fail();
+		}
+		try {
+			assertTrue(actual.retainAll(Arrays.asList(null, 2)));
+		}
+		catch (NullPointerException npe) {
+			fail();
+		}
+	}
+
+	@Test(timeout = 200)
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	public void toStringOnListWhichContainsInself() {
+		List list = new DynamicList();
+		list.addAll(Arrays.asList(0, list, 1));
+		assertNotNull(list.toString());
+	}
+
+	@Test(timeout = 200)
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	public void containsOnListWhichContainsInself() {
+		List list = new DynamicList();
+		list.addAll(Arrays.asList(0, list, 1));
+		assertTrue(list.contains(list));
+	}
+
+	@Test(timeout = 200)
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	public void containsAllOnListWhichContainsInself() {
+		List list = new DynamicList();
+		list.addAll(Arrays.asList(0, list, 1));
+		assertTrue(list.containsAll(Arrays.asList(list)));
+	}
+
+	@Test(timeout = 200)
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	public void indexOfOnListWhichContainsInself() {
+		List list = new DynamicList();
+		list.addAll(Arrays.asList(0, list, 1, list));
+		assertEquals(1, list.indexOf(list));
+	}
+
+	@Test(timeout = 200)
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	public void lastIndexOfOnListWhichContainsInself() {
+		List list = new DynamicList();
+		list.addAll(Arrays.asList(0, list, 1, list));
+		assertEquals(3, list.lastIndexOf(list));
+	}
+
+	@Test(timeout = 200)
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	public void cloneOnListWhichContainsInself() {
+		List list = new DynamicList();
+		list.addAll(Arrays.asList(0, list, 1, list));
+		List clone = (List)(((DynamicList)list).clone());
+		assertFalse(list == clone);
+		assertTrue(list.getClass() == clone.getClass());
+		assertTrue(list.equals(clone));
+		clone.add(0, -1);
+		assertFalse(list.equals(clone));
+		assertTrue(list.get(1) == clone.get(2));
+	}
+
+	@Test//(timeout = 200)
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	public void retainAllOnListWhichContainsInself() {
+		List list = new DynamicList();
+		list.addAll(Arrays.asList(0, list, 1, list));
+		assertTrue(list.retainAll(Arrays.asList(list)));
+		assertEquals(Arrays.asList(list, list), list);
+	}
+
+	@Test//(timeout = 200)
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	public void removeAllOnListWhichContainsInself() {
+		List list = new DynamicList();
+		list.addAll(Arrays.asList(0, list, 1, list));
+		assertTrue(list.removeAll(Arrays.asList(list)));
+		assertEquals(Arrays.asList(0, 1), list);
 	}
 
 	// - basic operations tests
 	
 	@Test(timeout = 200)
-	public void addRemoveTest01() {
+	public void basicAddCheck() {
 		for (int i = 0; i < 1000; i++) {
 			Integer value = i;
 			expected.add(value);
@@ -145,44 +213,77 @@ public class DynamicListTest {
 			actual.add(index, value);
 		}
 		assertEquals(expected, actual);
-		for (int i = 0; i < 2000; i += 12) {
-			Integer value = i ^ (i >> 1);
-			expected.add(i, value);
-			actual.add(i, value);
-			assertEquals(expected, actual);
+	}
+	
+	@Test(timeout=200)
+	public void basicToArrayCheck() {
+		for (int i = 0; i < 1000; i++) {
+			Integer value = i;
+			expected.add(value);
+			actual.add(value);
 		}
-		for (int i = 0; i < 2000; i += 3) {
+		for (int i = 0; i < 1000; i++) {
+			int index = 1000-i;
+			Integer value = i;
+			expected.add(index, value);
+			actual.add(index, value);
+		}
+		assertArrayEquals(expected.toArray(), actual.toArray());
+	}
+
+	
+	@Test(timeout=200)
+	public void basicRemoveCheck() {
+		for (int i = 0; i < 1000; i++) {
+			Integer value = i;
+			expected.add(value);
+			actual.add(value);
+		}
+		for (int i = 0; i < 1000; i++) {
+			int index = 1000-i;
+			Integer value = i;
+			expected.add(index, value);
+			actual.add(index, value);
+		}
+		for (int i = 1; i < 2000; i += 3) {
 			int index = 2000 - i;
 			assertEquals(expected.remove(index), actual.remove(index));
 		}
 		assertArrayEquals(expected.toArray(), actual.toArray());
-		for (int i = 0, l = expected.size(); i < l; i++) {
-			assertEquals(expected.remove(0), actual.remove(0));
-		}
-		assertTrue(actual.isEmpty());
 	}
 	
 	@Test(timeout = 200)
-	public void addRemoveTest02() {
-		List<Integer> sample = Arrays.asList(2, 3, 5, null, 7, 13, 1, 8, null);
-		expected.addAll(sample);
-		actual.addAll(sample);
+	public void basicAddAllCheck() {
+		List<Integer> valuesToAdd = Arrays.asList(2, 3, 5, null, 7, 13, 1, 8, null);
+		expected.addAll(valuesToAdd);
+		actual.addAll(valuesToAdd);
 		assertEquals(expected, actual);
-		expected.remove(1);
-		actual.remove(1);
-		assertEquals(expected, actual);
-		expected.add(1);
-		actual.add(1);
-		assertEquals(expected, actual);
-		expected.addAll(sample);
-		actual.addAll(sample);
-		assertEquals(expected, actual);
-		for (int i = 0; i < expected.size(); i++)
-			assertEquals(expected.get(i), actual.get(i));
 	}
-	
+
 	@Test(timeout = 200)
-	public void addRemoveTest03() {
+	public void basicRemoveAllCheck() {
+		List<Integer> valuesToAdd = Arrays.asList(2, 3, 5, null, 7, 13, 1, 8, null);
+		expected.addAll(valuesToAdd);
+		actual.addAll(valuesToAdd);
+		List<Integer> valuesToRemove = Arrays.asList(2, 5, 1, null, 2);
+		expected.removeAll(valuesToRemove);
+		actual.removeAll(valuesToRemove);
+		assertEquals(expected, actual);
+	}
+
+	@Test(timeout = 200)
+	public void basicRetainAllCheck() {
+		List<Integer> valuesToAdd = Arrays.asList(2, 3, 5, null, 7, 13, 1, 8, null);
+		expected.addAll(valuesToAdd);
+		actual.addAll(valuesToAdd);
+		List<Integer> valuesToRemove = Arrays.asList(2, 5, 1, null, 2);
+		expected.removeAll(valuesToRemove);
+		actual.removeAll(valuesToRemove);
+		assertEquals(expected, actual);
+	}
+
+	@Test(timeout = 200)
+	public void complexBulkOperationsCheck() {
 		List<Integer> sample0 = Arrays.asList(7, 7, 7, 7, 7, 7, 7);
 		List<Integer> sample1 = Arrays.asList(1, 2, 1, 2, 1, 2, 1, 2);
 		List<Integer> sample2 = Arrays.asList(3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19);
@@ -205,13 +306,13 @@ public class DynamicListTest {
 		actual.addAll(14, sample2);	
 		assertEquals(expected, actual);
 		expected.addAll(4, sample3);
-		actual.addAll(4, sample3);			
+		actual.addAll(4, sample3);
 		assertEquals(expected, actual);
 		expected.addAll(8, sample3);
-		actual.addAll(8, sample3);			
+		actual.addAll(8, sample3);
 		assertEquals(expected, actual);
 		expected.addAll(16, sample3);
-		actual.addAll(16, sample3);			
+		actual.addAll(16, sample3);
 		assertEquals(expected, actual);
 		expected.addAll(32, sample3);
 		actual.addAll(32, sample3);
@@ -234,7 +335,7 @@ public class DynamicListTest {
 	}
 	
 	@Test(timeout = 200)
-	public void sublistTest01() {
+	public void subListCheck() {
 		List<Integer> sample0 = Arrays.asList(7, 7, 7, 7, 7, 7, 7);
 		List<Integer> sample1 = Arrays.asList(1, 2, 1, 2, 1, 2, 1, 2);
 		List<Integer> sample2 = Arrays.asList(3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19);
@@ -284,13 +385,13 @@ public class DynamicListTest {
 		for (int i = 0; i < 1000; i++) {
 			actual.add(i);
 		}
-		for (int i = 0; i < 500000; i++) {
+		for (int i = 0; i < 200000; i++) {
 			actual.add(32 + (i & 1), i & 63);
 		}
-		for (int i = 0; i < 250000; i++) {
-			actual.remove(250000 - i);
+		for (int i = 0; i < 100000; i++) {
+			actual.remove(100000 - i);
 		}
-		for (int i = 0; i < 250000; i++) {
+		for (int i = 0; i < 100000; i++) {
 			actual.remove(i & 511);
 		}
 		assertTrue(actual.size() == 1000);
@@ -308,7 +409,7 @@ public class DynamicListTest {
 	}
 	
 	@Test(timeout = 1000)
-	public void performanceTestAssureThatThereAreNoExcessiveMemoryThrashingDuringRemovalsAtTheEnd() {
+	public void performanceTestAssureThatThereAreNoExcessiveMemoryThrashingDuringRemovalsAtTheEndOfBlock() {
 		for (int i = 0; i < 127; i++)
 			actual.add(i);
 		Integer zero = 0;
