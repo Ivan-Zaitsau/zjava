@@ -178,7 +178,7 @@ public class DynamicListTest {
 		assertTrue(list.get(1) == clone.get(2));
 	}
 
-	@Test//(timeout = 200)
+	@Test(timeout = 200)
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public void retainAllOnListWhichContainsInself() {
 		List list = new DynamicList();
@@ -187,7 +187,7 @@ public class DynamicListTest {
 		assertEquals(Arrays.asList(list, list), list);
 	}
 
-	@Test//(timeout = 200)
+	@Test(timeout = 200)
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public void removeAllOnListWhichContainsInself() {
 		List list = new DynamicList();
@@ -380,7 +380,7 @@ public class DynamicListTest {
 	
 	// - performance tests
 	
-	@Test(timeout = 2000)
+	@Test(timeout = 1000)
 	public void performanceTestInsertionsAndRemovalsAtTheBeginningAndTheMid() {
 		for (int i = 0; i < 1000; i++) {
 			actual.add(i);
@@ -410,14 +410,12 @@ public class DynamicListTest {
 	
 	@Test(timeout = 1000)
 	public void performanceTestAssureThatThereAreNoExcessiveMemoryThrashingDuringRemovalsAtTheEndOfBlock() {
-		for (int i = 0; i < 127; i++)
-			actual.add(i);
 		Integer zero = 0;
-		for (int i = 0; i < 5000000; i++) {
+		for (int i = 0; i < 127; i++)
+			actual.add(zero);
+		for (int i = 0; i < 10000000; i++) {
 			actual.add(zero);
 			actual.add(zero);
-			actual.add(zero);
-			actual.remove(129);
 			actual.remove(127);
 			actual.remove(127);
 		}

@@ -280,7 +280,7 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeList
 	private transient HugeList<E> hugeView;
 	
 	/** Null-safe access to data block with initialization.*/
-	private Block<E> data(int index) {
+	private Block<E> data(final int index) {
 		if (data[index] == null)
 			data[index] = new Block<E>(1 << blockAddressBits);
 		return data[index];
@@ -343,12 +343,12 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeList
         return "Index: " + index + ", Size: " + size;
     }
 	
-	private void rangeCheck(long index) {
+	private void rangeCheck(final long index) {
 		if (index < 0 || index >= size)
 			throw new IndexOutOfBoundsException(outOfBoundsMsg(index));
 	}
 
-	private void rangeCheckForAdd(long index) {
+	private void rangeCheckForAdd(final long index) {
 		if (index < 0 || index > size)
 			throw new IndexOutOfBoundsException(outOfBoundsMsg(index));
 	}
@@ -684,7 +684,7 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeList
 				modified = true;
 			}
 		}
-		return modified;		
+		return modified;
 	}
 	
 	/**
