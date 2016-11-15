@@ -198,6 +198,8 @@ final public class Collectionz {
 		return contains;
 	}
 	
+	private static final int TO_STRING_SIZE_THRESHOLD = 4000;
+	
     /**
      * Returns a string representation of the given <tt>Iterable</tt>.<br>
      * The string representation consists of a list of the <tt>Iterable</tt>'s
@@ -221,7 +223,7 @@ final public class Collectionz {
         for (Iterator<?> iter = c.iterator(); iter.hasNext(); iter.next()) {
         	Object e = iter.next();
             sb.append(e == c ? onSelf : e);
-            if (sb.length() > 1000) {
+            if (sb.length() > TO_STRING_SIZE_THRESHOLD) {
             	sb.append(',').append(" ...");
             	break;
             }

@@ -54,6 +54,7 @@ final public class Treez {
 		private Stack<Iterator<T>> iteratorsStack;
 		private T currentNode;		
 		private NodeFilter<? super T> filter;
+		private boolean currentNodeReturned;
 		private boolean filterApplied;
 		private boolean iterationDone;
 
@@ -76,6 +77,7 @@ final public class Treez {
 			else {
 				currentNode = iteratorsStack.peek().next();
 				filterApplied = false;
+				currentNodeReturned = false;
 			}
 		}
 		
@@ -83,9 +85,7 @@ final public class Treez {
 			while (true) {
 				if (iterationDone)
 					return false;
-				if (filterApplied)
-					return true;
-				if (!filter.isIgnored(currentNode)) {
+				if (!currentNodeReturned && (filterApplied || !filter.isIgnored(currentNode))) {
 					filterApplied = true;
 					return true;
 				}
@@ -98,8 +98,8 @@ final public class Treez {
 				throw new NoSuchElementException();
 			
 			T result = currentNode;
+			currentNodeReturned = true;
 			iteratorsStack.push(currentNode.getChildren().iterator());
-			moveToNext();
 			return result;
 		}
 
@@ -151,6 +151,7 @@ final public class Treez {
 		private Queue<T> nodesQueue = new LinkedList<T>();
 		private T currentNode;		
 		private NodeFilter<? super T> filter;
+		private boolean currentNodeReturned;
 		private boolean filterApplied;
 		private boolean iterationDone;
 
@@ -178,6 +179,7 @@ final public class Treez {
 			else {
 				currentNode = currentIterator.next();
 				filterApplied = false;
+				currentNodeReturned = false;
 			}
 		}
 		
@@ -185,9 +187,7 @@ final public class Treez {
 			while (true) {
 				if (iterationDone)
 					return false;
-				if (filterApplied)
-					return true;
-				if (!filter.isIgnored(currentNode)) {
+				if (!currentNodeReturned && (filterApplied || !filter.isIgnored(currentNode))) {
 					filterApplied = true;
 					return true;
 				}
@@ -199,8 +199,8 @@ final public class Treez {
 			if (!hasNext())
 				throw new NoSuchElementException();
 			T result = currentNode;
+			currentNodeReturned = true;
 			nodesQueue.add(currentNode);
-			moveToNext();
 			return result;
 		}
 
