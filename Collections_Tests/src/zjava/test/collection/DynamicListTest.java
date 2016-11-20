@@ -411,13 +411,14 @@ public class DynamicListTest {
 	@Test(timeout = 1000)
 	public void performanceTestAssureThatThereAreNoExcessiveMemoryThrashingDuringRemovalsAtTheEndOfBlock() {
 		Integer zero = 0;
-		for (int i = 0; i < 127; i++)
+		int almostFilledBlockOnIndex = 65536-1024-1;
+		for (int i = 0; i < almostFilledBlockOnIndex; i++)
 			actual.add(zero);
-		for (int i = 0; i < 10000000; i++) {
+		for (int i = 0; i < 5000000; i++) {
 			actual.add(zero);
 			actual.add(zero);
-			actual.remove(127);
-			actual.remove(127);
+			actual.remove(almostFilledBlockOnIndex);
+			actual.remove(almostFilledBlockOnIndex);
 		}
 	}
 }

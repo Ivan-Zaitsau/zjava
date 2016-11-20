@@ -137,12 +137,12 @@ public class CharList implements Cloneable, java.io.Serializable {
 		}
 		
 		// - returns "physical" index for given "logical" position
-		int index(int pos) {
+		int index(final int pos) {
 			return (offset + pos) & (values.length - 1);
 		}
 
 		// - appends given value to the beginning of the block
-		char addFirst(char value) {
+		char addFirst(final char value) {
 			offset = index(-1);
 			char last = values[offset];
 			values[offset] = value;
@@ -153,7 +153,7 @@ public class CharList implements Cloneable, java.io.Serializable {
 		}
 		
 		// - appends given value to the end of the block
-		void addLast(char value) {
+		void addLast(final char value) {
 			if (size == values.length)
 				return;
 			values[index(size)] = value;
@@ -161,7 +161,7 @@ public class CharList implements Cloneable, java.io.Serializable {
 		}
 		
 		// - inserts given value at given position
-		char add(int pos, char value) {
+		char add(final int pos, final char value) {
 			// - range check
 			assert(pos >= 0 && pos <= size);
 			
@@ -183,7 +183,7 @@ public class CharList implements Cloneable, java.io.Serializable {
 		}
 
 		// - replaces element at given position with given value
-		char set(int pos, char value) {
+		char set(final int pos, final char value) {
 			// - range check
 			assert(pos >= 0 && pos < size);
 			
@@ -205,7 +205,7 @@ public class CharList implements Cloneable, java.io.Serializable {
 		}
 		
 		// - removes element at given position
-		char remove(int pos) {
+		char remove(final int pos) {
 			// - range check
 			assert(pos >= 0 && pos < size);
 			
@@ -226,7 +226,7 @@ public class CharList implements Cloneable, java.io.Serializable {
 		}
 		
 		// - returns element at given position
-		char get(int pos) {
+		char get(final int pos) {
 			// - range check
 			assert(pos >= 0 && pos < size);
 			
@@ -253,18 +253,18 @@ public class CharList implements Cloneable, java.io.Serializable {
         return "Index: " + index + ", Size: " + size;
     }
 	
-	private void rangeCheck(long index) {
+	private void rangeCheck(final long index) {
 		if (index < 0 || index >= size)
 			throw new IndexOutOfBoundsException(outOfBoundsMsg(index));
 	}
 
-	private void rangeCheckForAdd(long index) {
+	private void rangeCheckForAdd(final long index) {
 		if (index < 0 || index > size)
 			throw new IndexOutOfBoundsException(outOfBoundsMsg(index));
 	}
 
 	/** Null-safe access to data block with initialization.*/
-	private Block data(int index) {
+	private Block data(final int index) {
 		if (data[index] == null)
 			data[index] = new Block(1 << blockAddressBits);
 		return data[index];

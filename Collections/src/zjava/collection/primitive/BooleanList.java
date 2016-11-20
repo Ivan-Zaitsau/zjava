@@ -3,7 +3,7 @@ package zjava.collection.primitive;
 import java.util.Arrays;
 
 /**
- * Resizable dynamic array of primitive long values.
+ * Resizable dynamic array of primitive boolean values.
  *
  * <p>The <tt>size</tt>, <tt>get</tt>, <tt>set</tt> operations run in
  * constant time. The <tt>add</tt> operation runs in <i>amortized constant
@@ -22,14 +22,14 @@ import java.util.Arrays;
  * @author Ivan Zaitsau
  * 
  */
-public class LongList implements Cloneable, java.io.Serializable {
+public class BooleanList implements Cloneable, java.io.Serializable {
 
 	static private final long serialVersionUID = 201503092100L;
 	
 	/** Actual initial block size is 2<sup>INITIAL_BLOCK_ADDRESS_BITS</sup> */
 	static private final int INITIAL_BLOCK_ADDRESS_BITS = 5;
 	
-	/** Number of blocks on LongList initialization.
+	/** Number of blocks on BooleanList initialization.
 	 * <br> <b>Note:</b> Must be even number due to some simplifications and assumptions made in the code*/
 	static private final int INITIAL_BLOCKS_COUNT = 2;
 	
@@ -39,7 +39,7 @@ public class LongList implements Cloneable, java.io.Serializable {
 
     /**
 	 * Internal storage block.<br>
-	 * Maintains up to <tt>capacity</tt> long values.<br>
+	 * Maintains up to <tt>capacity</tt> boolean values.<br>
 	 * If there are more elements than <tt>capacity</tt> after <tt>add</tt> operation,
 	 * last element is removed from the block and returned from <tt>add</tt> method.<br>
 	 * 
@@ -98,7 +98,7 @@ public class LongList implements Cloneable, java.io.Serializable {
 		
 		private int offset;
 		private int size;
-		private long[] values;
+		private boolean[] values;
 
 		Block(int capacity) {
 			// - capacity must be even power of 2
@@ -106,11 +106,11 @@ public class LongList implements Cloneable, java.io.Serializable {
 			
 			this.offset = 0;
 			this.size = 0;
-			this.values = new long[capacity];
+			this.values = new boolean[capacity];
 		}
 		
 		// - copies "count" values of this block starting from "srcPos" to array starting from "trgPos" index
-		int copyToArray(long[] array, int trgPos, int srcPos, int count) {
+		int copyToArray(boolean[] array, int trgPos, int srcPos, int count) {
 			if (srcPos >= values.length | count <= 0)
 				return 0;
 			if (srcPos + count > values.length)
@@ -128,7 +128,7 @@ public class LongList implements Cloneable, java.io.Serializable {
 		}
 
 		// - copies all values of this block to given array starting from "pos" index
-		int copyToArray(long[] array, int pos) {
+		int copyToArray(boolean[] array, int pos) {
 			return copyToArray(array, pos, 0, size);
 		}
 
@@ -142,9 +142,9 @@ public class LongList implements Cloneable, java.io.Serializable {
 		}
 
 		// - appends given value to the beginning of the block
-		long addFirst(final long value) {
+		boolean addFirst(final boolean value) {
 			offset = index(-1);
-			long last = values[offset];
+			boolean last = values[offset];
 			values[offset] = value;
 			if (size < values.length) {
 				size++;
@@ -153,7 +153,7 @@ public class LongList implements Cloneable, java.io.Serializable {
 		}
 		
 		// - appends given value to the end of the block
-		void addLast(final long value) {
+		void addLast(final boolean value) {
 			if (size == values.length)
 				return;
 			values[index(size)] = value;
@@ -161,11 +161,11 @@ public class LongList implements Cloneable, java.io.Serializable {
 		}
 		
 		// - inserts given value at given position
-		long add(final int pos, final long value) {
+		boolean add(final int pos, final boolean value) {
 			// - range check
 			assert(pos >= 0 && pos <= size);
 			
-			long last = (size == values.length) ? values[index(-1)] : 0;
+			boolean last = (size == values.length) ? values[index(-1)] : false;
 			if (2*pos < size) {
 				offset = index(-1);
 				for (int i = 0; i < pos; i++) {
@@ -183,33 +183,33 @@ public class LongList implements Cloneable, java.io.Serializable {
 		}
 
 		// - replaces element at given position with given value
-		long set(final int pos, final long value) {
+		boolean set(final int pos, final boolean value) {
 			// - range check
 			assert(pos >= 0 && pos < size);
 			
 			int i = index(pos);
-			long replaced = values[i];
+			boolean replaced = values[i];
 			values[i] = value;
 			return replaced;
 		}
 		
 		// - removes first element of the block
-		long removeFirst() {
+		boolean removeFirst() {
 			// - range check
 			assert(size > 0);
 			
-			long removed = values[offset];
+			boolean removed = values[offset];
 			offset = index(1);
 			size--;
 			return removed;
 		}
 		
 		// - removes element at given position
-		long remove(final int pos) {
+		boolean remove(final int pos) {
 			// - range check
 			assert(pos >= 0 && pos < size);
 			
-			long removed = values[index(pos)];
+			boolean removed = values[index(pos)];
 			if (2*pos < size) {
 				for (int i = pos; i > 0; i--) {
 					values[index(i)] = values[index(i-1)];					
@@ -226,7 +226,7 @@ public class LongList implements Cloneable, java.io.Serializable {
 		}
 		
 		// - returns element at given position
-		long get(final int pos) {
+		boolean get(final int pos) {
 			// - range check
 			assert(pos >= 0 && pos < size);
 			
@@ -264,7 +264,7 @@ public class LongList implements Cloneable, java.io.Serializable {
 	}
 
 	/** Null-safe access to data block with initialization.*/
-	private Block data(int index) {
+	private Block data(final int index) {
 		if (data[index] == null)
 			data[index] = new Block(1 << blockAddressBits);
 		return data[index];
@@ -291,7 +291,6 @@ public class LongList implements Cloneable, java.io.Serializable {
 			capacity = (long) data.length << blockAddressBits;
 		}
 	}
-
 	
 	private void compact() {
 		if (data.length <= INITIAL_BLOCKS_COUNT)
@@ -332,14 +331,14 @@ public class LongList implements Cloneable, java.io.Serializable {
 	/**
      * Constructs an empty list with an initial capacity of 32 elements.
      */
-	public LongList() {
+	public BooleanList() {
 		init();
 	}
 
 	/**
      * Constructs an empty list with at least specified capacity.
      */
-	public LongList(long initialCapacity) {
+	public BooleanList(long initialCapacity) {
 		init(initialCapacity);
 	}
 
@@ -360,7 +359,7 @@ public class LongList implements Cloneable, java.io.Serializable {
      * @throws IndexOutOfBoundsException if the index is out of range
      *         (<tt>index &lt; 0 || index &gt;= size()</tt>)
      */
-	public long get(long index) {
+	public boolean get(long index) {
 		rangeCheck(index);
 		int blockIndex = (int) (index >>> blockAddressBits);
 		int valueIndex = (int) (index & (-1L >>> -blockAddressBits));
@@ -377,7 +376,7 @@ public class LongList implements Cloneable, java.io.Serializable {
      * @throws IndexOutOfBoundsException if the index is out of range
      *         (<tt>index &lt; 0 || index &gt;= size()</tt>)
      */
-	public long set(long index, long value) {
+	public boolean set(long index, boolean value) {
 		rangeCheck(index);
 		int blockIndex = (int) (index >>> blockAddressBits);
 		int valueIndex = (int) (index & (-1L >>> -blockAddressBits));
@@ -389,7 +388,7 @@ public class LongList implements Cloneable, java.io.Serializable {
      *
      * @param value element to be appended to this list
      */
-	public void add(long value) {
+	public void add(boolean value) {
 		ensureCapacity(size + 1);
 		int blockIndex = (int) (size >>> blockAddressBits);
 		data(blockIndex).addLast(value);
@@ -406,7 +405,7 @@ public class LongList implements Cloneable, java.io.Serializable {
      * @throws IndexOutOfBoundsException if the index is out of range
      *         (<tt>index &lt; 0 || index &gt;= size()</tt>)
      */
-	public void add(long index, long value) {
+	public void add(long index, boolean value) {
 		rangeCheckForAdd(index);
 		ensureCapacity(size + 1);
 		int blockIndex = (int) (index >>> blockAddressBits);
@@ -435,11 +434,11 @@ public class LongList implements Cloneable, java.io.Serializable {
      * @throws IndexOutOfBoundsException if the index is out of range
      *         (<tt>index &lt; 0 || index &gt;= size()</tt>)
      */
-	public long remove(long index) {
+	public boolean remove(long index) {
 		rangeCheck(index);
 		int blockIndex = (int) (index >>> blockAddressBits);
 		int valueIndex = (int) (index & (-1L >>> -blockAddressBits));
-		long removed = data[blockIndex].remove(valueIndex);
+		boolean removed = data[blockIndex].remove(valueIndex);
 		while (++blockIndex < data.length && data[blockIndex] != null && data[blockIndex].size() > 0) {
 			data[blockIndex-1].addLast(data[blockIndex].removeFirst());
 		}
@@ -464,13 +463,13 @@ public class LongList implements Cloneable, java.io.Serializable {
 	}
 
     /**
-     * Returns a copy of this <tt>LongList</tt> instance.
+     * Returns a copy of this <tt>BooleanList</tt> instance.
      *
-     * @return a clone of this <tt>LongList</tt> instance
+     * @return a clone of this <tt>BooleanList</tt> instance
      */
 	public Object clone() {
     	try {
-			LongList clone = (LongList) super.clone();
+			BooleanList clone = (BooleanList) super.clone();
 			clone.data = new Block[data.length];
     		for (int i = 0; i < data.length && data[i] != null; i++) {
     			clone.data[i] = (Block) data[i].clone();
@@ -482,5 +481,4 @@ public class LongList implements Cloneable, java.io.Serializable {
     		throw new InternalError();
 		}
     }
-
 }

@@ -17,6 +17,8 @@ import java.util.Iterator;
  */
 final public class Collectionz {
 
+	private static final int TO_STRING_SIZE_THRESHOLD = 4000;
+	
 	/**
 	 * Performs binary search of the specified object on given <tt>HugeArray</tt>
 	 * instance and returns index of position right after the last element which is
@@ -197,9 +199,7 @@ final public class Collectionz {
 		catch (NullPointerException ignore) {};
 		return contains;
 	}
-	
-	private static final int TO_STRING_SIZE_THRESHOLD = 4000;
-	
+
     /**
      * Returns a string representation of the given <tt>Iterable</tt>.<br>
      * The string representation consists of a list of the <tt>Iterable</tt>'s
@@ -224,7 +224,7 @@ final public class Collectionz {
         	Object e = iter.next();
             sb.append(e == c ? onSelf : e);
             if (sb.length() > TO_STRING_SIZE_THRESHOLD) {
-            	sb.append(',').append(" ...");
+            	sb.append(", ...");
             	break;
             }
             if (iter.hasNext())

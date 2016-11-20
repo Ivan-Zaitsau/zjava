@@ -137,12 +137,12 @@ public class $1List implements Cloneable, java.io.Serializable {
 		}
 		
 		// - returns "physical" index for given "logical" position
-		int index(int pos) {
+		int index(final int pos) {
 			return (offset + pos) & (values.length - 1);
 		}
 
 		// - appends given value to the beginning of the block
-		$0 addFirst($0 value) {
+		$0 addFirst(final $0 value) {
 			offset = index(-1);
 			$0 last = values[offset];
 			values[offset] = value;
@@ -153,7 +153,7 @@ public class $1List implements Cloneable, java.io.Serializable {
 		}
 		
 		// - appends given value to the end of the block
-		void addLast($0 value) {
+		void addLast(final $0 value) {
 			if (size == values.length)
 				return;
 			values[index(size)] = value;
@@ -161,7 +161,7 @@ public class $1List implements Cloneable, java.io.Serializable {
 		}
 		
 		// - inserts given value at given position
-		$0 add(int pos, $0 value) {
+		$0 add(final int pos, final $0 value) {
 			// - range check
 			assert(pos >= 0 && pos <= size);
 			
@@ -183,7 +183,7 @@ public class $1List implements Cloneable, java.io.Serializable {
 		}
 
 		// - replaces element at given position with given value
-		$0 set(int pos, $0 value) {
+		$0 set(final int pos, final $0 value) {
 			// - range check
 			assert(pos >= 0 && pos < size);
 			
@@ -205,7 +205,7 @@ public class $1List implements Cloneable, java.io.Serializable {
 		}
 		
 		// - removes element at given position
-		$0 remove(int pos) {
+		$0 remove(final int pos) {
 			// - range check
 			assert(pos >= 0 && pos < size);
 			
@@ -226,7 +226,7 @@ public class $1List implements Cloneable, java.io.Serializable {
 		}
 		
 		// - returns element at given position
-		$0 get(int pos) {
+		$0 get(final int pos) {
 			// - range check
 			assert(pos >= 0 && pos < size);
 			
@@ -253,18 +253,18 @@ public class $1List implements Cloneable, java.io.Serializable {
         return "Index: " + index + ", Size: " + size;
     }
 	
-	private void rangeCheck(long index) {
+	private void rangeCheck(final long index) {
 		if (index < 0 || index >= size)
 			throw new IndexOutOfBoundsException(outOfBoundsMsg(index));
 	}
 
-	private void rangeCheckForAdd(long index) {
+	private void rangeCheckForAdd(final long index) {
 		if (index < 0 || index > size)
 			throw new IndexOutOfBoundsException(outOfBoundsMsg(index));
 	}
 
 	/** Null-safe access to data block with initialization.*/
-	private Block data(int index) {
+	private Block data(final int index) {
 		if (data[index] == null)
 			data[index] = new Block(1 << blockAddressBits);
 		return data[index];
@@ -291,7 +291,6 @@ public class $1List implements Cloneable, java.io.Serializable {
 			capacity = (long) data.length << blockAddressBits;
 		}
 	}
-
 	
 	private void compact() {
 		if (data.length <= INITIAL_BLOCKS_COUNT)

@@ -6,6 +6,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
 
+import zjava.collection.primitive.BooleanList;
 import zjava.collection.primitive.ByteList;
 import zjava.collection.primitive.CharList;
 import zjava.collection.primitive.DoubleList;
@@ -525,6 +526,59 @@ final public class Wrapperz {
 		}
 	}
 
+	private static class BooleanListWrapper extends AbstractPrimitiveListWrapper<Boolean> implements List<Boolean>, Cloneable, java.io.Serializable {
+
+		private static final long serialVersionUID = 201504020400L;
+
+		private BooleanList list;
+		
+		private BooleanListWrapper(BooleanList list) {
+			this.list = list;
+		}
+		
+		long getSize() {
+			return list.size();
+		}
+
+		Boolean doGet(long index) {
+			return list.get(index);
+		}
+
+		Boolean doSet(long index, Boolean element) {
+			return list.set(index, element);
+		}
+
+		void doAdd(Boolean e) {
+			list.add(e);
+		}
+
+		void doAdd(long index, Boolean element) {
+			list.add(index, element);
+		}
+
+		Boolean doRemove(long index) {
+			return list.remove(index);
+		}
+
+		public void clear() {
+			list.clear();
+		}
+
+		public Object clone() {
+	    	try {
+	    		BooleanListWrapper clone = (BooleanListWrapper) super.clone();
+	    		clone.modCount = 0;
+	    		clone.hugeView = null;
+	    		clone.list = (BooleanList) list.clone();
+	    		return clone;
+			}
+	    	catch (CloneNotSupportedException e) {
+	    		// - should never be thrown since we are Cloneable
+	    		throw new InternalError();
+			}
+		}
+	}
+
 	public static List<Byte> asList(ByteList list) {
 		return new ByteListWrapper(list);
 	}
@@ -551,6 +605,10 @@ final public class Wrapperz {
 
 	public static List<Short> asList(ShortList list) {
 		return new ShortListWrapper(list);
+	}
+
+	public static List<Boolean> asList(BooleanList list) {
+		return new BooleanListWrapper(list);
 	}
 
 	private Wrapperz() {

@@ -137,12 +137,12 @@ public class DoubleList implements Cloneable, java.io.Serializable {
 		}
 		
 		// - returns "physical" index for given "logical" position
-		int index(int pos) {
+		int index(final int pos) {
 			return (offset + pos) & (values.length - 1);
 		}
 
 		// - appends given value to the beginning of the block
-		double addFirst(double value) {
+		double addFirst(final double value) {
 			offset = index(-1);
 			double last = values[offset];
 			values[offset] = value;
@@ -153,7 +153,7 @@ public class DoubleList implements Cloneable, java.io.Serializable {
 		}
 		
 		// - appends given value to the end of the block
-		void addLast(double value) {
+		void addLast(final double value) {
 			if (size == values.length)
 				return;
 			values[index(size)] = value;
@@ -161,7 +161,7 @@ public class DoubleList implements Cloneable, java.io.Serializable {
 		}
 		
 		// - inserts given value at given position
-		double add(int pos, double value) {
+		double add(final int pos, final double value) {
 			// - range check
 			assert(pos >= 0 && pos <= size);
 			
@@ -183,7 +183,7 @@ public class DoubleList implements Cloneable, java.io.Serializable {
 		}
 
 		// - replaces element at given position with given value
-		double set(int pos, double value) {
+		double set(final int pos, final double value) {
 			// - range check
 			assert(pos >= 0 && pos < size);
 			
@@ -205,7 +205,7 @@ public class DoubleList implements Cloneable, java.io.Serializable {
 		}
 		
 		// - removes element at given position
-		double remove(int pos) {
+		double remove(final int pos) {
 			// - range check
 			assert(pos >= 0 && pos < size);
 			
@@ -226,7 +226,7 @@ public class DoubleList implements Cloneable, java.io.Serializable {
 		}
 		
 		// - returns element at given position
-		double get(int pos) {
+		double get(final int pos) {
 			// - range check
 			assert(pos >= 0 && pos < size);
 			
@@ -253,12 +253,12 @@ public class DoubleList implements Cloneable, java.io.Serializable {
         return "Index: " + index + ", Size: " + size;
     }
 	
-	private void rangeCheck(long index) {
+	private void rangeCheck(final long index) {
 		if (index < 0 || index >= size)
 			throw new IndexOutOfBoundsException(outOfBoundsMsg(index));
 	}
 
-	private void rangeCheckForAdd(long index) {
+	private void rangeCheckForAdd(final long index) {
 		if (index < 0 || index > size)
 			throw new IndexOutOfBoundsException(outOfBoundsMsg(index));
 	}
