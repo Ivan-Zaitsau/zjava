@@ -43,7 +43,7 @@ public class BooleanArray implements Cloneable, java.io.Serializable {
         return "Index: " + index + ", Size: " + length;
     }
 	
-	private void rangeCheck(long index) {
+	private void rangeCheck(final long index) {
 		if (index < 0 | index >= length)
 			throw new IndexOutOfBoundsException(outOfBoundsMsg(index));
 	}
@@ -52,22 +52,30 @@ public class BooleanArray implements Cloneable, java.io.Serializable {
 	 * Sets value at specified position to <b>true</b>
 	 * 
 	 * @param index index of value to set to <b>true</b>
+     * @return the value previously at the specified position
      * @throws IndexOutOfBoundsException if the index is out of range
      */
-	public void setTrue(long index) {
+	public boolean setTrue(final long index) {
 		rangeCheck(index);
-		data[(int)(index >>> ADDRESS_BITS)] = PrimitiveBitSet.add(data[(int)(index >>> ADDRESS_BITS)], index);
+		final int di = (int)(index >>> ADDRESS_BITS);
+		final long beforeUpdate = data[di];
+		data[di] = PrimitiveBitSet.add(data[di], index);
+		return beforeUpdate == data[di];
 	}
 
 	/**
 	 * Sets value at specified position to <b>false</b>
 	 * 
 	 * @param index index of value to set to <b>false</b>
+     * @return the value previously at the specified position
      * @throws IndexOutOfBoundsException if the index is out of range
      */
-	public void setFalse(long index) {
+	public boolean setFalse(final long index) {
 		rangeCheck(index);
-		data[(int)(index >>> ADDRESS_BITS)] = PrimitiveBitSet.remove(data[(int)(index >>> ADDRESS_BITS)], index);
+		final int di = (int)(index >>> ADDRESS_BITS);
+		final long beforeUpdate = data[di];
+		data[di] = PrimitiveBitSet.remove(data[di], index);
+		return beforeUpdate != data[di];
 	}
 	
 	/**
@@ -77,11 +85,8 @@ public class BooleanArray implements Cloneable, java.io.Serializable {
 	 * @param value new value
      * @throws IndexOutOfBoundsException if the index is out of range
 	 */
-	public void set(long index, boolean value) {
-		if (value)
-			setTrue(index);
-		else
-			setFalse(index);
+	public boolean set(final long index, final boolean value) {
+		return value ? setTrue(index) : setFalse(index);
 	}
 	
 	/**

@@ -25,7 +25,7 @@ final public class PrimitiveBitSet {
 	 * @param set - given set
 	 * @return number of elements in this set
 	 */
-	static public int size(int set) {
+	static public int size(final int set) {
 		return Integer.bitCount(set);
 	}
 	
@@ -37,7 +37,7 @@ final public class PrimitiveBitSet {
 	 * @return <tt>true</tt> if the set contains given value<br>
 	 *         <tt>false</tt> otherwise
 	 */
-	static public boolean contains(int set, int value) {
+	static public boolean contains(final int set, final int value) {
 		return (set & (1 << value)) != 0;
 	}
 	
@@ -48,7 +48,7 @@ final public class PrimitiveBitSet {
 	 * @param value - value to add to the set
 	 * @return updated set
 	 */
-	static public int add(int set, int value) {
+	static public int add(final int set, final int value) {
 		return set | (1 << value);
 	}
 	
@@ -59,7 +59,7 @@ final public class PrimitiveBitSet {
 	 * @param value - value to remove from the set
 	 * @return updated set
 	 */
-	static public int remove(int set, int value) {
+	static public int remove(final int set, final int value) {
 		return set & ~(1 << value);
 	}
 	
@@ -70,7 +70,7 @@ final public class PrimitiveBitSet {
 	 * @param value - value to get index for
 	 * @return number of elements smaller than the given value
 	 */
-	static public int indexOf(int set, int value) {
+	static public int indexOf(final int set, final int value) {
 		return Integer.bitCount(set & ((1 << value) - 1));
 	}
 	
@@ -82,7 +82,7 @@ final public class PrimitiveBitSet {
 	 * @param value - value to get next for
 	 * @return value next to method parameter
 	 */
-	static public int next(int set, int value) {
+	static public int next(final int set, final int value) {
 		int trailingZeroes = Integer.numberOfTrailingZeros(set & ~((1 << value) - 1));
 		return (trailingZeroes < Integer.SIZE) ? trailingZeroes : -1;
 	}
@@ -95,7 +95,7 @@ final public class PrimitiveBitSet {
 	 * @param set - given set
 	 * @return number of elements in this set
 	 */
-	static public int size(long set) {
+	static public int size(final long set) {
 		return Long.bitCount(set);
 	}
 	
@@ -107,7 +107,7 @@ final public class PrimitiveBitSet {
 	 * @return <tt>true</tt> if the set contains given value<br>
 	 *         <tt>false</tt> otherwise
 	 */
-	static public boolean contains(long set, long value) {
+	static public boolean contains(final long set, final long value) {
 		return (set & (1L << value)) != 0;
 	}
 	
@@ -118,7 +118,7 @@ final public class PrimitiveBitSet {
 	 * @param value - value to add to the set
 	 * @return updated set
 	 */
-	static public long add(long set, long value) {
+	static public long add(final long set, final long value) {
 		return set | (1L << value);
 	}
 	
@@ -129,7 +129,7 @@ final public class PrimitiveBitSet {
 	 * @param value - value to remove from the set
 	 * @return updated set
 	 */
-	static public long remove(long set, long value) {
+	static public long remove(final long set, final long value) {
 		return set & ~(1L << value);
 	}
 	
@@ -140,7 +140,7 @@ final public class PrimitiveBitSet {
 	 * @param value - value to get index for
 	 * @return number of elements smaller than the given value
 	 */
-	static public int indexOf(long set, long value) {
+	static public int indexOf(final long set, final long value) {
 		return Long.bitCount(set & ((1L << value) - 1));
 	}
 	
@@ -152,7 +152,7 @@ final public class PrimitiveBitSet {
 	 * @param value - value to get next for
 	 * @return value next to method parameter
 	 */
-	static public long next(long set, long value) {
+	static public long next(final long set, final long value) {
 		int trailingZeroes = Long.numberOfTrailingZeros(set & ~((1L << value) - 1));
 		return (trailingZeroes < Long.SIZE) ? trailingZeroes : -1;
 	}

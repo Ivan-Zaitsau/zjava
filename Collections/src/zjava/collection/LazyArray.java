@@ -15,7 +15,7 @@ import static zjava.system.Const.MAX_ARRAY_SIZE;
  * @author Ivan Zaitsau
  */
 public class LazyArray<E> implements HugeArray<E>, Cloneable, java.io.Serializable {
-		
+	
 	private static final long serialVersionUID = 201412031800L;
 	
 	private static final int DEFAULT_BLOCK_ADDRESS_BITS = 10;

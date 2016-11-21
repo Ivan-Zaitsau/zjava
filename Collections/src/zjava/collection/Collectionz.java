@@ -7,8 +7,8 @@ import java.util.Iterator;
 /**
  * This class contains number of useful methods that operate on collections.
  *
- * <p>The methods of this class all throw a <tt>NullPointerException</tt>
- * if the collections or class objects provided to them are null.
+ * <p>The methods of this class usually throw a <tt>NullPointerException</tt>
+ * if the collections or class objects provided to them are null.<br>
  *
  * @since Zjava 1.0
  * 
@@ -204,9 +204,12 @@ final public class Collectionz {
      * Returns a string representation of the given <tt>Iterable</tt>.<br>
      * The string representation consists of a list of the <tt>Iterable</tt>'s
      * elements separated by commas in the order they are returned by its iterator.<br>
-     * <tt>Iterable</tt> is enclosed in square brackets (<tt>"[]"</tt>).<br>
-     * If <tt>Iterable</tt> contains too many elements, only first elements will be shown,
+     * <tt>Iterable</tt> is enclosed in square brackets (<tt>"[]"</tt>).
+     * 
+     * <p>If <tt>Iterable</tt> contains too many elements, only first elements will be shown,
      * followed by three-dot (<tt>"..."</tt>).
+     * 
+     * <p> If given {@code Iterable} is null, string "null" is returned.
      * 
 	 * @param c - given <tt>Iterable</tt>
 	 * @param onSelf - denotes string value assigned to <tt>Iterable</tt> itself
@@ -238,9 +241,12 @@ final public class Collectionz {
      * Returns a string representation of the given <tt>Iterable</tt>.<br>
      * The string representation consists of a list of the <tt>Iterable</tt>'s
      * elements separated by commas in the order they are returned by its iterator.<br>
-     * <tt>Iterable</tt> enclosed in square brackets (<tt>"[]"</tt>).<br>
-     * If <tt>Iterable</tt> contains too many elements, only first elements will be shown,
+     * <tt>Iterable</tt> enclosed in square brackets (<tt>"[]"</tt>).
+     * 
+     * <p>If <tt>Iterable</tt> contains too many elements, only first elements will be shown,
      * followed by three-dot (<tt>"..."</tt>).
+     * 
+     * <p> If given {@code Iterable} is null, string "null" is returned.
      * 
 	 * @param c - given <tt>Iterable</tt>
 	 * 

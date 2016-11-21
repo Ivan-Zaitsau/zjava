@@ -56,7 +56,7 @@ public class LongSet {
 		long used;
 		Node[] children;
 
-		Branch(int startingBit, long value) {
+		Branch(final int startingBit, final long value) {
 			if (value == 0) {
 				used = 0;
 				children = new Node[INITIAL_NUM_OF_CHILDREN];
@@ -67,11 +67,11 @@ public class LongSet {
 			}
 		}
 
-		Node newEntry(int startingBit, long value) {
+		Node newEntry(final int startingBit, long value) {
 			return (startingBit <= LEAF_RADIX - BRANCH_RADIX) ? new Leaf(value) : new Branch(startingBit, value);
 		}
 		
-		public boolean contains(int startingBit, long value) {
+		public boolean contains(final int startingBit, final long value) {
 			// - special case: value is stored in "used" itself
 			if (children == null)
 				return (value == used) & (used != 0);
@@ -82,7 +82,7 @@ public class LongSet {
 			return children[PrimitiveBitSet.indexOf(used, radix)].contains(startingBit - BRANCH_RADIX, value);
 		}
 
-		public boolean add(int startingBit, long value) {
+		public boolean add(final int startingBit, final long value) {
 			// - special case: value is stored in "used" itself
 			if (children == null) {
 				if (used == 0 & value != 0) {
@@ -111,7 +111,7 @@ public class LongSet {
 			return true;
 		}
 
-		public boolean remove(int startingBit, long value) {
+		public boolean remove(final int startingBit, final long value) {
 			// - special case: value is stored in "used" itself
 			if (children == null) {
 				if (used == 0 | value != used)
@@ -127,7 +127,7 @@ public class LongSet {
 			return children[PrimitiveBitSet.indexOf(used, radix)].remove(startingBit - BRANCH_RADIX, value);
 		}
 
-		public Long next(int startingBit, long value) {
+		public Long next(final int startingBit, final long value) {
 			// - special case: value is stored in "used" itself
 			if (children == null) {
 				if (used != 0 & unsignedCompare(value, used) <= 0)
@@ -169,7 +169,7 @@ public class LongSet {
 			used = (1L << COMPRESSED_RADIXES_BITS) | (value & LEAF_RADIX_MASK);
 		}
 
-		public boolean contains(int startingBit, long value) {
+		public boolean contains(final int startingBit, final long value) {
 			long radix = value & LEAF_RADIX_MASK;
 			// - optimization: a few radixes stored in "used" itself
 			if (sets == null) {
@@ -202,7 +202,7 @@ public class LongSet {
 			}
 		}
 		
-		public boolean add(int startingBit, long value) {
+		public boolean add(final int startingBit, final long value) {
 			long radix = value & LEAF_RADIX_MASK;
 			// - optimization: a few radixes stored in "used" itself			
 			if (sets == null) {
@@ -238,7 +238,7 @@ public class LongSet {
 			return sets[setIndex] != beforeUpdate;
 		}
 		
-		public boolean remove(int startingBit, long value) {
+		public boolean remove(final int startingBit, final long value) {
 			long radix = value & LEAF_RADIX_MASK;
 			// - optimization: a few radixes stored in "used" itself
 			if (sets == null) {
@@ -269,7 +269,7 @@ public class LongSet {
 			return sets[setIndex] != beforeUpdate;
 		}
 
-		public Long next(int startingBit, long value) {
+		public Long next(final int startingBit, final long value) {
 			long radix = value & LEAF_RADIX_MASK;
 			// - optimization: a few radixes stored in "used" itself
 			if (sets == null) {
@@ -348,11 +348,11 @@ public class LongSet {
 				^ (signed ? MODE_SIGNED : MODE_UNSIGNED);
 	}
 	
-	private long applyMode(long value) {
+	private long applyMode(final long value) {
 		return value ^ mode;
 	}
 	
-	private long revertMode(long value) {
+	private long revertMode(final long value) {
 		return value ^ mode;
 	}
 
