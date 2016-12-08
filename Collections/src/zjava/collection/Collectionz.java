@@ -200,6 +200,26 @@ final public class Collectionz {
 		return contains;
 	}
 
+	public static RangeSet<Byte> range(byte fromInclusive, byte toExclusive) {
+		return new ByteRangeSet(fromInclusive, toExclusive);
+	}
+
+	public static RangeSet<Short> range(short fromInclusive, short toExclusive) {
+		return new ShortRangeSet(fromInclusive, toExclusive);
+	}
+
+	public static RangeSet<Integer> range(int fromInclusive, int toExclusive) {
+		return new IntegerRangeSet(fromInclusive, toExclusive);
+	}
+
+	public static RangeSet<Long> range(long fromInclusive, long toExclusive) {
+		return new LongRangeSet(fromInclusive, toExclusive);
+	}
+
+	public static RangeSet<Character> range(char fromInclusive, char toExclusive) {
+		return new CharacterRangeSet(fromInclusive, toExclusive);
+	}
+
     /**
      * Returns a string representation of the given <tt>Iterable</tt>.<br>
      * The string representation consists of a list of the <tt>Iterable</tt>'s

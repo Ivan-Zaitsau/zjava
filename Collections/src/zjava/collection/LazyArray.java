@@ -1,7 +1,5 @@
 package zjava.collection;
 
-import java.util.Arrays;
-
 import static zjava.system.Const.MAX_ARRAY_SIZE;
 
 /**
@@ -115,10 +113,10 @@ public class LazyArray<E> implements HugeArray<E>, Cloneable, java.io.Serializab
 		try {
 			@SuppressWarnings("unchecked")
 			LazyArray<E> clone = (LazyArray<E>) super.clone();
-			clone.data = Arrays.copyOf(data, data.length);
+			clone.data = data.clone();
 			for (int i = 0; i < data.length; i++)
 				if (data[i] != null)
-					clone.data[i] = Arrays.copyOf(data[i], data[i].length);
+					clone.data[i] = data[i].clone();
 			return clone;
 		} catch (CloneNotSupportedException e) {
     		// - should never be thrown since we are Cloneable

@@ -260,11 +260,11 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeList
 			return (E) values[index(pos)];
 		}
 		
-		public Object clone() {
+		public Block<E> clone() {
 			try {
 				@SuppressWarnings("unchecked")
 				Block<E> clone = (Block<E>) super.clone();
-				clone.values = Arrays.copyOf(values, values.length);
+				clone.values = values.clone();
 				return clone;
 			} catch (CloneNotSupportedException e) {
 	    		// - this should never be thrown since we are Cloneable
@@ -344,12 +344,12 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeList
     }
 	
 	private void rangeCheck(final long index) {
-		if (index < 0 || index >= size)
+		if (index < 0 | index >= size)
 			throw new IndexOutOfBoundsException(outOfBoundsMsg(index));
 	}
 
 	private void rangeCheckForAdd(final long index) {
-		if (index < 0 || index > size)
+		if (index < 0 | index > size)
 			throw new IndexOutOfBoundsException(outOfBoundsMsg(index));
 	}
 
@@ -382,14 +382,14 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeList
 		rangeCheckForAdd(toIndex);
 		int fromBlock = (1 + ((fromIndex - 1) >> blockAddressBits));
 		int toBlock = (toIndex >>> blockAddressBits);
-		int d = toBlock - fromBlock;
-		if (d > 0) {
+		int blocksToRemove = toBlock - fromBlock;
+		if (blocksToRemove > 0) {
 			for (int i = toBlock; i < data.length && data[i] != null && data[i].size() > 0; i++) {
-				data[i-d] = data[i];
+				data[i-blocksToRemove] = data[i];
 				data[i] = null;
 			}
-			size -= d << blockAddressBits;
-			toIndex -= d << blockAddressBits;
+			size -= blocksToRemove << blockAddressBits;
+			toIndex -= blocksToRemove << blockAddressBits;
 		}
 		for (int i = fromIndex; i < toIndex; i++)
 			fastRemove(fromIndex);
@@ -766,7 +766,7 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeList
 		};
 	}
 	
-	public HugeList<E> hugeView() {
+	public HugeList<E> asHuge() {
 		if (hugeView == null) {
 			hugeView = new HugeList<E>() {
 				
@@ -881,7 +881,7 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeList
 			clone.hugeView = null;
 			clone.data = new Block[data.length];
     		for (int i = 0; i < data.length && data[i] != null; i++) {
-    			clone.data[i] = (Block<E>) data[i].clone();
+    			clone.data[i] = data[i].clone();
     		}
     		return clone;
 		}

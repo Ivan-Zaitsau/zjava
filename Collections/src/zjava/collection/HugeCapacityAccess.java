@@ -19,5 +19,5 @@ public interface HugeCapacityAccess {
 	 * 
 	 * @return <tt>HugeCapacity</tt> object, used to query real size of the underlying collection.
 	 */
-	HugeCapacity hugeView();
+	HugeCapacity asHuge();
 }

@@ -51,18 +51,18 @@ public class BooleanList implements Cloneable, java.io.Serializable {
 	 * 
 	 * @author Ivan Zaitsau
 	 */
-	static final private class Block implements Cloneable, java.io.Serializable {
+	static final private class BinaryBlock implements Cloneable, java.io.Serializable {
 		
 		private static final long serialVersionUID = 201503092100L;
 		
 		// - merges two blocks of equal capacities into block with doubled capacity
-		static Block merge(Block block1, Block block2) {
+		static BinaryBlock merge(BinaryBlock block1, BinaryBlock block2) {
 			if ((block1 == null || block1.size() == 0) && (block2 == null || block2.size() == 0))
 				return null;
 
 			assert (block1 == null | block2 == null) || (block1.values.length == block2.values.length);
 
-			Block mergedBlock = new Block(2 * ((block1 == null) ? block2.values.length : block1.values.length));
+			BinaryBlock mergedBlock = new BinaryBlock(2 * ((block1 == null) ? block2.values.length : block1.values.length));
 			if (block1 != null)
 				mergedBlock.size += block1.copyToArray(mergedBlock.values, 0);
 			if (block2 != null)
@@ -71,28 +71,28 @@ public class BooleanList implements Cloneable, java.io.Serializable {
 		}
 
 		// - splits block to two smaller blocks of capacity equal to half of given block
-		static Block[] split(Block block) {
+		static BinaryBlock[] split(BinaryBlock block) {
 			if (block == null || block.size == 0)
-				return new Block[] {null, null};
+				return new BinaryBlock[] {null, null};
 			
 			assert (block.values.length & 1) == 0;
 			
 			int halfSize = block.values.length / 2;
 			
 			if (block.size <= halfSize) {
-				Block block1 = new Block(halfSize);
+				BinaryBlock block1 = new BinaryBlock(halfSize);
 				block.copyToArray(block1.values, 0, 0, block.size);
 				block1.size = block.size;
-				return new Block[] {block1, null};
+				return new BinaryBlock[] {block1, null};
 			}
 			else {
-				Block block1 = new Block(halfSize);
+				BinaryBlock block1 = new BinaryBlock(halfSize);
 				block.copyToArray(block1.values, 0, 0, halfSize);
 				block1.size = halfSize;
-				Block block2 = new Block(halfSize);
+				BinaryBlock block2 = new BinaryBlock(halfSize);
 				block.copyToArray(block2.values, 0, halfSize, block.size - halfSize);
 				block2.size = halfSize;
-				return new Block[] {block1, block2};				
+				return new BinaryBlock[] {block1, block2};				
 			}
 		}
 		
@@ -100,7 +100,7 @@ public class BooleanList implements Cloneable, java.io.Serializable {
 		private int size;
 		private boolean[] values;
 
-		Block(int capacity) {
+		BinaryBlock(int capacity) {
 			// - capacity must be even power of 2
 			assert((capacity & (capacity-1)) == 0 && capacity > 1);
 			
@@ -235,8 +235,8 @@ public class BooleanList implements Cloneable, java.io.Serializable {
 		
 		public Object clone() {
 			try {
-				Block clone = (Block) super.clone();
-				clone.values = Arrays.copyOf(values, values.length);
+				BinaryBlock clone = (BinaryBlock) super.clone();
+				clone.values = values.clone();
 				return clone;
 			} catch (CloneNotSupportedException e) {
 	    		// - this should never be thrown since we are Cloneable
@@ -247,7 +247,7 @@ public class BooleanList implements Cloneable, java.io.Serializable {
 
 	private long size;
 	private int blockAddressBits;
-	private Block[] data;
+	private BinaryBlock[] data;
 
     private String outOfBoundsMsg(long index) {
         return "Index: " + index + ", Size: " + size;
@@ -264,9 +264,9 @@ public class BooleanList implements Cloneable, java.io.Serializable {
 	}
 
 	/** Null-safe access to data block with initialization.*/
-	private Block data(final int index) {
+	private BinaryBlock data(final int index) {
 		if (data[index] == null)
-			data[index] = new Block(1 << blockAddressBits);
+			data[index] = new BinaryBlock(1 << blockAddressBits);
 		return data[index];
 	}
 	
@@ -274,10 +274,10 @@ public class BooleanList implements Cloneable, java.io.Serializable {
 		long capacity = (long) data.length << blockAddressBits;
 		while (requiredCapacity > capacity) {
 			// - double number of blocks and their size
-			Block[] newData = new Block[2*data.length];
+			BinaryBlock[] newData = new BinaryBlock[2*data.length];
 			int newBlockBitsize = blockAddressBits+1;
 			for (int i = 1, j = 0; i < data.length; i += 2, j++) {
-				newData[j] = Block.merge(data[i-1], data[i]);
+				newData[j] = BinaryBlock.merge(data[i-1], data[i]);
 				if (newData[j] == null)
 					break;
 			}
@@ -297,11 +297,11 @@ public class BooleanList implements Cloneable, java.io.Serializable {
 			return;
 		if (size * REDUCTION_COEFFICIENT <= (long) data.length << blockAddressBits) {
 			// - decrease number of blocks and their size by half
-			Block[] newData = new Block[(data.length+1)/2];
+			BinaryBlock[] newData = new BinaryBlock[(data.length+1)/2];
 			int newBlockBitsize = blockAddressBits-1;
 			main:
 			for (int i = 0; ; i++) {
-				Block[] splitBlock = Block.split(data[i]);
+				BinaryBlock[] splitBlock = BinaryBlock.split(data[i]);
 				for (int j = 0; j <= 1; j++) {
 					if (splitBlock[j] == null || splitBlock[j].size() == 0)
 						break main;
@@ -325,7 +325,7 @@ public class BooleanList implements Cloneable, java.io.Serializable {
 			blocksCount += blocksCount;
 			blockAddressBits++;
 		}
-		data = new Block[blocksCount];
+		data = new BinaryBlock[blocksCount];
 	}
 
 	/**
@@ -470,9 +470,9 @@ public class BooleanList implements Cloneable, java.io.Serializable {
 	public Object clone() {
     	try {
 			BooleanList clone = (BooleanList) super.clone();
-			clone.data = new Block[data.length];
+			clone.data = new BinaryBlock[data.length];
     		for (int i = 0; i < data.length && data[i] != null; i++) {
-    			clone.data[i] = (Block) data[i].clone();
+    			clone.data[i] = (BinaryBlock) data[i].clone();
     		}
     		return clone;
 		}

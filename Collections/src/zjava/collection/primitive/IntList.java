@@ -236,7 +236,7 @@ public class IntList implements Cloneable, java.io.Serializable {
 		public Object clone() {
 			try {
 				Block clone = (Block) super.clone();
-				clone.values = Arrays.copyOf(values, values.length);
+				clone.values = values.clone();
 				return clone;
 			} catch (CloneNotSupportedException e) {
 	    		// - this should never be thrown since we are Cloneable

@@ -18,5 +18,5 @@ public interface HugeArrayAccess<E> extends HugeCapacityAccess {
 	 * 
 	 * @return <tt>HugeArray</tt> object, used to work with lists of huge capacity
 	 */
-	HugeArray<E> hugeView();
+	HugeArray<E> asHuge();
 }

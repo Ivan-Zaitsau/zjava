@@ -54,24 +54,24 @@ final public class Wrapperz {
 			return size < Integer.MAX_VALUE ? (int) size : Integer.MAX_VALUE;
 		}
 
-		public E get(int index) {
+		public E get(final int index) {
 			return doGet(index);
 		}
 
-		public E set(int index, E element) {
+		public E set(final int index, final E element) {
 			return doSet(index, element);
 		}
 
-		public boolean add(E e) {
+		public boolean add(final E e) {
 			doAdd(e);
 			return true;
 		}
 
-		public void add(int index, E element) {
+		public void add(final int index, final E element) {
 			doAdd(index, element);
 		}
 
-		public E remove(int index) {
+		public E remove(final int index) {
 			return doRemove(index);
 		}
 
@@ -132,7 +132,7 @@ final public class Wrapperz {
 			};
 		}
 
-		public HugeList<E> hugeView() {
+		public HugeList<E> asHuge() {
 			if (hugeView == null) {
 				hugeView = new HugeList<E>() {
 					public long size() {

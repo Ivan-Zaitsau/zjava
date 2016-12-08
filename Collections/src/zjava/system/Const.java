@@ -7,7 +7,7 @@ package zjava.system;
  *
  * @author Ivan Zaitsau
  */
-final public class Const {
+public final class Const {
 	
     /**
      * The maximum size of array to allocate.<br>
@@ -18,6 +18,7 @@ final public class Const {
 	static public final int MAX_ARRAY_SIZE = Integer.MAX_VALUE - 8;
 
 	static public final int BITS_BYTES_BITWISE_SHIFT = 3;
+	static public final int BITS_PER_BYTE = 8;
 	
 	static public final int ADDRESS_BITS_PER_BOOLEAN = 3;	
 	
@@ -48,7 +49,7 @@ final public class Const {
 	 * @param v - item to get size for
 	 * @return size of the given item in bytes
 	 */
-	public static int sizeOf(boolean v) {
+	public static int sizeOf(final boolean v) {
 		return BYTES_PER_BOOLEAN;
 	}
 	
@@ -57,7 +58,7 @@ final public class Const {
 	 * @param v - item to get size for
 	 * @return size of the given item in bytes
 	 */
-	public static int sizeOf(byte v) {
+	public static int sizeOf(final byte v) {
 		return BYTES_PER_BYTE;
 	}
 
@@ -66,7 +67,7 @@ final public class Const {
 	 * @param v - item to get size for
 	 * @return size of the given item in bytes
 	 */
-	public static int sizeOf(short v) {
+	public static int sizeOf(final short v) {
 		return BYTES_PER_SHORT;
 	}
 	
@@ -75,7 +76,7 @@ final public class Const {
 	 * @param v - item to get size for
 	 * @return size of the given item in bytes
 	 */
-	public static int sizeOf(int v) {
+	public static int sizeOf(final int v) {
 		return BYTES_PER_INT;
 	}
 	
@@ -84,7 +85,7 @@ final public class Const {
 	 * @param v - item to get size for
 	 * @return size of the given item in bytes
 	 */
-	public static int sizeOf(long v) {
+	public static int sizeOf(final long v) {
 		return BYTES_PER_LONG;
 	}
 	
@@ -93,7 +94,7 @@ final public class Const {
 	 * @param v - item to get size for
 	 * @return size of the given item in bytes
 	 */
-	public static int sizeOf(char v) {
+	public static int sizeOf(final char v) {
 		return BYTES_PER_CHAR;
 	}
 	
@@ -102,7 +103,7 @@ final public class Const {
 	 * @param v - item to get size for
 	 * @return size of the given item in bytes
 	 */
-	public static int sizeOf(float v) {
+	public static int sizeOf(final float v) {
 		return BYTES_PER_FLOAT;
 	}
 	
@@ -111,7 +112,7 @@ final public class Const {
 	 * @param v - item to get size for
 	 * @return size of the given item in bytes
 	 */
-	public static int sizeOf(double v) {
+	public static int sizeOf(final double v) {
 		return BYTES_PER_DOUBLE;
 	}
 	

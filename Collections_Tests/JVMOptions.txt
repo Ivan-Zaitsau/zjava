@@ -1,0 +1,1 @@
+-ea -Xmx10G -Xss128k -XX:+UseCompressedOops -XX:+TieredCompilation -XX:+AggressiveOpts

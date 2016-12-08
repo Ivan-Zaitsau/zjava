@@ -5,9 +5,8 @@ import java.util.Arrays;
 import zjava.system.Const;
 
 /**
- * *** <b>WARNING!</b> *** <br>
  * *** <b>Experimental Feature</b> *** <br>
- * Can be changed or completely removed in the future.
+ * <i>Can be changed or completely removed in the future.</i>
  * 
  * <p>LongSet represents set of primitive long values.<br>
  * Elements of this set are sorted.<br>
@@ -67,7 +66,7 @@ public class LongSet {
 			}
 		}
 
-		Node newEntry(final int startingBit, long value) {
+		Node newEntry(final int startingBit, final long value) {
 			return (startingBit <= LEAF_RADIX - BRANCH_RADIX) ? new Leaf(value) : new Branch(startingBit, value);
 		}
 		

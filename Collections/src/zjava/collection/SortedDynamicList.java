@@ -66,7 +66,7 @@ public class SortedDynamicList<E> extends AbstractCollection<E> implements Sorte
 	 */
 	@SuppressWarnings("unchecked")
 	private long binarySearch(Object o) {
-		return Collectionz.binarySearch(data.hugeView(), (E) o, comparator);
+		return Collectionz.binarySearch(data.asHuge(), (E) o, comparator);
 	}
 
 	/*
@@ -77,7 +77,7 @@ public class SortedDynamicList<E> extends AbstractCollection<E> implements Sorte
 	 */
 	@SuppressWarnings("unchecked")
 	private long binarySearchNext(Object o) {
-		return Collectionz.binarySearchNext(data.hugeView(), (E) o, comparator);
+		return Collectionz.binarySearchNext(data.asHuge(), (E) o, comparator);
 	}
 
     /**
@@ -180,7 +180,7 @@ public class SortedDynamicList<E> extends AbstractCollection<E> implements Sorte
 		long i = binarySearchNext(e);
 		if (i < 0)
 			i = ~i;
-		data.hugeView().add(i, e);
+		data.asHuge().add(i, e);
 		return true;
 	}
 	
@@ -229,7 +229,7 @@ public class SortedDynamicList<E> extends AbstractCollection<E> implements Sorte
 		long i = binarySearch(o);
 		if (i < 0)
 			return false;
-		data.hugeView().remove(i);
+		data.asHuge().remove(i);
 		return true;
 	}
 
@@ -363,16 +363,16 @@ public class SortedDynamicList<E> extends AbstractCollection<E> implements Sorte
 	 * <p> Returned <tt>HugeList</tt> doesn't support {@link HugeList#set(long, E) set(long, E)}
 	 * and {@link HugeList#add(long, E) add(long, E)} operations.
 	 */
-	public HugeList<E> hugeView() {
+	public HugeList<E> asHuge() {
 		if (hugeView == null) {
 			hugeView = new HugeList<E>() {
 				
 				public long size() {
-					return data.hugeView().size();
+					return data.asHuge().size();
 				}
 	
 				public E get(long index) {
-					return data.hugeView().get(index);
+					return data.asHuge().get(index);
 				}
 	
 				public E set(long index, E element) {
@@ -384,7 +384,7 @@ public class SortedDynamicList<E> extends AbstractCollection<E> implements Sorte
 				}
 	
 				public E remove(long index) {
-					return data.hugeView().remove(index);
+					return data.asHuge().remove(index);
 				}
 
 				public Iterator<E> iterator() {

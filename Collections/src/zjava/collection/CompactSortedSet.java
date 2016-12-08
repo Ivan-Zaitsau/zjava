@@ -18,8 +18,8 @@ import java.util.SortedSet;
  * 
  * <p>This implementation of SortedSet interface is focused on lower memory footprint
  * rather than performance. However, it tends to outperform <tt>TreeSet</tt> for sets
- * of sizes up to approximately 20.000 - 100.000 elements (depending on system architecture)
- * due to simplicity of operations.
+ * of sizes up to approximately 20.000 - 250.000 elements due to simplicity of operations.
+ * (actual numbers depend on system architecture and percentage of update )
  * 
  * <p>This implementation provides guaranteed log(n) time cost for {@code contains}
  * operation and amortized sqrt(n) time cost for the operations {@code add} and
@@ -86,7 +86,7 @@ public class CompactSortedSet<E> extends AbstractSet<E> implements SortedSet<E>,
 
 		public int size() {
 			long fromIndex = (fromElement == null) ? 0 : index(fromElement);
-			long toIndex = (toElement == null) ? data.hugeView().size() : index(toElement);
+			long toIndex = (toElement == null) ? data.asHuge().size() : index(toElement);
 			long size = toIndex - fromIndex;
 			return (size < Integer.MAX_VALUE) ? (int) size : Integer.MAX_VALUE;
 		}
@@ -106,7 +106,7 @@ public class CompactSortedSet<E> extends AbstractSet<E> implements SortedSet<E>,
 
 			return new Iterator<E>() {
 				
-				HugeList<E> data = CompactSortedSet.this.data.hugeView();
+				HugeList<E> data = CompactSortedSet.this.data.asHuge();
 				
 				long index = (fromElement == null) ? 0 : index(fromElement);
 				E element = index < data.size() ? data.get(index) : null;
@@ -199,14 +199,14 @@ public class CompactSortedSet<E> extends AbstractSet<E> implements SortedSet<E>,
 		}
 
 		public E first() {
-			E first = data.hugeView().get((fromElement == null) ? 0 : index(fromElement));
+			E first = data.asHuge().get((fromElement == null) ? 0 : index(fromElement));
 			if (compare(first, toElement) < 0)
 				return first;
 			throw new NoSuchElementException();
 		}
 
 		public E last() {
-			E last = data.hugeView().get((toElement == null) ? data.hugeView().size()-1 : index(toElement)-1);
+			E last = data.asHuge().get((toElement == null) ? data.asHuge().size()-1 : index(toElement)-1);
 			if (compare(fromElement, last) <= 0)
 				return last;
 			throw new NoSuchElementException();
@@ -240,7 +240,7 @@ public class CompactSortedSet<E> extends AbstractSet<E> implements SortedSet<E>,
 	// - if list contains given object, returned value is equal to position, otherwise it's equal to binary inverse of the position
 	@SuppressWarnings("unchecked")
 	private long binarySearch(Object o) {
-		return Collectionz.binarySearch(data.hugeView(), (E) o, comparator);
+		return Collectionz.binarySearch(data.asHuge(), (E) o, comparator);
 	}
 
 	public int size() {
@@ -281,7 +281,7 @@ public class CompactSortedSet<E> extends AbstractSet<E> implements SortedSet<E>,
 		long i = binarySearch(e);
 		if (i >= 0)
 			return false;
-		data.hugeView().add(~i, e);
+		data.asHuge().add(~i, e);
 		return true;
 	}
 
@@ -303,7 +303,7 @@ public class CompactSortedSet<E> extends AbstractSet<E> implements SortedSet<E>,
 		long i = binarySearch(o);
 		if (i < 0)
 			return false;
-		data.hugeView().remove(i);
+		data.asHuge().remove(i);
 		return true;
 	}
 
@@ -373,15 +373,15 @@ public class CompactSortedSet<E> extends AbstractSet<E> implements SortedSet<E>,
 	}
 
 	public E last() {
-		HugeList<E> hugeView = data.hugeView();
+		HugeList<E> hugeView = data.asHuge();
 		return hugeView.get(hugeView.size()-1);
 	}
 
-	public HugeCapacity hugeView() {
+	public HugeCapacity asHuge() {
 		if (hugeView == null) {
 			hugeView = new HugeCapacity() {
 				public long size() {
-					return data.hugeView().size();
+					return data.asHuge().size();
 				}
 			};
 		}

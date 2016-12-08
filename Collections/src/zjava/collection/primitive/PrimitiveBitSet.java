@@ -5,7 +5,7 @@ package zjava.collection.primitive;
  * primitives as if they are sets of numbers between <tt>0</tt>
  * (inclusive) and <tt>bit_length_of_primitive</tt> (exclusive).<br>
  * For performance and simplicity range checks are omitted.
- * Instead, only last bits of a value are taken into consideration.
+ * Instead, only the last bits of a value are taken into consideration.
  * 
  * @since Zjava 1.0
  * 
@@ -87,6 +87,104 @@ final public class PrimitiveBitSet {
 		return (trailingZeroes < Integer.SIZE) ? trailingZeroes : -1;
 	}
 
+	/**
+	 * Returns array containing all the values from the set passed
+	 * as method argument.<br>
+	 * Elements of the array are returned in increasing order.
+	 * 
+	 * @param set - set to get array representation for
+	 * @param offset - all items of the returned array will be incremented
+	 *                 by this value. It's also used to determine type of
+	 *                 the array to return
+	 * @return sorted in increasing order array which contains all
+	 *         values from the given set
+	 */
+	static public byte[] toArray(final int set, final byte offset) {
+		int arraySize = size(set);
+		byte[] array = new byte[arraySize];
+		for (int i = 0, j = 0; i < Integer.SIZE; i++)
+			if (contains(set, i))
+				array[j++] = (byte) (i + offset);
+		return array;
+	}
+
+	/**
+	 * Returns array containing all the values from the set passed
+	 * as method argument.<br>
+	 * Elements of the array are returned in increasing order.
+	 * 
+	 * @param set - set to get array representation for
+	 * @param offset - all items of the returned array will be incremented
+	 *                 by this value. It's also used to determine type of
+	 *                 the array to return
+	 * @return sorted in increasing order array which contains all
+	 *         values from the given set
+	 */
+	static public short[] toArray(final int set, final short offset) {
+		int arraySize = size(set);
+		short[] array = new short[arraySize];
+		for (int i = 0, j = 0; i < Integer.SIZE; i++)
+			if (contains(set, i))
+				array[j++] = (short) (i + offset);
+		return array;
+	}
+
+	/**
+	 * Returns array containing all the values from the set passed
+	 * as method argument.<br>
+	 * Elements of the array are returned in increasing order.
+	 * 
+	 * @param set - set to get array representation for
+	 * @param offset - all items of the returned array will be incremented
+	 *                 by this value. It's also used to determine type of
+	 *                 the array to return
+	 * @return sorted in increasing order array which contains all
+	 *         values from the given set
+	 */
+	static public int[] toArray(final int set, final int offset) {
+		int arraySize = size(set);
+		int[] array = new int[arraySize];
+		for (int i = 0, j = 0; i < Integer.SIZE; i++)
+			if (contains(set, i))
+				array[j++] = i + offset;
+		return array;
+	}
+
+	/**
+	 * Returns array containing all the values from the set passed
+	 * as method argument.<br>
+	 * Elements of the array are returned in increasing order.
+	 * 
+	 * @param set - set to get array representation for
+	 * @param offset - all items of the returned array will be incremented
+	 *                 by this value. It's also used to determine type of
+	 *                 the array to return
+	 * @return sorted in increasing order array which contains all
+	 *         values from the given set
+	 */
+	static public long[] toArray(final int set, final long offset) {
+		int arraySize = size(set);
+		long[] array = new long[arraySize];
+		for (int i = 0, j = 0; i < Integer.SIZE; i++)
+			if (contains(set, i))
+				array[j++] = i + offset;
+		return array;
+	}
+
+	/**
+	 * Returns array containing all the values from the set passed
+	 * as method argument.<br>
+	 * Elements of the array are returned in increasing order.
+	 * 
+	 * @param set - set to get array representation for
+	 * 
+	 * @return sorted in increasing order array which contains all
+	 *         values from the given set
+	 */
+	static public int[] toArray(final int set) {
+		return toArray(set, 0);
+	}
+
 	// - "long" related methods
 	
 	/**
@@ -157,6 +255,104 @@ final public class PrimitiveBitSet {
 		return (trailingZeroes < Long.SIZE) ? trailingZeroes : -1;
 	}
 	
+	/**
+	 * Returns array containing all the values from the set passed
+	 * as method argument.<br>
+	 * Elements of the array are returned in increasing order.
+	 * 
+	 * @param set - set to get array representation for
+	 * @param offset - all items of the returned array will be incremented
+	 *                 by this value. It's also used to determine type of
+	 *                 the array to return
+	 * @return sorted in increasing order array which contains all
+	 *         values from the given set
+	 */
+	static public byte[] toArray(final long set, final byte offset) {
+		int arraySize = size(set);
+		byte[] array = new byte[arraySize];
+		for (int i = 0, j = 0; i < Long.SIZE; i++)
+			if (contains(set, i))
+				array[j++] = (byte) (i + offset);
+		return array;
+	}
+
+	/**
+	 * Returns array containing all the values from the set passed
+	 * as method argument.<br>
+	 * Elements of the array are returned in increasing order.
+	 * 
+	 * @param set - set to get array representation for
+	 * @param offset - all items of the returned array will be incremented
+	 *                 by this value. It's also used to determine type of
+	 *                 the array to return
+	 * @return sorted in increasing order array which contains all
+	 *         values from the given set
+	 */
+	static public short[] toArray(final long set, final short offset) {
+		int arraySize = size(set);
+		short[] array = new short[arraySize];
+		for (int i = 0, j = 0; i < Long.SIZE; i++)
+			if (contains(set, i))
+				array[j++] = (short) (i + offset);
+		return array;
+	}
+
+	/**
+	 * Returns array containing all the values from the set passed
+	 * as method argument.<br>
+	 * Elements of the array are returned in increasing order.
+	 * 
+	 * @param set - set to get array representation for
+	 * @param offset - all items of the returned array will be incremented
+	 *                 by this value. It's also used to determine type of
+	 *                 the array to return
+	 * @return sorted in increasing order array which contains all
+	 *         values from the given set
+	 */
+	static public int[] toArray(final long set, final int offset) {
+		int arraySize = size(set);
+		int[] array = new int[arraySize];
+		for (int i = 0, j = 0; i < Long.SIZE; i++)
+			if (contains(set, i))
+				array[j++] = i + offset;
+		return array;
+	}
+
+	/**
+	 * Returns array containing all the values from the set passed
+	 * as method argument.<br>
+	 * Elements of the array are returned in increasing order.
+	 * 
+	 * @param set - set to get array representation for
+	 * @param offset - all items of the returned array will be incremented
+	 *                 by this value. It's also used to determine type of
+	 *                 the array to return
+	 * @return sorted in increasing order array which contains all
+	 *         values from the given set
+	 */
+	static public long[] toArray(final long set, final long offset) {
+		int arraySize = size(set);
+		long[] array = new long[arraySize];
+		for (int i = 0, j = 0; i < Long.SIZE; i++)
+			if (contains(set, i))
+				array[j++] = i + offset;
+		return array;
+	}
+
+	/**
+	 * Returns array containing all the values from the set passed
+	 * as method argument.<br>
+	 * Elements of the array are returned in increasing order.
+	 * 
+	 * @param set - set to get array representation for
+	 * 
+	 * @return sorted in increasing order array which contains all
+	 *         values from the given set
+	 */
+	static public int[] toArray(final long set) {
+		return toArray(set, 0);
+	}
+
 	/**
 	 * Returns string representation of the set passed as method argument
 	 * 

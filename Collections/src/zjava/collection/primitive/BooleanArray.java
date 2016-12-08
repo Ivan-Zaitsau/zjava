@@ -1,7 +1,5 @@
 package zjava.collection.primitive;
 
-import java.util.Arrays;
-
 import zjava.system.Const;
 
 /**
@@ -118,7 +116,7 @@ public class BooleanArray implements Cloneable, java.io.Serializable {
 	public Object clone() {
 		try {
 			BooleanArray clone = (BooleanArray) super.clone();
-			clone.data = Arrays.copyOf(data, data.length);
+			clone.data = data.clone();
 			return clone;
 		} catch (CloneNotSupportedException e) {
     		// - should never be thrown since we are Cloneable

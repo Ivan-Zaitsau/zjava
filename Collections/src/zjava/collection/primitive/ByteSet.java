@@ -87,10 +87,11 @@ public class ByteSet {
 		int i = (int) v - Byte.MIN_VALUE + 1;
 		for (int wi = i >>> ADDRESS_BITS_PER_WORD; wi < WORDS; wi++) {
 			long w = words[i];
-			if (w > 0)
-				for (int j = i; j <= BIT_INDEX_MASK; j++)
-					if (PrimitiveBitSet.contains(w, j))
-						return (byte) (Byte.MIN_VALUE + (wi << ADDRESS_BITS_PER_WORD) + j);
+			if (w > 0) {
+				int j = PrimitiveBitSet.next(wi, i);
+				if (j >= 0)
+					return (byte) (Byte.MIN_VALUE + (wi << ADDRESS_BITS_PER_WORD) + j);
+			}
 			i = 0;
 		}
 		return v;
@@ -102,7 +103,7 @@ public class ByteSet {
      */
 	public void clear() {
 		size = 0;
-		for (int i = 0; i < WORDS; i++) words[i] = 0;
+		for (int i = 0; i < WORDS; i++) words[i] = PrimitiveBitSet.EMPTY_SET;
 	}
 
 	/**
