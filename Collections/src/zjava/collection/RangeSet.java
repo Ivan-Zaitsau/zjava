@@ -14,8 +14,10 @@ import java.util.Set;
  * 
  * @author Ivan Zaitsau
  */
-public abstract class RangeSet<E> extends AbstractSet<E> implements Set<E> {
+public abstract class RangeSet<E> extends AbstractSet<E> implements Set<E>, Cloneable, java.io.Serializable {
 
+	private static final long serialVersionUID = 201612092300L;
+	
 	final long from;
 	final long to;
 	final int d;
@@ -28,6 +30,15 @@ public abstract class RangeSet<E> extends AbstractSet<E> implements Set<E> {
 		this.isClosedRange = isClosedRange;
 	}
 
+	/**
+	 * Returns <tt>RangeSet</tt> which represents <i>closed</i> variant of this range.<br>
+	 * If range is already <i>closed</i>, the method returns this range itself.<br>
+	 * <br>
+	 * In other words, if our <tt>RangeSet</tt> represents either [a, b) or [a, b] interval,
+	 * interval [a, b] is returned.
+	 * 
+	 * @return <i>closed</i> range corresponding to this range
+	 */
 	abstract public RangeSet<E> closed();
 	
 	abstract E asObject(long v);
@@ -76,9 +87,8 @@ public abstract class RangeSet<E> extends AbstractSet<E> implements Set<E> {
     /**
      * {@inheritDoc}
      *
-     * <p> If specified collection is also <tt>RangeSet</tt> then it checks that
-     * specified range lies within our range borders.<br>
-     * Otherwise it calls to
+     * <p> If specified collection is also a <tt>RangeSet</tt> then it checks that
+     * specified range lies within our range borders.<br> Otherwise it calls to
      * {@linkplain AbstractCollection#containsAll (Collection) method of superclass}
      * which iterates over the specified collection, checking each element returned
      * by the iterator in turn to see if it's contained in this collection. If all
@@ -235,6 +245,18 @@ public abstract class RangeSet<E> extends AbstractSet<E> implements Set<E> {
         }
     }
     
+	public RangeSet<E> clone() {
+    	try {
+    	    @SuppressWarnings("unchecked")
+    		RangeSet<E> clone = (RangeSet<E>) super.clone();
+    		return clone;
+		}
+    	catch (CloneNotSupportedException e) {
+    		// - should never be thrown since we are Cloneable
+    		throw new InternalError();
+		}
+    }
+    
     /**
      * Returns a string representation of this range.<br>
      * String representation consist of word "Range: " followed by
@@ -257,6 +279,8 @@ public abstract class RangeSet<E> extends AbstractSet<E> implements Set<E> {
  */
 class ByteRangeSet extends RangeSet<Byte> {
 	
+	private static final long serialVersionUID = 201612092300L;
+
 	ByteRangeSet(long from, long to, boolean isClosedRange) {super(from, to, isClosedRange);}
 
 	ByteRangeSet(long from, long to) {super(from, to, false);}
@@ -291,6 +315,8 @@ class ByteRangeSet extends RangeSet<Byte> {
  */
 class ShortRangeSet extends RangeSet<Short> {
 	
+	private static final long serialVersionUID = 201612092300L;
+
 	ShortRangeSet(long from, long to, boolean isClosedRange) {super(from, to, isClosedRange);}
 
 	ShortRangeSet(long from, long to) {super(from, to, false);}
@@ -325,6 +351,8 @@ class ShortRangeSet extends RangeSet<Short> {
  */
 class IntegerRangeSet extends RangeSet<Integer> {
 	
+	private static final long serialVersionUID = 201612092300L;
+
 	IntegerRangeSet(long from, long to, boolean isClosedRange) {super(from, to, isClosedRange);}
 
 	IntegerRangeSet(long from, long to) {super(from, to, false);}
@@ -359,6 +387,8 @@ class IntegerRangeSet extends RangeSet<Integer> {
  */
 class LongRangeSet extends RangeSet<Long> {
 	
+	private static final long serialVersionUID = 201612092300L;
+
 	LongRangeSet(long from, long to, boolean isClosedRange) {super(from, to, isClosedRange);}
 
 	LongRangeSet(long from, long to) {super(from, to, false);}
@@ -430,6 +460,8 @@ class LongRangeSet extends RangeSet<Long> {
  */
 class CharacterRangeSet extends RangeSet<Character> {
 	
+	private static final long serialVersionUID = 201612092300L;
+
 	CharacterRangeSet(long from, long to, boolean isClosedRange) {super(from, to, isClosedRange);}
 
 	CharacterRangeSet(long from, long to) {super(from, to, false);}

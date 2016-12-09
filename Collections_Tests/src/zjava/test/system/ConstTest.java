@@ -17,7 +17,7 @@ public class ConstTest {
 		assertEquals(1 << Const.ADDRESS_BITS_PER_CHAR  , Character.SIZE);
 		assertEquals(1 << Const.ADDRESS_BITS_PER_FLOAT , Float.SIZE);
 		assertEquals(1 << Const.ADDRESS_BITS_PER_DOUBLE, Double.SIZE);
-		final int bitsInByte = 8;
+		final int bitsInByte = Const.BITS_PER_BYTE;
 		assertEquals(bitsInByte * Const.BYTES_PER_BYTE  , Byte.SIZE);
 		assertEquals(bitsInByte * Const.BYTES_PER_SHORT , Short.SIZE);
 		assertEquals(bitsInByte * Const.BYTES_PER_INT   , Integer.SIZE);

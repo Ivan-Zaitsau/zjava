@@ -18,8 +18,14 @@ public class RangedSetTest {
 	@Test(timeout = 200)
 	public void emptyRangeSizeIsZero() {
 		assertEquals(0, range(-1L, -1L).size());;
-		assertEquals(0, range(Long.MAX_VALUE, Long.MAX_VALUE).size());;
-		assertEquals(0, range(Long.MIN_VALUE, Long.MIN_VALUE).size());;
+		assertEquals(0, range(Long.MAX_VALUE, Long.MAX_VALUE).size());
+		assertEquals(0, range(Long.MIN_VALUE, Long.MIN_VALUE).size());
+		assertEquals(0, range(Integer.MIN_VALUE, Integer.MIN_VALUE).size());
+		assertEquals(0, range(Integer.MAX_VALUE, Integer.MAX_VALUE).size());
+		assertEquals(0, range(Short.MIN_VALUE, Short.MIN_VALUE).size());
+		assertEquals(0, range(Short.MAX_VALUE, Short.MAX_VALUE).size());
+		assertEquals(0, range(Byte.MIN_VALUE, Byte.MIN_VALUE).size());
+		assertEquals(0, range(Byte.MAX_VALUE, Byte.MAX_VALUE).size());
 	}
 	
 	// - evaluates hash code of interval of long values following
@@ -32,7 +38,7 @@ public class RangedSetTest {
 	}
 
 	@Test(timeout = 20000)
-	public void hashCodeIsConsistentWithSetInterfaceContract() {
+	public void hashCodeIsConsistentWithSetInterfaceContractForLongRangeSet() {
 		// - empty interval (edge cases)
 		assertEquals(0, range(-1L, -1L).hashCode());
 		assertEquals(0, range(0L, 0L).hashCode());
