@@ -14,19 +14,19 @@ import java.util.Set;
  * 
  * @author Ivan Zaitsau
  */
-public abstract class RangeSet<E> extends AbstractSet<E> implements Set<E>, Cloneable, java.io.Serializable {
+public abstract class RangeSet<E> extends AbstractSet<E> implements Set<E>, HugeCapacitySupport, Cloneable, java.io.Serializable {
 
 	private static final long serialVersionUID = 201612092300L;
 	
 	final long from;
 	final long to;
-	final int d;
+	final byte d;
 	final boolean isClosedRange;
 
 	RangeSet(long from, long to, boolean isClosedRange) {
 		this.from = from;
 		this.to = to;
-		this.d = (from > to) ? -1 : 1;
+		this.d = (byte) ((from > to) ? -1 : 1);
 		this.isClosedRange = isClosedRange;
 	}
 
@@ -57,7 +57,7 @@ public abstract class RangeSet<E> extends AbstractSet<E> implements Set<E>, Clon
 			return isClosedRange ? 1 : 0;
 		long diff = (d < 0) ? from-to : to-from;
 		// - diff can be less than 0 because of long overflow
-		return (diff >= 0) && (diff < Integer.MAX_VALUE) ? (int)(diff + ((isClosedRange) ? 1 : 0)) : Integer.MAX_VALUE;		
+		return (diff >= 0) && (diff < Integer.MAX_VALUE) ? (int)(diff + (isClosedRange ? 1 : 0)) : Integer.MAX_VALUE;
 	}
 
 	// - returns true if our range contains specified value
@@ -148,6 +148,18 @@ public abstract class RangeSet<E> extends AbstractSet<E> implements Set<E>, Clon
      */
     public Iterator<E> iterator() {
     	return new RangeSetIterator();
+    }
+
+    public HugeCapacity asHuge() {
+    	return new HugeCapacity() {
+			public long size() {
+				if (from == to)
+					return isClosedRange ? 1 : 0;
+				long diff = (d < 0) ? from-to : to-from;
+				// - diff can be less than 0 because of long overflow
+				return (diff >= 0) && (diff < Long.MAX_VALUE) ? diff + (isClosedRange ? 1 : 0) : Long.MAX_VALUE;
+			}
+		};
     }
 
     /**

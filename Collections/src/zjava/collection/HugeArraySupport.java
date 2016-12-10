@@ -11,7 +11,7 @@ package zjava.collection;
  * 
  * @see HugeArray
  */
-public interface HugeArrayAccess<E> extends HugeCapacityAccess {
+public interface HugeArraySupport<E> extends HugeCapacitySupport {
 
 	/**
 	 * Provides means of accessing elements above <tt>Integer.MAX_VALUE</tt> limit

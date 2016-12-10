@@ -13,7 +13,11 @@ package zjava.collection;
 public interface HugeList<E> extends HugeArray<E> {
 	
 	/**
-	 * Returns the number of elements in the backing list
+	 * Returns the number of elements in the backing list.<br>
+     * If this list contains more than <tt>Long.MAX_VALUE</tt> elements,
+     * returns <tt>Long.MAX_VALUE</tt>.
+     * 
+	 * @return number of elements in the backing list
 	 */
 	long size();
 	

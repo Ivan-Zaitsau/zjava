@@ -29,7 +29,7 @@ import zjava.common.Objectz;
  * @see SortedList
  * @see DynamicList
  */
-public class SortedDynamicList<E> extends AbstractCollection<E> implements SortedList<E>, HugeListAccess<E>, RandomAccess, Cloneable, java.io.Serializable {
+public class SortedDynamicList<E> extends AbstractCollection<E> implements SortedList<E>, HugeListSupport<E>, RandomAccess, Cloneable, java.io.Serializable {
 
 	static private final long serialVersionUID = 201502121200L;
 

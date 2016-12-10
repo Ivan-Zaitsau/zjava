@@ -33,7 +33,7 @@ final public class Wrapperz {
 	 * 
 	 * @author Ivan Zaitsau
 	 */
-	abstract private static class AbstractPrimitiveListWrapper<E> extends AbstractList<E> implements List<E>, HugeListAccess<E> {
+	abstract private static class AbstractPrimitiveListWrapper<E> extends AbstractList<E> implements List<E>, HugeListSupport<E> {
 		
 		transient HugeList<E> hugeView;
 		

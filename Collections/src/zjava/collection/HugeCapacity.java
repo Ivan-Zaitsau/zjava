@@ -12,9 +12,11 @@ package zjava.collection;
 public interface HugeCapacity {
 	
 	/**
-	 * Returns the number of elements in the backing collection
-	 * 
-	 * @return 
+	 * Returns the number of elements in the backing collection.
+     * If this collection contains more than <tt>Long.MAX_VALUE</tt> elements,
+     * returns <tt>Long.MAX_VALUE</tt>.
+     *
+	 * @return number of elements in the backing collection
 	 */
 	long size();
 }

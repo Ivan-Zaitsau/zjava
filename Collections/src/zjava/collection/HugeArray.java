@@ -16,7 +16,7 @@ package zjava.collection;
 public interface HugeArray<E> extends HugeCapacity {
 
 	/**
-	 * Returns size of the array
+	 * Returns size of the array.
 	 * 
 	 * @return size of the array
 	 */

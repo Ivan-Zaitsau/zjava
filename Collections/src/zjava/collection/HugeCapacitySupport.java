@@ -11,7 +11,7 @@ package zjava.collection;
  * 
  * @see HugeCapacity
  */
-public interface HugeCapacityAccess {
+public interface HugeCapacitySupport {
 
 	/**
 	 * Provides means of querying real size of huge collections (which have more than

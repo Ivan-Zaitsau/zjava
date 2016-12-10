@@ -43,7 +43,7 @@ import java.util.SortedSet;
  * 
  * @author Ivan Zaitsau
  */
-public class CompactSortedSet<E> extends AbstractSet<E> implements SortedSet<E>, HugeCapacityAccess, Cloneable, java.io.Serializable {
+public class CompactSortedSet<E> extends AbstractSet<E> implements SortedSet<E>, HugeCapacitySupport, Cloneable, java.io.Serializable {
 
 	private static final long serialVersionUID = 201503111900L;
 	

@@ -34,7 +34,7 @@ import static zjava.system.Const.MAX_ARRAY_SIZE;
  * @see     Collection
  * @see     List 
  */
-public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeListAccess<E>, RandomAccess, Cloneable, java.io.Serializable {
+public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeListSupport<E>, RandomAccess, Cloneable, java.io.Serializable {
 
 	static private final long serialVersionUID = 201503121600L;
 	

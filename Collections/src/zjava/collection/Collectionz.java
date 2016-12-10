@@ -200,22 +200,102 @@ final public class Collectionz {
 		return contains;
 	}
 
+	/**
+	 * Returns immutable representation of a range of <tt>Byte</tt> values.<br>
+	 * Returned range is open-ended and doesn't contain point passed as second
+	 * parameter.<br>
+	 * Closed range can be obtained by calling {@link RangeSet#closed() closed()}
+	 * method.<br>
+	 * <br>
+	 * Range returned is also an implementation of {@link java.util.Set Set}
+	 * interface. Calling any method that tries to change returned RangeSet will
+	 * throw an {@link UnsupportedOperationException}.
+	 * 
+	 * @param fromInclusive - first element of the range
+	 * @param toExclusive - value right after the last element of the range
+	 * 
+	 * @return RangeSet which corresponds to specified interval [fromInclusive; toExclusive)
+	 */
 	public static RangeSet<Byte> range(byte fromInclusive, byte toExclusive) {
 		return new ByteRangeSet(fromInclusive, toExclusive);
 	}
 
+	/**
+	 * Returns immutable representation of a range of <tt>Short</tt> values.<br>
+	 * Returned range is open-ended and doesn't contain point passed as second
+	 * parameter.<br>
+	 * Closed range can be obtained by calling {@link RangeSet#closed() closed()}
+	 * method.<br>
+	 * <br>
+	 * Range returned is also an implementation of {@link java.util.Set Set}
+	 * interface. Calling any method that tries to change returned RangeSet will
+	 * throw an {@link UnsupportedOperationException}.
+	 * 
+	 * @param fromInclusive - first element of the range
+	 * @param toExclusive - value right after the last element of the range
+	 * 
+	 * @return RangeSet which corresponds to specified interval [fromInclusive; toExclusive)
+	 */
 	public static RangeSet<Short> range(short fromInclusive, short toExclusive) {
 		return new ShortRangeSet(fromInclusive, toExclusive);
 	}
 
+	/**
+	 * Returns immutable representation of a range of <tt>Integer</tt> values.<br>
+	 * Returned range is open-ended and doesn't contain point passed as second
+	 * parameter.<br>
+	 * Closed range can be obtained by calling {@link RangeSet#closed() closed()}
+	 * method.<br>
+	 * <br>
+	 * Range returned is also an implementation of {@link java.util.Set Set}
+	 * interface. Calling any method that tries to change returned RangeSet will
+	 * throw an {@link UnsupportedOperationException}.
+	 * 
+	 * @param fromInclusive - first element of the range
+	 * @param toExclusive - value right after the last element of the range
+	 * 
+	 * @return RangeSet which corresponds to specified interval [fromInclusive; toExclusive)
+	 */
 	public static RangeSet<Integer> range(int fromInclusive, int toExclusive) {
 		return new IntegerRangeSet(fromInclusive, toExclusive);
 	}
 
+	/**
+	 * Returns immutable representation of a range of <tt>Long</tt> values.<br>
+	 * Returned range is open-ended and doesn't contain point passed as second
+	 * parameter.<br>
+	 * Closed range can be obtained by calling {@link RangeSet#closed() closed()}
+	 * method.<br>
+	 * <br>
+	 * Range returned is also an implementation of {@link java.util.Set Set}
+	 * interface. Calling any method that tries to change returned RangeSet will
+	 * throw an {@link UnsupportedOperationException}.
+	 * 
+	 * @param fromInclusive - first element of the range
+	 * @param toExclusive - value right after the last element of the range
+	 * 
+	 * @return RangeSet which corresponds to specified interval [fromInclusive; toExclusive)
+	 */
 	public static RangeSet<Long> range(long fromInclusive, long toExclusive) {
 		return new LongRangeSet(fromInclusive, toExclusive);
 	}
 
+	/**
+	 * Returns immutable representation of a range of <tt>Character</tt> values.<br>
+	 * Returned range is open-ended and doesn't contain point passed as second
+	 * parameter.<br>
+	 * Closed range can be obtained by calling {@link RangeSet#closed() closed()}
+	 * method.<br>
+	 * <br>
+	 * Range returned is also an implementation of {@link java.util.Set Set}
+	 * interface. Calling any method that tries to change returned RangeSet will
+	 * throw an {@link UnsupportedOperationException}.
+	 * 
+	 * @param fromInclusive - first element of the range
+	 * @param toExclusive - value right after the last element of the range
+	 * 
+	 * @return RangeSet which corresponds to specified interval [fromInclusive; toExclusive)
+	 */
 	public static RangeSet<Character> range(char fromInclusive, char toExclusive) {
 		return new CharacterRangeSet(fromInclusive, toExclusive);
 	}
