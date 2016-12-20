@@ -68,17 +68,18 @@ final public class Treez {
 		private void moveToNext() {
 			while (!iteratorsStack.empty() && !iteratorsStack.peek().hasNext())
 				iteratorsStack.pop();
+
 			if (iteratorsStack.isEmpty()) {
 				iterationDone = true;
 				iteratorsStack = null;
 				currentNode = null;
 				filter = null;
+				return;
 			}
-			else {
-				currentNode = iteratorsStack.peek().next();
-				filterApplied = false;
-				currentNodeReturned = false;
-			}
+
+			currentNode = iteratorsStack.peek().next();
+			filterApplied = false;
+			currentNodeReturned = false;
 		}
 		
 		public boolean hasNext() {
@@ -169,18 +170,19 @@ final public class Treez {
 		private void moveToNext() {
 			while (!currentIterator.hasNext() && !nodesQueue.isEmpty())
 				currentIterator = nodesQueue.poll().getChildren().iterator();
+
 			if (!currentIterator.hasNext()) {
 				iterationDone = true;
 				currentIterator = null;
 				nodesQueue = null;
 				currentNode = null;
 				filter = null;
+				return;
 			}
-			else {
-				currentNode = currentIterator.next();
-				filterApplied = false;
-				currentNodeReturned = false;
-			}
+
+			currentNode = currentIterator.next();
+			filterApplied = false;
+			currentNodeReturned = false;
 		}
 		
 		public boolean hasNext() {

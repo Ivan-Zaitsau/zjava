@@ -4,7 +4,8 @@ import zjava.system.Const;
 
 /**
  * Simple implementation of array of boolean values which
- * requires only 1 bit of memory per boolean value (rounded up to multiple of 64).
+ * requires only 1 bit of memory per boolean value
+ * (rounded up to multiple of 64).
  * 
  * @since Zjava 1.0
  * 

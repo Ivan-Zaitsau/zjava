@@ -57,7 +57,7 @@ public abstract class RangeSet<E> extends AbstractSet<E> implements Set<E>, Huge
 			return isClosedRange ? 1 : 0;
 		long diff = (d < 0) ? from-to : to-from;
 		// - diff can be less than 0 because of long overflow
-		return (diff >= 0) && (diff < Integer.MAX_VALUE) ? (int)(diff + (isClosedRange ? 1 : 0)) : Integer.MAX_VALUE;
+		return (0 <= diff & diff < Integer.MAX_VALUE) ? (int)(diff + (isClosedRange ? 1 : 0)) : Integer.MAX_VALUE;
 	}
 
 	// - returns true if our range contains specified value
@@ -157,7 +157,7 @@ public abstract class RangeSet<E> extends AbstractSet<E> implements Set<E>, Huge
 					return isClosedRange ? 1 : 0;
 				long diff = (d < 0) ? from-to : to-from;
 				// - diff can be less than 0 because of long overflow
-				return (diff >= 0) && (diff < Long.MAX_VALUE) ? diff + (isClosedRange ? 1 : 0) : Long.MAX_VALUE;
+				return (0 <= diff & diff < Long.MAX_VALUE) ? diff + (isClosedRange ? 1 : 0) : Long.MAX_VALUE;
 			}
 		};
     }
