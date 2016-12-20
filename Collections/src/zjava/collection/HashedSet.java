@@ -65,33 +65,45 @@ public class HashedSet<E> extends AbstractSet<E> implements Set<E> {
 	}
 
 	private boolean addNull() {
-		if (containsNull)
-			return false;
-		containsNull = true;
-		size++;
-		return true;
+		if (!containsNull) {
+			containsNull = true;
+			size++;
+			return true;			
+		}
+		return false;
 	}
 
 	public boolean add(E e) {
 		if (e == null)
 			return addNull();
-		return table.add(hash(e), e);
+		if (table.add(hash(e), e)) {
+			modCount++;
+			size++;
+			return true;
+		}
+		return false;
 	}
 
 	private boolean removeNull() {
-		if (!containsNull)
-			return false;
-		containsNull = false;
-		size--;
-		return true;
+		if (containsNull) {
+			containsNull = false;
+			size--;
+			return true;			
+		}
+		return false;
 	}
 
 	public boolean remove(Object o) {
 		if (o == null)
-			removeNull();
+			return removeNull();
 		@SuppressWarnings("unchecked")
 		E e = (E) o;
-		return table.remove(hash(e), e);
+		if (table.remove(hash(e), e)) {
+			modCount++;
+			size--;
+			return true;
+		}
+		return false;
 	}
 
 	public void clear() {
