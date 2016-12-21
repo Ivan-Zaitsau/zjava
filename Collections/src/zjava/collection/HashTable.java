@@ -254,8 +254,9 @@ class HashTable<E> implements Iterable<E>, Cloneable, java.io.Serializable {
 							lastCollisionIndex = (byte) ~lastCollisionIndex;
 							return;
 						}
-						while (collision.next != lastCollision)
+						while (collision.next != lastCollision) {
 							collision = collision.next;
+						}
 						collision.next = lastCollision.next;
 						lastCollisionIndex = (byte) ~lastCollisionIndex;
 					}
@@ -277,9 +278,11 @@ class HashTable<E> implements Iterable<E>, Cloneable, java.io.Serializable {
 				clone.hashes = hashes.clone();
 				if (collisions != null) {
 					clone.collisions = new Entry[collisions.length];
-					for (int i = 0; i < collisions.length; i++)
-						if (collisions[i] != null)
+					for (int i = 0; i < collisions.length; i++) {
+						if (collisions[i] != null) {
 							clone.collisions[i] = collisions[i].clone();
+						}
+					}
 				}
 				return clone();
 			}
@@ -367,7 +370,7 @@ class HashTable<E> implements Iterable<E>, Cloneable, java.io.Serializable {
 			
 			public boolean hasNext() {
 				while ((iter == null || !iter.hasNext()) && i < data.length) {
-					if (!visitedBlocks.contains(data[i])) {
+					if (visitedBlocks.add(data[i])) {
 						iter = data[i].iterator();
 					}
 					i++;
@@ -387,6 +390,7 @@ class HashTable<E> implements Iterable<E>, Cloneable, java.io.Serializable {
 				if (prev == null)
 					throw new IllegalStateException();
 				prev.remove();
+				prev = null;
 			}
 		};
 	}
