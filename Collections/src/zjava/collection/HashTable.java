@@ -1,8 +1,11 @@
 package zjava.collection;
 
 import java.util.Arrays;
+import java.util.ConcurrentModificationException;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
+import java.util.Set;
 
 /**
  * Early draft of HashTable.
@@ -158,7 +161,7 @@ class HashTable<E> implements Iterable<E>, Cloneable, java.io.Serializable {
 			return false;
 		}
 
-		public Block<E> extract(int requestedRank, int hash) {
+		Block<E> extract(int requestedRank, int hash) {
 			if (requestedRank == rank)
 				return this;
 			// - FIXME implementation is missing
@@ -176,65 +179,92 @@ class HashTable<E> implements Iterable<E>, Cloneable, java.io.Serializable {
 				private Entry<E> lastCollision = null;
 	
 				public boolean hasNext() {
-					// - iteration over values
-					if (values == null)
-						return false;
-					while (nextIndex < values.length && values[nextIndex] == null)
-						nextIndex++;
-					if (nextIndex < values.length)
-						return true;
+					try {
+						// - iteration over values
+						if (values == null)
+							return false;
+						while (nextIndex < values.length && values[nextIndex] == null)
+							nextIndex++;
+						if (nextIndex < values.length)
+							return true;
 
-					// - iteration over collisions
-					if (collisions == null)
-						return false;
-					if (lastCollision != null && lastCollision.next != null)
-						return true;
+						// - iteration over collisions
+						if (collisions == null)
+							return false;
+						if (lastCollision != null && lastCollision.next != null)
+							return true;
 
-					while (nextCollisionIndex < collisions.length && collisions[nextCollisionIndex] == null)
-						nextCollisionIndex++;
-					return (nextCollisionIndex < collisions.length);
+						while (nextCollisionIndex < collisions.length && collisions[nextCollisionIndex] == null)
+							nextCollisionIndex++;
+						return (nextCollisionIndex < collisions.length);						
+					}
+					catch (NullPointerException e) {
+						throw new ConcurrentModificationException();
+					}
+					catch (IndexOutOfBoundsException e) {
+						throw new ConcurrentModificationException();						
+					}
 				}
 
 				public E next() {
 					if (!hasNext())
 						throw new NoSuchElementException();
-					// - iteration over values
-					lastIndex = nextIndex;
-					if (lastIndex < values.length) {
-						return values[lastIndex];
+					try {
+						// - iteration over values
+						lastIndex = nextIndex;
+						if (lastIndex < values.length) {
+							return values[lastIndex];
+						}
+						// - iteration over collisions
+						if (lastCollision == null || lastCollision.next == null) {
+							lastCollisionIndex = nextCollisionIndex++;
+							lastCollision = collisions[lastCollisionIndex];
+						}
+						else {
+							lastCollision = lastCollision.next;
+							if (lastCollisionIndex < 0)
+								lastCollisionIndex = (byte) ~lastCollisionIndex;
+						}
+						return lastCollision.key;
 					}
-					// - iteration over collisions
-					if (lastCollision == null || lastCollision.next == null) {
-						lastCollisionIndex = nextCollisionIndex;
-						lastCollision = collisions[lastCollisionIndex];
+					catch (NullPointerException e) {
+						throw new ConcurrentModificationException();
 					}
-					else {
-						lastCollision = lastCollision.next;						
+					catch (IndexOutOfBoundsException e) {
+						throw new ConcurrentModificationException();						
 					}
-					return lastCollision.key;
 				}
 
 				public void remove() {
-					// - iteration over values
-					if (lastIndex < 0)
-						throw new IllegalStateException();
-					if (lastIndex < values.length) {
-						values[lastIndex] = null;
-						hashes[lastIndex] = 0;
-						lastIndex = -1;
+					try {
+						// - iteration over values
+						if (lastIndex < 0)
+							throw new IllegalStateException();
+						if (lastIndex < values.length) {
+							values[lastIndex] = null;
+							hashes[lastIndex] = 0;
+							lastIndex = -1;
+						}
+						// - iteration over collisions
+						if (lastCollisionIndex < 0)
+							throw new IllegalStateException();
+						Entry<E> collision = collisions[lastCollisionIndex];
+						if (collision == lastCollision) {
+							collisions[lastCollisionIndex] = collision.next;
+							lastCollisionIndex = (byte) ~lastCollisionIndex;
+							return;
+						}
+						while (collision.next != lastCollision)
+							collision = collision.next;
+						collision.next = lastCollision.next;
+						lastCollisionIndex = (byte) ~lastCollisionIndex;
 					}
-					// - iteration over collisions
-					if (lastCollisionIndex < 0)
-						throw new IllegalStateException();
-					if (collisions[lastCollisionIndex] == lastCollision) {
-						collisions[lastCollisionIndex] = lastCollision.next;
-						lastCollisionIndex = -1;
+					catch (NullPointerException e) {
+						throw new ConcurrentModificationException();
 					}
-					Entry<E> collision = collisions[lastCollisionIndex];
-					while (collision.next != lastCollision)
-						collision = collision.next;
-					collision.next = lastCollision.next;
-					lastCollisionIndex = -1;
+					catch (IndexOutOfBoundsException e) {
+						throw new ConcurrentModificationException();						
+					}
 				}
 			};
 		}
@@ -318,9 +348,67 @@ class HashTable<E> implements Iterable<E>, Cloneable, java.io.Serializable {
 		data = Arrays.copyOf(data, data.length);
 		System.arraycopy(data, 0, data, oldLength, oldLength);
 	}
-	
+
 	public Iterator<E> iterator() {
-		// TODO Auto-generated method stub
-		return null;
+
+		return new Iterator<E>() {
+
+			/** index of current data block */
+			private int i = 0;
+
+			/** current block iterator */
+			Iterator<E> iter;
+			
+			/** previously used iterator to handle <tt>remove()</tt> calls */
+			Iterator<E> prev;
+			
+			/** used to track already visited blocks */
+			Set<Block<E>> visitedBlocks = new HashSet<Block<E>>();
+			
+			public boolean hasNext() {
+				while ((iter == null || !iter.hasNext()) && i < data.length) {
+					if (!visitedBlocks.contains(data[i])) {
+						iter = data[i].iterator();
+					}
+					i++;
+				}
+				return (iter != null && iter.hasNext());
+			}
+
+			public E next() {
+				if (!hasNext())
+					throw new NoSuchElementException();
+				E next = iter.next();
+				prev = iter;
+				return next;
+			}
+
+			public void remove() {
+				if (prev == null)
+					throw new IllegalStateException();
+				prev.remove();
+			}
+		};
 	}
+	
+    /**
+     * Returns a shallow copy of this <tt>HashTable</tt> instance.
+     * (The elements themselves are not cloned).
+     *
+     * @return a clone of this <tt>HashTable</tt> instance
+     */
+    @SuppressWarnings("unchecked")
+	public HashTable<E> clone() {
+    	try {
+    		HashTable<E> clone = (HashTable<E>) super.clone();
+    		for (int i = 0; i < data.length; i++) {
+    			clone.data[i] = data[i].clone();
+    		}
+    		return clone;
+		}
+    	catch (CloneNotSupportedException e) {
+    		// - should never be thrown since we are Cloneable
+    		throw new InternalError();
+		}
+    }
 }

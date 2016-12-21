@@ -1,6 +1,7 @@
 package zjava.collection;
 
 import java.util.AbstractSet;
+import java.util.ConcurrentModificationException;
 import java.util.Iterator;
 import java.util.Set;
 
@@ -13,26 +14,24 @@ import java.util.Set;
  * 
  * @author Ivan Zaitsau
  */
-public class HashedSet<E> extends AbstractSet<E> implements Set<E> {
+public class HashedSet<E> extends AbstractSet<E> implements Set<E>, HugeCapacitySupport, Cloneable, java.io.Serializable {
 	
+	private static final long serialVersionUID = 201612210000L;
+
 	transient volatile int modCount = 0;
 
 	private final Hasher<? super E> hasher;
 	
 	private long size;
-	private final HashTable<E> table;
+	private HashTable<E> table;
 	private boolean containsNull;
-	
-	private int hash(E value) {
-		int h = hasher.hashCode(value);
-        h ^= (h >>> 20) ^ (h >>> 12);
-        return h ^ (h >>> 7) ^ (h >>> 4);
-	}
+
+	private transient HugeCapacity hugeView;
 	
 	public HashedSet() {
 		this(Hasher.DEFAULT);
 	}
-	
+
 	/**
 	 * 
 	 * 
@@ -46,15 +45,16 @@ public class HashedSet<E> extends AbstractSet<E> implements Set<E> {
 		table = new HashTable<E>();
 	}
 
-	public Iterator<E> iterator() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
 	public int size() {
 		return (size > Integer.MAX_VALUE) ? Integer.MAX_VALUE : (int) size;
 	}
 
+	private int hash(E value) {
+		int h = hasher.hashCode(value);
+        h ^= (h >>> 20) ^ (h >>> 12);
+        return h ^ (h >>> 7) ^ (h >>> 4);
+	}
+	
 	public boolean contains(Object o) {
 		if (o == null)
 			return containsNull;
@@ -107,8 +107,102 @@ public class HashedSet<E> extends AbstractSet<E> implements Set<E> {
 	}
 
 	public void clear() {
+		modCount++;
 		containsNull = false;
 		table.clear();
 		size = 0;
+	}
+	
+	public Iterator<E> iterator() {
+
+		return new Iterator<E>() {
+
+			/** true if this iterator still has null value */
+			private boolean hasNull = containsNull;
+
+			/** true if previous value returned by this iterator was <tt>null</tt> */
+			private boolean wasNull = false;
+			
+			/** Expected version (modifications count) of the backing Set */
+			private int expectedModCount = modCount;
+			private Iterator<E> tableIter = table.iterator();
+
+			void checkForComodification() {
+				if (expectedModCount != modCount)
+					throw new ConcurrentModificationException();
+			}
+
+			public boolean hasNext() {
+				checkForComodification();
+				return hasNull || tableIter.hasNext();
+			}
+
+			public E next() {
+				checkForComodification();
+				if (hasNull) {
+					hasNull = false;
+					wasNull = true;
+					return null;
+				}
+				try {
+					E next = tableIter.next();
+					wasNull = false;
+					return next;
+				}
+				catch (NullPointerException e) {
+					throw new ConcurrentModificationException();
+				}
+				catch (IndexOutOfBoundsException e) {
+					throw new ConcurrentModificationException();
+				}
+			}
+
+			public void remove() {
+				checkForComodification();
+				if (wasNull)
+					removeNull();
+				try {
+					tableIter.remove();					
+				}
+				catch (NullPointerException e) {
+					throw new ConcurrentModificationException();
+				}
+				catch (IndexOutOfBoundsException e) {
+					throw new ConcurrentModificationException();
+				}
+				expectedModCount = modCount;
+			}
+		};
+	}
+
+    /**
+     * Returns a shallow copy of this <tt>HashedSet</tt> instance.
+     * (The elements themselves are not cloned).
+     *
+     * @return a clone of this <tt>HashedSet</tt> instance
+     */
+    @SuppressWarnings("unchecked")
+	public Object clone() {
+    	try {
+    		HashedSet<E> clone = (HashedSet<E>) super.clone();
+			clone.modCount = 0;
+			clone.hugeView = null;
+			clone.table = (HashTable<E>) table.clone();
+    		return clone;
+		}
+    	catch (CloneNotSupportedException e) {
+    		// - should never be thrown since we are Cloneable
+    		throw new InternalError();
+		}
+    }
+
+	public HugeCapacity asHuge() {
+		if (hugeView == null)
+			hugeView = new HugeCapacity() {
+			public long size() {
+				return size;
+			}
+		};
+		return hugeView;
 	}
 }

@@ -13,13 +13,21 @@ import zjava.common.Objectz;
  * @author Ivan Zaitsau
  * 
  */
-public abstract class Hasher<T> {
+public abstract class Hasher<T> implements java.io.Serializable {
 	
+	private static final long serialVersionUID = 201612210000L;
+
 	/**
 	 * Default hash-function which uses standard Object hashCode and equals methods.
 	 */
 	final public static Hasher<Object> DEFAULT = new Hasher<Object>() {
 		
+		private static final long serialVersionUID = 201612210000L;
+
+		private Object readResolve() throws java.io.ObjectStreamException {
+			return DEFAULT;
+		}
+
 		/**
 		 * Default hashCode implementation.<br>
 		 * @return method's argument <tt>hashCode()</tt> or 0
@@ -38,6 +46,12 @@ public abstract class Hasher<T> {
 	 */
 	final public static Hasher<Object> IDENTITY = new Hasher<Object>() {
 		
+		private static final long serialVersionUID = 201612210000L;
+
+		private Object readResolve() throws java.io.ObjectStreamException {
+			return IDENTITY;
+		}
+
 		/**
 		 * Returns true if and only if o1 and o2 represent the same object
 		 */
