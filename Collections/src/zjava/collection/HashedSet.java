@@ -8,7 +8,7 @@ import java.util.Set;
 /** 
  * Early draft of HashedSet.
  * 
- * @param <E> - the type of elements in this set
+ * @param <E> - the type of elements in this <tt>Set</tt>
  * 
  * @since Zjava 1.0
  * 
@@ -127,7 +127,7 @@ public class HashedSet<E> extends AbstractSet<E> implements Set<E>, HugeCapacity
 			private int expectedModCount = modCount;
 			private Iterator<E> tableIter = table.iterator();
 
-			void checkForComodification() {
+			private void checkForComodification() {
 				if (expectedModCount != modCount)
 					throw new ConcurrentModificationException();
 			}

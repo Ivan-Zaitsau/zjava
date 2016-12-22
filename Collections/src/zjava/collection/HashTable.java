@@ -21,6 +21,7 @@ import java.util.Set;
 class HashTable<E> implements Iterable<E>, Cloneable, java.io.Serializable {
 	
 	private static final long serialVersionUID = 201612081900L;
+	private static final byte COLLISION_HITS_THRESHOLD = 20;
 
 	private static class Entry<E> implements Cloneable, java.io.Serializable {
 		
@@ -63,16 +64,41 @@ class HashTable<E> implements Iterable<E>, Cloneable, java.io.Serializable {
 		private static final int ASSOCIATIVITY = 7;
 
 		// - essential variables
-		E[] values;
-		int[] hashes;
-		Entry<E>[] collisions;
+		private E[] values;
+		private int[] hashes;
+		private Entry<E>[] collisions;
 
 		// - service variables
-		byte rank;
+		private final byte rank;
+		private byte collisionHits;
 
-		public Block() {
+		private static int valuesIndex(final int hash) {
+			return hash & (SIZE - 1);
 		}
 
+		private static int collisionsIndex(final int hash) {
+			return hash & (COLLISIONS_SIZE - 1);
+		}
+
+		public Block(int rank) {
+			if (0 > rank | rank >= 32)
+				throw new IllegalArgumentException();
+			this.rank = (byte) rank;
+		}
+
+		private void incCollisionHits() {
+			if (collisionHits < Byte.MAX_VALUE)
+				collisionHits++;
+		}
+		
+		public byte getCollisionHits() {
+			return collisionHits;
+		}
+		
+		public void resetCollisionHits() {
+			collisionHits = 0;
+		}
+		
 		@SuppressWarnings("unchecked")
 		private void lazyInitValues() {
 			if (values == null) {
@@ -88,12 +114,12 @@ class HashTable<E> implements Iterable<E>, Cloneable, java.io.Serializable {
 			}
 		}
 
-		public boolean add(int hash, E key) {
+		public boolean add(final int hash, final E key) {
 			if (contains(hash, key))
 				return false;
 			// - look for free space in values
 			lazyInitValues();
-			int idx = hash & (SIZE - 1);
+			int idx = valuesIndex(hash);
 			for (int i = 0; i < ASSOCIATIVITY; i++) {
 				if (values[idx+i] == null) {
 					hashes[idx+i] = hash;
@@ -103,16 +129,16 @@ class HashTable<E> implements Iterable<E>, Cloneable, java.io.Serializable {
 			}
 			// - add to collisions if no space left in "values"
 			lazyInitCollisions();
-			idx = hash & (COLLISIONS_SIZE - 1);
+			idx = collisionsIndex(hash);
 			collisions[idx] = new Entry<E>(hash, key, collisions[idx]);
 			return true;
 		}
 
-		public boolean contains(int hash, E key) {
+		public boolean contains(final int hash, final E key) {
 			// - check values
 			if (values == null)
 				return false;
-			int idx = hash & (SIZE - 1);
+			int idx = valuesIndex(hash);
 			for (int i = 0; i < ASSOCIATIVITY; i++)
 				if (hashes[idx+i] == hash && key.equals(values[idx+i]))
 					return true;
@@ -120,8 +146,9 @@ class HashTable<E> implements Iterable<E>, Cloneable, java.io.Serializable {
 			// - check collisions
 			if (collisions == null)
 				return false;
-			Entry<E> entry = collisions[hash & (COLLISIONS_SIZE - 1)];
+			Entry<E> entry = collisions[collisionsIndex(hash)];
 			while (entry != null) {
+				incCollisionHits();
 				if (entry.hash == hash && entry.key.equals(key))
 					return true;
 				entry = entry.next;
@@ -129,11 +156,11 @@ class HashTable<E> implements Iterable<E>, Cloneable, java.io.Serializable {
 			return false;
 		}
 
-		public boolean remove(int hash, E key) {
+		public boolean remove(final int hash, final E key) {
 			// - check values
 			if (values == null)
 				return false;
-			int idx = hash & (SIZE - 1);
+			int idx = valuesIndex(hash);
 			for (int i = 0; i < ASSOCIATIVITY; i++)
 				if (hashes[idx+i] == hash && key.equals(values[idx+i])) {
 					hashes[idx+i] = 0;
@@ -144,10 +171,11 @@ class HashTable<E> implements Iterable<E>, Cloneable, java.io.Serializable {
 			// - check collisions
 			if (collisions == null)
 				return false;
-			idx = hash & (COLLISIONS_SIZE - 1);
+			idx = collisionsIndex(hash);
 			Entry<E> prev = null;
 			Entry<E> entry = collisions[idx];
 			while (entry != null) {
+				incCollisionHits();
 				if (entry.hash == hash && entry.key.equals(key)) {
 					if (prev == null)
 						collisions[idx] = entry.next;
@@ -161,11 +189,64 @@ class HashTable<E> implements Iterable<E>, Cloneable, java.io.Serializable {
 			return false;
 		}
 
-		Block<E> extract(int requestedRank, int hash) {
+		// - returns bits of the given hash related to given rank
+		private static int rankedHash(final int hash, final int rank) {
+			return (hash >>> ADDRESS_BITS) & ((1 << rank) - 1);
+		}
+
+		private boolean putToValues(Entry<E> entry) {
+			int idx = valuesIndex(entry.hash);
+			for (int i = 0; i < ASSOCIATIVITY; i++)
+				if (values[idx+i] == null) {
+					hashes[idx+i] = entry.hash;
+					values[idx+i] = entry.key;
+					return true;
+				}
+			return false;
+		}
+
+		public Block<E> extract(final int requestedRank, int hash) {
 			if (requestedRank == rank)
 				return this;
-			// - FIXME implementation is missing
-			return null;
+			hash = rankedHash(hash, requestedRank);
+			Block<E> extracted = new Block<E>(requestedRank);
+			// - extract values
+			if (values == null)
+				return extracted;
+			for (int i = 0; i < values.length; i++) {
+				if (rankedHash(hashes[i], requestedRank) == hash) {
+					extracted.lazyInitValues();
+					extracted.hashes[i] = hashes[i];
+					extracted.values[i] = values[i];
+					hashes[i] = 0;
+					values[i] = null;
+				}
+			}
+			// - extract collisions and put them in values, if possible
+			if (collisions == null)
+				return extracted;
+			for (int i = 0; i < collisions.length; i++)
+				if (collisions[i] != null) {
+					Entry<E> prev = null;
+					Entry<E> entry = collisions[i];
+					while (entry != null) {
+						// - try to put to values
+						if (((rankedHash(entry.hash, requestedRank) == hash) ? extracted : this).putToValues(entry)) {
+							entry = (prev == null) ? (collisions[i] = entry.next) : (prev.next = entry.next);
+						}
+						// - if not possible - move to collisions in extracted block / leave there
+						else {
+							final Entry<E> next = entry.next;
+							if (rankedHash(entry.hash, requestedRank) == hash) {
+								extracted.lazyInitCollisions();
+								entry.next = extracted.collisions[i];
+								extracted.collisions[i] = entry;
+							}
+							entry = next;
+						}
+					}
+				}
+			return extracted;
 		}
 
 		public Iterator<E> iterator() {
@@ -293,14 +374,13 @@ class HashTable<E> implements Iterable<E>, Cloneable, java.io.Serializable {
 		}
 	}
 
-	// - essential variables
 	private Block<E>[] data;
 	private long size;
 	
 	@SuppressWarnings("unchecked")
 	private void init() {
 		data = (Block<E>[]) new Block[1];
-		data[0] = new Block<E>();
+		data[0] = new Block<E>(0);
 		size = 0;
 	}
 	
@@ -315,8 +395,22 @@ class HashTable<E> implements Iterable<E>, Cloneable, java.io.Serializable {
 		return size;
 	}
 
+	private int blockIndex(final int hash) {
+		return (hash >>> Block.ADDRESS_BITS) & (data.length - 1);
+	}
+	
+	private void optimize(final int blockIndex, final int hash) {
+		final Block<E> block = data[blockIndex];
+		if (block.getCollisionHits() >= COLLISION_HITS_THRESHOLD) {
+			data[blockIndex] = block.extract(rank(), hash);
+			block.resetCollisionHits();
+		}
+	}
+	
 	public boolean add(int hash, E entry) {
-		if (data[(hash >>> Block.ADDRESS_BITS) & (data.length - 1)].add(hash, entry)) {
+		final int blockIndex = blockIndex(hash);
+		optimize(blockIndex, hash);
+		if (data[blockIndex].add(hash, entry)) {
 			size++;
 			return true;
 		}
@@ -324,11 +418,15 @@ class HashTable<E> implements Iterable<E>, Cloneable, java.io.Serializable {
 	}
 	
 	public boolean contains(int hash, E entry) {
-		return data[(hash >>> Block.ADDRESS_BITS) & (data.length - 1)].contains(hash, entry);
+		final int blockIndex = blockIndex(hash);
+		optimize(blockIndex, hash);
+		return data[blockIndex].contains(hash, entry);
 	}
 	
 	public boolean remove(int hash, E entry) {
-		if (data[(hash >>> Block.ADDRESS_BITS) & (data.length - 1)].remove(hash, entry)) {
+		final int blockIndex = blockIndex(hash);
+		optimize(blockIndex, hash);
+		if (data[blockIndex].remove(hash, entry)) {
 			size--;
 			return true;
 		}

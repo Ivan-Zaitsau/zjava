@@ -305,7 +305,7 @@ public class $1List implements Cloneable, java.io.Serializable {
 				for (int j = 0; j <= 1; j++) {
 					if (splitBlock[j] == null || splitBlock[j].size() == 0)
 						break main;
-						newData[i+i+j] = splitBlock[j];
+					newData[i+i+j] = splitBlock[j];
 				}
 			}
 			data = newData;

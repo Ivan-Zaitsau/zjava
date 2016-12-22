@@ -278,14 +278,14 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeList
 	private Block<E>[] data;
 	
 	private transient HugeList<E> hugeView;
-	
+
 	/** Null-safe access to data block with initialization.*/
 	private Block<E> data(final int index) {
 		if (data[index] == null)
 			data[index] = new Block<E>(1 << blockAddressBits);
 		return data[index];
 	}
-	
+
     /**
      * Increases the capacity of this <tt>DynamicList</tt> instance, if
      * necessary, to ensure that it can hold at least the number of elements
@@ -315,7 +315,7 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeList
 			capacity = (long) data.length << blockAddressBits;
 		}
 	}
-	
+
 	private void compact() {
 		if (data.length <= INITIAL_BLOCKS_COUNT)
 			return;
@@ -330,7 +330,7 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeList
 				for (int j = 0; j <= 1; j++) {
 					if (splitBlock[j] == null || splitBlock[j].size() == 0)
 						break main;
-						newData[i+i+j] = splitBlock[j];
+					newData[i+i+j] = splitBlock[j];
 				}
 			}
 			data = newData;
@@ -338,7 +338,7 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeList
 			modCount++;
 		}
 	}
-	
+
     private String outOfBoundsMsg(long index) {
         return "Index: " + index + ", Size: " + size;
     }
@@ -759,7 +759,7 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeList
 	            }
 	        }
 		
-			void checkForComodification() {
+			private void checkForComodification() {
 				if (expectedModCount != modCount)
 					throw new ConcurrentModificationException();
 			}
