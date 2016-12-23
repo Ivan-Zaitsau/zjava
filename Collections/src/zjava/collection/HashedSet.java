@@ -205,4 +205,18 @@ public class HashedSet<E> extends AbstractSet<E> implements Set<E>, HugeCapacity
 		};
 		return hugeView;
 	}
+	
+    /**
+     * Returns a string representation of this set.<br>
+     * The string representation consists of a list of the set's elements
+     * separated by commas in the order they are returned by its iterator.
+     * Set is enclosed in square brackets (<tt>"[]"</tt>).<br>
+     * If this set contains too many elements, only first elements will be shown,
+     * followed by three-dot (<tt>"..."</tt>).
+     * 
+	 * @return a string representation of this set.
+     */
+	public String toString() {
+		return Collectionz.toString(this, "(this Set)");
+	}
 }

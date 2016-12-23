@@ -905,20 +905,6 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeList
         if (isEmpty())
             return "[]";
 
-        StringBuilder sb = new StringBuilder();
-        sb.append('[');
-        for (int i = 0; i < size; ) {
-            E e = fastGet(i);
-            sb.append(e == this ? "(this List)" : e);
-            if (++i < size) {
-                if (sb.length() > 1000) {
-                	sb.append(',').append(" ...");
-                	break;
-                }            	
-                sb.append(',').append(' ');
-            }
-        }
-        sb.append(']');
-        return sb.toString();
+        return Collectionz.toString(this, "(this List)");
 	}
 }
