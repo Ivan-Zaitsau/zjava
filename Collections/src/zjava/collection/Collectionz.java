@@ -392,7 +392,7 @@ final public class Collectionz {
      * Returns a string representation of the given <tt>Iterable</tt>.<br>
      * The string representation consists of a list of the <tt>Iterable</tt>'s
      * elements separated by commas in the order they are returned by its iterator.
-     * <tt>Iterable</tt> enclosed in square brackets (<tt>"[]"</tt>).
+     * <tt>Iterable</tt> is enclosed in square brackets (<tt>"[]"</tt>).
      * 
      * <p>If <tt>Iterable</tt> contains too many elements, only first elements will be shown,
      * followed by three-dot (<tt>"..."</tt>).
@@ -406,7 +406,7 @@ final public class Collectionz {
 	public static String toString(Iterable<?> c) {
 		return toString(c, "(this)");
 	}
-	
+
 	private Collectionz() {
 		throw new AssertionError("Instantiation of utility class " + getClass().getName() + " is prohibited");
 	};
