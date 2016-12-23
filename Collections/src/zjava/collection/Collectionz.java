@@ -317,9 +317,9 @@ final public class Collectionz {
         	if (e == array)
         		result.append(onSelf);
         	else if (e instanceof Iterable<?>)
-        		toString((Iterable<?>) e, "(this)", visited, charsLeft - result.length());
+        		result.append(toString((Iterable<?>) e, "(this)", visited, charsLeft - result.length()));
         	else if (e instanceof Object[])
-        		toString((Object[]) e, "(this)", visited, charsLeft - result.length());
+        		result.append(toString((Object[]) e, "(this)", visited, charsLeft - result.length()));
         	else 
         		result.append(e);
 
@@ -350,9 +350,9 @@ final public class Collectionz {
         	if (e == c)
         		result.append(onSelf);
         	else if (e instanceof Iterable<?>)
-        		toString((Iterable<?>) e, "(this)", visited, charsLeft - result.length());
+        		result.append(toString((Iterable<?>) e, "(this)", visited, charsLeft - result.length()));
         	else if (e instanceof Object[])
-        		toString((Object[]) e, "(this)", visited, charsLeft - result.length());
+        		result.append(toString((Object[]) e, "(this)", visited, charsLeft - result.length()));
         	else 
         		result.append(e);
 
