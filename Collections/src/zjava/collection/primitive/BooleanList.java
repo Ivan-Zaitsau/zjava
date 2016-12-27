@@ -2,6 +2,8 @@ package zjava.collection.primitive;
 
 import java.util.Arrays;
 
+import zjava.system.Const;
+
 /**
  * Resizable dynamic array of primitive boolean values.
  *
@@ -16,6 +18,7 @@ import java.util.Arrays;
  * memory.</li>
  * <li>Faster insertions at random positions.</li>
  * <li>Support for more than {@code Integer.MAX_VALUE} elements.</li>
+ * <li>Uses only 1 bit of memory per value
  * 
  * @since Zjava 1.0
  *  
@@ -24,10 +27,10 @@ import java.util.Arrays;
  */
 public class BooleanList implements Cloneable, java.io.Serializable {
 
-	static private final long serialVersionUID = 201503092100L;
+	static private final long serialVersionUID = 201612271645L;
 	
 	/** Actual initial block size is 2<sup>INITIAL_BLOCK_ADDRESS_BITS</sup> */
-	static private final int INITIAL_BLOCK_ADDRESS_BITS = 5;
+	static private final int INITIAL_BLOCK_ADDRESS_BITS = 10;
 	
 	/** Number of blocks on BooleanList initialization.
 	 * <br> <b>Note:</b> Must be even number due to some simplifications and assumptions made in the code*/
@@ -53,7 +56,22 @@ public class BooleanList implements Cloneable, java.io.Serializable {
 	 */
 	static final private class BinaryBlock implements Cloneable, java.io.Serializable {
 		
-		private static final long serialVersionUID = 201503092100L;
+		private static final long serialVersionUID = 201612271645L;
+		
+		private static final int ADDRESS_BITS_PER_WORD = Const.ADDRESS_BITS_PER_LONG;
+		private static final int WORD_MASK = (1 << ADDRESS_BITS_PER_WORD) - 1;
+		
+		// - partial logical shift to left
+		private static long pshl(final long value, final int fromIndex, final int toIndex) {
+			final long rangeMask = (((1L << toIndex) << 1) - 1) - ((1L << fromIndex) - 1);
+			return (value & ~rangeMask) | (((value & rangeMask) << 1) & rangeMask);
+		}
+		
+		// - partial logical shift to right
+		private static long pshr(final long value, final int fromIndex, final int toIndex) {
+			final long rangeMask = (((1L << toIndex) << 1) - 1) - ((1L << fromIndex) - 1);
+			return (value & ~rangeMask) | (((value & rangeMask) >>> 1) & rangeMask);
+		}
 		
 		// - merges two blocks of equal capacities into block with doubled capacity
 		static BinaryBlock merge(BinaryBlock block1, BinaryBlock block2) {
@@ -62,11 +80,81 @@ public class BooleanList implements Cloneable, java.io.Serializable {
 
 			assert (block1 == null | block2 == null) || (block1.values.length == block2.values.length);
 
-			BinaryBlock mergedBlock = new BinaryBlock(2 * ((block1 == null) ? block2.values.length : block1.values.length));
-			if (block1 != null)
-				mergedBlock.size += block1.copyToArray(mergedBlock.values, 0);
-			if (block2 != null)
-				mergedBlock.size += block2.copyToArray(mergedBlock.values, mergedBlock.size);
+			if (block1 == null || block1.size == 0) {
+				block1 = block2;
+				block2 = null;
+			}
+			BinaryBlock mergedBlock = new BinaryBlock(2 * block1.values.length);
+			
+			// - copy bits from block1
+			final int blockMask = (block1.values.length - 1);
+			int remainingBits = block1.size & WORD_MASK;
+			int wordSplit = block1.offset & WORD_MASK;
+			int fullWords = block1.size >>> ADDRESS_BITS_PER_WORD;
+			int wordOffset = block1.offset >>> ADDRESS_BITS_PER_WORD;
+			if (wordSplit == 0) {
+				for (int wi = 0; wi < fullWords; wi++) {
+					mergedBlock.values[wi] = block1.values[(wordOffset + wi) & blockMask];
+				}
+				if (remainingBits > 0) {
+					mergedBlock.values[fullWords] = block1.values[(wordOffset + fullWords) & blockMask]
+							& ((1L << remainingBits) - 1);
+				}
+			}
+			else {
+				for (int wi = 0; wi < fullWords; wi++) {
+					mergedBlock.values[wi] = (block1.values[(wordOffset + wi) & blockMask] >>> wordSplit)
+							| (block1.values[(wordOffset + wi + 1) & blockMask] << -wordSplit);
+				}
+				if (remainingBits > 0) {
+					mergedBlock.values[fullWords] = ((block1.values[(wordOffset + fullWords) & blockMask] >>> wordSplit)
+							| (block1.values[(wordOffset + fullWords + 1) & blockMask] << -wordSplit))
+							& ((1L << remainingBits) - 1);
+				}
+			}
+			mergedBlock.size += block1.size;
+
+			if (block2 == null || block2.size == 0)
+				return mergedBlock;
+
+			// - copy bits from block2
+			final int bitsToCompleteWord = (remainingBits > 0) ? (1 << ADDRESS_BITS_PER_WORD) - remainingBits : 0;
+			// - finish uncompleted word first
+			if (remainingBits > 0) {
+				if (bitsToCompleteWord > block2.size) {
+					
+				}
+
+			}
+
+			final int mergedWords = fullWords;
+			remainingBits = (block2.size - bitsToCompleteWord) & WORD_MASK;
+			wordSplit = (block2.offset + bitsToCompleteWord) & WORD_MASK;
+			fullWords = (block2.size - bitsToCompleteWord) >>> ADDRESS_BITS_PER_WORD;
+			wordOffset = (block2.offset + bitsToCompleteWord) >>> ADDRESS_BITS_PER_WORD;
+			
+			if (wordSplit == 0) {
+				for (int wi = 0; wi < fullWords; wi++) {
+					mergedBlock.values[mergedWords + wi] = block2.values[(wordOffset + wi) & blockMask];
+				}
+				if (remainingBits > 0) {
+					mergedBlock.values[mergedWords + fullWords] = block2.values[(wordOffset + fullWords) & blockMask]
+							& ((1L << remainingBits) - 1);
+				}
+			}
+			else {
+				for (int wi = 0; wi < fullWords; wi++) {
+					mergedBlock.values[mergedWords + wi] = (block2.values[(wordOffset + wi) & blockMask] >>> wordSplit)
+							| (block2.values[(wordOffset + wi + 1) & blockMask] << -wordSplit);
+				}
+				if (remainingBits > 0) {
+					mergedBlock.values[mergedWords + fullWords] = ((block2.values[(wordOffset + fullWords) & blockMask] >>> wordSplit)
+							| (block2.values[(wordOffset + fullWords + 1) & blockMask] << -wordSplit))
+							& ((1L << remainingBits) - 1);
+				}
+			}
+			mergedBlock.size += block2.size;
+
 			return mergedBlock;
 		}
 
@@ -77,108 +165,203 @@ public class BooleanList implements Cloneable, java.io.Serializable {
 			
 			assert (block.values.length & 1) == 0;
 			
-			int halfSize = block.values.length / 2;
+			final int halfCapacity = (block.values.length / 2) << ADDRESS_BITS_PER_WORD;
+			final int blockMask = (block.values.length - 1);
+			final int wordSplit = block.offset & WORD_MASK;
+			final int remainingBits = block.size & WORD_MASK;
+			final int wordOffset = block.offset >>> ADDRESS_BITS_PER_WORD;
+			final int fullWords = block.size >>> ADDRESS_BITS_PER_WORD;
 			
-			if (block.size <= halfSize) {
-				BinaryBlock block1 = new BinaryBlock(halfSize);
-				block.copyToArray(block1.values, 0, 0, block.size);
+			if (block.size <= halfCapacity) {
+				BinaryBlock block1 = new BinaryBlock(halfCapacity);
+				if (wordSplit == 0) {
+					for (int wi = 0; wi < fullWords; wi++) {
+						block1.values[wi] = block.values[(wordOffset + wi) & blockMask];
+					}
+					if (remainingBits > 0) {
+						block1.values[fullWords] = block.values[(wordOffset + fullWords) & blockMask]
+								& ((1L << remainingBits) - 1);
+					}
+				}
+				else {
+					for (int wi = 0; wi < fullWords; wi++) {
+						block1.values[wi] = (block.values[(wordOffset + wi) & blockMask] >>> wordSplit)
+								+ (block.values[(wordOffset + wi + 1) & blockMask] << -wordSplit);
+					}
+					if (remainingBits > 0) {
+						block1.values[fullWords] = ((block.values[(wordOffset + fullWords) & blockMask] >>> wordSplit)
+								+ (block.values[(wordOffset + fullWords + 1) & blockMask] << -wordSplit))
+								& ((1L << remainingBits) - 1);
+					}
+				}
 				block1.size = block.size;
 				return new BinaryBlock[] {block1, null};
 			}
 			else {
-				BinaryBlock block1 = new BinaryBlock(halfSize);
-				block.copyToArray(block1.values, 0, 0, halfSize);
-				block1.size = halfSize;
-				BinaryBlock block2 = new BinaryBlock(halfSize);
-				block.copyToArray(block2.values, 0, halfSize, block.size - halfSize);
-				block2.size = halfSize;
-				return new BinaryBlock[] {block1, block2};				
+				BinaryBlock block1 = new BinaryBlock(halfCapacity);
+				if (wordSplit == 0) {
+					for (int wi = 0; wi < block1.values.length; wi++) {
+						block1.values[wi] = block.values[(wordOffset + wi) & blockMask];
+					}
+				}
+				else {
+					for (int wi = 0; wi < block1.values.length; wi++) {
+						block1.values[wi] = (block.values[(wordOffset + wi) & blockMask] >>> wordSplit)
+								+ (block.values[(wordOffset + wi + 1) & blockMask] << -wordSplit);
+					}
+				}
+				block1.size = halfCapacity;
+
+				BinaryBlock block2 = new BinaryBlock(halfCapacity);
+				if (wordSplit == 0) {
+					for (int wi = 0; wi < fullWords; wi++) {
+						block2.values[wi - block1.values.length] = block.values[(wordOffset + wi) & blockMask];
+					}
+					if (remainingBits > 0) {
+						block2.values[fullWords - block1.values.length] = block.values[(wordOffset + fullWords) & blockMask]
+								& ((1L << remainingBits) - 1);
+					}
+				}
+				else {
+					for (int wi = 0; wi < fullWords; wi++) {
+						block2.values[wi - block1.values.length] = (block.values[(wordOffset + wi) & blockMask] >>> wordSplit)
+								+ (block.values[(wordOffset + wi + 1) & blockMask] << -wordSplit);
+					}
+					if (remainingBits > 0) {
+						block2.values[fullWords - block1.values.length] = ((block.values[(wordOffset + fullWords) & blockMask] >>> wordSplit)
+								+ (block.values[(wordOffset + fullWords + 1) & blockMask] << -wordSplit))
+								& ((1L << remainingBits) - 1);
+					}
+				}
+				block2.size = block.size - halfCapacity;
+				return new BinaryBlock[] {block1, block2};
 			}
 		}
-		
+
 		private int offset;
 		private int size;
-		private boolean[] values;
+		private long[] values;
 
 		BinaryBlock(int capacity) {
-			// - capacity must be even power of 2
-			assert((capacity & (capacity-1)) == 0 && capacity > 1);
+			// - capacity must be power of 2, greater than 64 (i.e. must contain at least two "words")
+			assert((capacity & (capacity-1)) == 0 && capacity > 1 << ADDRESS_BITS_PER_WORD);
 			
 			this.offset = 0;
 			this.size = 0;
-			this.values = new boolean[capacity];
+			this.values = new long[capacity >>> ADDRESS_BITS_PER_WORD];
 		}
 		
-		// - copies "count" values of this block starting from "srcPos" to array starting from "trgPos" index
-		int copyToArray(boolean[] array, int trgPos, int srcPos, int count) {
-			if (srcPos >= values.length | count <= 0)
-				return 0;
-			if (srcPos + count > values.length)
-				count = values.length - srcPos;
-			int first = (offset + srcPos < values.length) ? offset + srcPos : offset + srcPos - values.length;
-			if (first + count <= values.length) {
-				System.arraycopy(values, first, array, trgPos, count);
-			}
-			else {
-				int halfCount = values.length - first;
-				System.arraycopy(values, first, array, trgPos, halfCount);
-				System.arraycopy(values, 0, array, trgPos + halfCount, count - halfCount);
-			}
-			return count;
-		}
-
-		// - copies all values of this block to given array starting from "pos" index
-		int copyToArray(boolean[] array, int pos) {
-			return copyToArray(array, pos, 0, size);
-		}
-
 		int size() {
 			return size;
 		}
 		
-		// - returns "physical" index for given "logical" position
-		int index(final int pos) {
-			return (offset + pos) & (values.length - 1);
+		// - returns maximum amount of values this BinaryBlock can hold
+		private int capacity() {
+			return values.length << ADDRESS_BITS_PER_WORD;
 		}
-
+		
+		// - returns "physical" index for given "logical" position
+		private int index(final int pos) {
+			return (offset + pos) & (capacity() - 1);
+		}
+		
+		private boolean getBit(final int index) {
+			return (values[index >>> ADDRESS_BITS_PER_WORD] & (1L << (index & WORD_MASK))) != 0;
+		}
+		
+		// - updates given bit at the specified index to given value
+		// - returns the value previously at the specified index
+		private boolean setBit(final int index, final boolean value) {
+			final int wi = index >>> ADDRESS_BITS_PER_WORD;
+			final long beforeUpdate = values[wi];
+			if (value) {
+				// - 1 bit
+				values[wi] |= 1L << (index & WORD_MASK);
+				return values[wi] == beforeUpdate;
+			}
+			else {
+				// - 0 bit
+				values[wi] &= ~(1L << (index & WORD_MASK));
+				return values[wi] != beforeUpdate;
+			}
+		}
+		
 		// - appends given value to the beginning of the block
 		boolean addFirst(final boolean value) {
 			offset = index(-1);
-			boolean last = values[offset];
-			values[offset] = value;
-			if (size < values.length) {
+			if (size < capacity()) {
+				setBit(offset, value);
 				size++;
+				return false;
 			}
-			return last;
+			return setBit(offset, value);
 		}
 		
 		// - appends given value to the end of the block
 		void addLast(final boolean value) {
-			if (size == values.length)
+			if (size == capacity())
 				return;
-			values[index(size)] = value;
+			setBit(index(size), value);
 			size++;
 		}
 		
+		// - shifts values in direction of the beginning of the values array
+		private void shiftToLeft(final int fromPosition, final int toPosition) {
+			final int fromIndex = index(fromPosition);
+			final int firstWordIndex = fromIndex >>> ADDRESS_BITS_PER_WORD;
+			final int toIndex = index(toPosition);
+			final int lastWordIndex = toIndex >>> ADDRESS_BITS_PER_WORD;
+			if (firstWordIndex == lastWordIndex & fromIndex < toIndex) {
+				// - requested shift lies within the first "word"
+				values[firstWordIndex] = pshr(values[firstWordIndex], fromIndex & WORD_MASK, toIndex & WORD_MASK);
+				return;
+			}
+			values[firstWordIndex] = pshr(values[firstWordIndex], fromIndex & WORD_MASK, WORD_MASK)
+					+ (values[(firstWordIndex + 1) & (values.length - 1)] << WORD_MASK);
+			for (int wi = (firstWordIndex + 1) & (values.length - 1); wi != lastWordIndex; ) {
+				final int ni = (wi + 1) & (values.length - 1);
+				values[wi] = (values[wi] >>> 1) + (values[ni] << WORD_MASK);
+				wi = ni;
+			}
+			values[lastWordIndex] = pshr(values[lastWordIndex], 0, toIndex & WORD_MASK);
+		}
+
+		// - shifts values in direction of the end of the values array
+		private void shiftToRight(final int fromPosition, final int toPosition) {
+			final int fromIndex = index(fromPosition);
+			final int firstWordIndex = fromIndex >>> ADDRESS_BITS_PER_WORD;
+			final int toIndex = index(toPosition);
+			final int lastWordIndex = toIndex >>> ADDRESS_BITS_PER_WORD;
+			if (firstWordIndex == lastWordIndex & fromIndex < toIndex) {
+				// - requested shift lies within the first "word"
+				values[firstWordIndex] = pshl(values[firstWordIndex], fromIndex & WORD_MASK, toIndex & WORD_MASK);
+				return;
+			}
+			values[lastWordIndex] = pshl(values[lastWordIndex], 0, toIndex & WORD_MASK)
+					+ (values[(lastWordIndex - 1) & (values.length - 1)] >>> WORD_MASK);
+			for (int wi = (lastWordIndex - 1) & (values.length - 1); wi != lastWordIndex; ) {
+				final int ni = (wi - 1) & (values.length - 1);
+				values[wi] = (values[wi] << 1) + (values[ni] >>> WORD_MASK);
+				wi = ni;
+			}
+			values[firstWordIndex] = pshl(values[firstWordIndex], fromIndex & WORD_MASK, WORD_MASK);	
+		}
+
 		// - inserts given value at given position
 		boolean add(final int pos, final boolean value) {
 			// - range check
 			assert(pos >= 0 && pos <= size);
 			
-			boolean last = (size == values.length) ? values[index(-1)] : false;
+			final boolean last = (size == capacity()) ? getBit(index(-1)) : false;
 			if (2*pos < size) {
 				offset = index(-1);
-				for (int i = 0; i < pos; i++) {
-					values[index(i)] = values[index(i+1)];
-				}
+				shiftToLeft(0, pos);
 			}
 			else {
-				for (int i = (size == values.length) ? size-1 : size; i > pos; i--) {
-					values[index(i)] = values[index(i-1)];
-				}
+				shiftToRight(pos, (size == capacity() ? size-1 : size));
 			}
-			values[index(pos)] = value;
-			if (size < values.length) size++;
+			setBit(index(pos), value);
+			if (size < capacity()) size++;
 			return last;
 		}
 
@@ -187,10 +370,7 @@ public class BooleanList implements Cloneable, java.io.Serializable {
 			// - range check
 			assert(pos >= 0 && pos < size);
 			
-			int i = index(pos);
-			boolean replaced = values[i];
-			values[i] = value;
-			return replaced;
+			return setBit(index(pos), value);
 		}
 		
 		// - removes first element of the block
@@ -198,7 +378,7 @@ public class BooleanList implements Cloneable, java.io.Serializable {
 			// - range check
 			assert(size > 0);
 			
-			boolean removed = values[offset];
+			boolean removed = getBit(offset);
 			offset = index(1);
 			size--;
 			return removed;
@@ -209,17 +389,13 @@ public class BooleanList implements Cloneable, java.io.Serializable {
 			// - range check
 			assert(pos >= 0 && pos < size);
 			
-			boolean removed = values[index(pos)];
+			boolean removed = getBit(index(pos));
 			if (2*pos < size) {
-				for (int i = pos; i > 0; i--) {
-					values[index(i)] = values[index(i-1)];					
-				}
+				shiftToRight(0, pos);
 				offset = index(1);
 			}
 			else {
-				for (int i = pos + 1; i < size; i++) {
-					values[index(i-1)] = values[index(i)];
-				}
+				shiftToLeft(pos, size-1);
 			}
 			size--;
 			return removed;
@@ -230,7 +406,7 @@ public class BooleanList implements Cloneable, java.io.Serializable {
 			// - range check
 			assert(pos >= 0 && pos < size);
 			
-			return values[index(pos)];
+			return getBit(index(pos));
 		}
 		
 		public Object clone() {
