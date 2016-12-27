@@ -16,7 +16,6 @@ public class ByteSet {
 	
 	private static final int WORDS = 4;
 	private static final int ADDRESS_BITS_PER_WORD = Const.ADDRESS_BITS_PER_LONG;
-	private static final int BIT_INDEX_MASK = (1 << ADDRESS_BITS_PER_WORD) - 1;
 	
 	private int size;
 	private long[] words = new long[WORDS];

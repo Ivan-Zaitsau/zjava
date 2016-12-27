@@ -386,10 +386,6 @@ public class SortedDynamicList<E> extends AbstractCollection<E> implements Sorte
 				public E remove(long index) {
 					return data.asHuge().remove(index);
 				}
-
-				public Iterator<E> iterator() {
-					return data.iterator();
-				}
 			};
 		}
 		return hugeView;
