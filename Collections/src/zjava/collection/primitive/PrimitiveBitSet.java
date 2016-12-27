@@ -83,8 +83,11 @@ final public class PrimitiveBitSet {
 	 * @return value next to method parameter
 	 */
 	static public int next(final int set, final int value) {
-		int trailingZeroes = Integer.numberOfTrailingZeros(set & ~((1 << value) - 1));
-		return (trailingZeroes < Integer.SIZE) ? trailingZeroes : -1;
+		int lowestOneBit = Integer.lowestOneBit(set & ~((1 << value) - 1));
+		if (lowestOneBit == 0)
+			return -1;
+
+		return Integer.bitCount(lowestOneBit - 1);
 	}
 
 	/**
@@ -251,8 +254,11 @@ final public class PrimitiveBitSet {
 	 * @return value next to method parameter
 	 */
 	static public long next(final long set, final long value) {
-		int trailingZeroes = Long.numberOfTrailingZeros(set & ~((1L << value) - 1));
-		return (trailingZeroes < Long.SIZE) ? trailingZeroes : -1;
+		long lowestOneBit = Long.lowestOneBit(set & ~((1L << value) - 1));
+		if (lowestOneBit == 0)
+			return -1;
+
+		return Long.bitCount(lowestOneBit - 1);
 	}
 	
 	/**
