@@ -155,7 +155,7 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeList
 		}
 		
 		// - returns "physical" index for given "logical" position
-		int index(final int pos) {
+		private int index(final int pos) {
 			return (offset + pos) & (values.length - 1);
 		}
 		
@@ -179,6 +179,26 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeList
 			size++;
 		}
 		
+		// - shifts values in direction of the beginning of the values array
+		private void shiftToLeft(final int fromPosition, final int toPosition) {
+			final int toIndex = index(toPosition);
+			for (int i = index(fromPosition); i != toIndex; ) {
+				final int ni = (i + 1) & (values.length - 1);
+				values[i] = values[ni];
+				i = ni;
+			}
+		}
+		
+		// - shifts values in direction of the end of the values array
+		private void shiftToRight(final int fromPosition, final int toPosition) {
+			final int fromIndex = index(fromPosition);
+			for (int i = index(toPosition); i != fromIndex; ) {
+				final int ni = (i - 1) & (values.length - 1);
+				values[i] = values[ni];
+				i = ni;
+			}
+		}
+
 		// - inserts given value at given position
 		E add(final int pos, final E value) {
 			// - range check
@@ -188,14 +208,10 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeList
 			E last = (E) ((size == values.length) ? values[index(-1)] : null);
 			if (pos + pos < size) {
 				offset = index(-1);
-				for (int i = 0; i < pos; i++) {
-					values[index(i)] = values[index(i+1)];
-				}
+				shiftToLeft(0, pos);
 			}
 			else {
-				for (int i = (size == values.length) ? size-1 : size; i > pos; i--) {
-					values[index(i)] = values[index(i-1)];
-				}
+				shiftToRight(pos, (size == values.length) ? size-1 : size);
 			}
 			values[index(pos)] = value;
 			if (size < values.length) size++;
@@ -235,22 +251,18 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeList
 			@SuppressWarnings("unchecked")
 			E removed = (E) values[index(pos)];
 			if (pos + pos < size) {
-				for (int i = pos; i > 0; i--) {
-					values[index(i)] = values[index(i-1)];					
-				}
+				shiftToRight(0, pos);
 				values[offset] = null;
 				offset = index(1);
 			}
 			else {
-				for (int i = pos + 1; i < size; i++) {
-					values[index(i-1)] = values[index(i)];
-				}
+				shiftToLeft(pos, size-1);
 				values[index(size-1)] = null;
 			}
 			size--;
 			return removed;
 		}
-		
+
 		// - returns element at given position
 		@SuppressWarnings("unchecked")
 		E get(final int pos) {

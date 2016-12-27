@@ -137,7 +137,7 @@ public class FloatList implements Cloneable, java.io.Serializable {
 		}
 		
 		// - returns "physical" index for given "logical" position
-		int index(final int pos) {
+		private int index(final int pos) {
 			return (offset + pos) & (values.length - 1);
 		}
 
@@ -148,6 +148,7 @@ public class FloatList implements Cloneable, java.io.Serializable {
 			values[offset] = value;
 			if (size < values.length) {
 				size++;
+				return 0;
 			}
 			return last;
 		}
