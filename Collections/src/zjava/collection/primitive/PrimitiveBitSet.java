@@ -253,7 +253,7 @@ final public class PrimitiveBitSet {
 	 * @param value - value to get next for
 	 * @return value next to method parameter
 	 */
-	static public long next(final long set, final long value) {
+	static public int next(final long set, final long value) {
 		long lowestOneBit = Long.lowestOneBit(set & ~((1L << value) - 1));
 		if (lowestOneBit == 0)
 			return -1;

@@ -1,7 +1,9 @@
 package zjava.common;
 
 /**
- * This class serves as a facade to commonly used utility-methods from other utility-classes.
+ * This class serves as a facade to commonly used utility-methods from other utility-classes.<br>
+ * 
+ * Use it in case of need for extreme coding speed only.
  * 
  * @since Zjava 1.0
  * 

@@ -290,7 +290,7 @@ public class LongSet {
 			int setId = (int)(radix >>> ADDRESS_BITS_PER_WORD);
 			int setIndex = PrimitiveBitSet.indexOf(used, setId);
 			if (PrimitiveBitSet.contains(used, setId)) {
-				long next = PrimitiveBitSet.next(sets[setIndex++], value);
+				int next = PrimitiveBitSet.next(sets[setIndex++], value);
 				if (next != -1)
 					return ((value >>> LEAF_RADIX) << LEAF_RADIX) + (setId << ADDRESS_BITS_PER_WORD) + next;
 					
