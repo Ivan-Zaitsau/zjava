@@ -21,7 +21,9 @@ import java.util.Set;
 class HashTable<E> implements Iterable<E>, Cloneable, java.io.Serializable {
 	
 	private static final long serialVersionUID = 201612081900L;
-	private static final byte COLLISION_HITS_THRESHOLD = 20;
+
+
+	private static final byte COLLISION_HITS_THRESHOLD = 12;
 
 	private static class Entry<E> implements Cloneable, java.io.Serializable {
 		
@@ -61,7 +63,7 @@ class HashTable<E> implements Iterable<E>, Cloneable, java.io.Serializable {
 
 		private static final int COLLISIONS_ADDRESS_BITS = 4;
 		private static final int COLLISIONS_SIZE = 1 << COLLISIONS_ADDRESS_BITS;
-		private static final int ASSOCIATIVITY = 7;
+		private static final int ASSOCIATIVITY = 6;
 
 		// - essential variables
 		private E[] values;
@@ -236,13 +238,16 @@ class HashTable<E> implements Iterable<E>, Cloneable, java.io.Serializable {
 						}
 						// - if not possible - move to collisions in extracted block / leave there
 						else {
-							final Entry<E> next = entry.next;
 							if (rankedHash(entry.hash, requestedRank) == hash) {
+								final Entry<E> next = (prev == null) ? (collisions[i] = entry.next) : (prev.next = entry.next);
 								extracted.lazyInitCollisions();
 								entry.next = extracted.collisions[i];
 								extracted.collisions[i] = entry;
+								entry = next;
 							}
-							entry = next;
+							else { 
+								entry = entry.next;
+							}
 						}
 					}
 				}
