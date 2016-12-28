@@ -75,7 +75,7 @@ public class LongSet {
 			if (children == null)
 				return (value == used) & (used != 0);
 			// - general case
-			long radix = (value >>> startingBit) & BRANCH_RADIX_MASK;
+			final long radix = (value >>> startingBit) & BRANCH_RADIX_MASK;
 			if (!PrimitiveBitSet.contains(used, radix))
 				return false;
 			return children[PrimitiveBitSet.indexOf(used, radix)].contains(startingBit - BRANCH_RADIX, value);
@@ -88,14 +88,16 @@ public class LongSet {
 					used = value;
 					return true;
 				}
-				long existingValue = used;
 				children = new Node[INITIAL_NUM_OF_CHILDREN];
-				used = 0;
-				add(startingBit, existingValue);
+				if (used != 0) {
+					long existingValue = used;
+					used = 0;
+					add(startingBit, existingValue);
+				}
 				return add(startingBit, value);
 			}
 			// - general case
-			long radix = (value >>> startingBit) & BRANCH_RADIX_MASK;
+			final long radix = (value >>> startingBit) & BRANCH_RADIX_MASK;
 			if (PrimitiveBitSet.contains(used, radix))
 				return children[PrimitiveBitSet.indexOf(used, radix)].add(startingBit - BRANCH_RADIX, value);
 			// - add entry to "children" array
@@ -120,7 +122,7 @@ public class LongSet {
 				return true;
 			}
 			// - general case
-			long radix = (value >>> startingBit) & BRANCH_RADIX_MASK;
+			final long radix = (value >>> startingBit) & BRANCH_RADIX_MASK;
 			if (!PrimitiveBitSet.contains(used, radix))
 				return false;
 			return children[PrimitiveBitSet.indexOf(used, radix)].remove(startingBit - BRANCH_RADIX, value);
@@ -169,7 +171,7 @@ public class LongSet {
 		}
 
 		public boolean contains(final int startingBit, final long value) {
-			long radix = value & LEAF_RADIX_MASK;
+			final long radix = value & LEAF_RADIX_MASK;
 			// - optimization: a few radixes stored in "used" itself
 			if (sets == null) {
 				long bits = used;
@@ -202,7 +204,7 @@ public class LongSet {
 		}
 		
 		public boolean add(final int startingBit, final long value) {
-			long radix = value & LEAF_RADIX_MASK;
+			final long radix = value & LEAF_RADIX_MASK;
 			// - optimization: a few radixes stored in "used" itself			
 			if (sets == null) {
 				long bits = used;
@@ -238,7 +240,7 @@ public class LongSet {
 		}
 		
 		public boolean remove(final int startingBit, final long value) {
-			long radix = value & LEAF_RADIX_MASK;
+			final long radix = value & LEAF_RADIX_MASK;
 			// - optimization: a few radixes stored in "used" itself
 			if (sets == null) {
 				long bits = used;
@@ -269,7 +271,7 @@ public class LongSet {
 		}
 
 		public Long next(final int startingBit, final long value) {
-			long radix = value & LEAF_RADIX_MASK;
+			final long radix = value & LEAF_RADIX_MASK;
 			// - optimization: a few radixes stored in "used" itself
 			if (sets == null) {
 				long next = Long.MAX_VALUE;
@@ -291,7 +293,7 @@ public class LongSet {
 			int setIndex = PrimitiveBitSet.indexOf(used, setId);
 			if (PrimitiveBitSet.contains(used, setId)) {
 				int next = PrimitiveBitSet.next(sets[setIndex++], value);
-				if (next != -1)
+				if (next >= 0)
 					return ((value >>> LEAF_RADIX) << LEAF_RADIX) + (setId << ADDRESS_BITS_PER_WORD) + next;
 					
 			}

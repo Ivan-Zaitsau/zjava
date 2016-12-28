@@ -25,6 +25,13 @@ public class LongSetTest {
 	}
 	
 	@Test(timeout = 200)
+	public void addingTwoZeroesReturnsCorrectValues() {
+		LongSet set = new LongSet(true, false);
+		assertTrue(set.add(0));
+		assertFalse(set.add(0));
+	}
+	
+	@Test(timeout = 200)
 	public void addReturnsCorrectValue() {
 		LongSet set = new LongSet();
 		assertTrue(set.add(3));
