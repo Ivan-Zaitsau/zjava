@@ -45,6 +45,17 @@ public class LongSetTest {
 	}
 	
 	@Test(timeout = 200)
+	public void checkAddOperationForLongIntervalOfValues() {
+		LongSet set = new LongSet();
+		final long toValue = 100000;
+		for (long v = 0; v < toValue; v++)
+			assertTrue(set.add(v));
+		for (long v = 0; v < toValue; v++)
+			assertTrue(set.contains(v));
+		assertFalse(set.contains(toValue));
+	}
+	
+	@Test(timeout = 200)
 	public void removeCheck() {
 		LongSet set = new LongSet();
 		long[] valuesToAdd = new long[] {1, 3, 7, 13, 6, 8, 61, 57, -1};
@@ -204,5 +215,19 @@ public class LongSetTest {
 			nv++;
 		}
 		assertEquals(null, set.next(nv));
+	}
+	
+	@Test(timeout = 200)
+	public void checkNextOperationIterativelyOnLongSetComposedOfHugeIntervalOfValues() {
+		LongSet set = new LongSet();
+		final long toValue = 100000;
+		for (long v = 0; v < toValue; v++)
+			set.add(v);
+		long actual = Long.MIN_VALUE;
+		for (long expected = 0; expected < toValue; expected++) {
+			actual = set.next(actual+1);
+			assertEquals(expected, actual);
+		}
+		assertNull(set.next(actual+1));
 	}
 }

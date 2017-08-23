@@ -103,11 +103,10 @@ final public class PrimitiveBitSet {
 	 *         values from the given set
 	 */
 	static public byte[] toArray(final int set, final byte offset) {
-		int arraySize = size(set);
+		final int arraySize = size(set);
 		byte[] array = new byte[arraySize];
-		for (int i = 0, j = 0; i < Integer.SIZE; i++)
-			if (contains(set, i))
-				array[j++] = (byte) (i + offset);
+		for (int i = next(set, 0), j = 0; j < arraySize; i = next(set, i+1))
+			array[j++] = (byte) (i + offset);
 		return array;
 	}
 
@@ -123,12 +122,11 @@ final public class PrimitiveBitSet {
 	 * @return sorted in increasing order array which contains all
 	 *         values from the given set
 	 */
-	static public short[] toArray(final int set, final short offset) {
-		int arraySize = size(set);
+	static public short[] toArray(int set, final short offset) {
+		final int arraySize = size(set);
 		short[] array = new short[arraySize];
-		for (int i = 0, j = 0; i < Integer.SIZE; i++)
-			if (contains(set, i))
-				array[j++] = (short) (i + offset);
+		for (int i = next(set, 0), j = 0; j < arraySize; i = next(set, i+1))
+			array[j++] = (short) (i + offset);
 		return array;
 	}
 
@@ -145,11 +143,10 @@ final public class PrimitiveBitSet {
 	 *         values from the given set
 	 */
 	static public int[] toArray(final int set, final int offset) {
-		int arraySize = size(set);
+		final int arraySize = size(set);
 		int[] array = new int[arraySize];
-		for (int i = 0, j = 0; i < Integer.SIZE; i++)
-			if (contains(set, i))
-				array[j++] = i + offset;
+		for (int i = next(set, 0), j = 0; j < arraySize; i = next(set, i+1))
+			array[j++] = i + offset;
 		return array;
 	}
 
@@ -166,11 +163,10 @@ final public class PrimitiveBitSet {
 	 *         values from the given set
 	 */
 	static public long[] toArray(final int set, final long offset) {
-		int arraySize = size(set);
+		final int arraySize = size(set);
 		long[] array = new long[arraySize];
-		for (int i = 0, j = 0; i < Integer.SIZE; i++)
-			if (contains(set, i))
-				array[j++] = i + offset;
+		for (int i = next(set, 0), j = 0; j < arraySize; i = next(set, i+1))
+			array[j++] = i + offset;
 		return array;
 	}
 
@@ -274,11 +270,10 @@ final public class PrimitiveBitSet {
 	 *         values from the given set
 	 */
 	static public byte[] toArray(final long set, final byte offset) {
-		int arraySize = size(set);
+		final int arraySize = size(set);
 		byte[] array = new byte[arraySize];
-		for (int i = 0, j = 0; i < Long.SIZE; i++)
-			if (contains(set, i))
-				array[j++] = (byte) (i + offset);
+		for (int i = next(set, 0), j = 0; j < arraySize; i = next(set, i+1))
+			array[j++] = (byte) (i + offset);
 		return array;
 	}
 
@@ -295,11 +290,10 @@ final public class PrimitiveBitSet {
 	 *         values from the given set
 	 */
 	static public short[] toArray(final long set, final short offset) {
-		int arraySize = size(set);
+		final int arraySize = size(set);
 		short[] array = new short[arraySize];
-		for (int i = 0, j = 0; i < Long.SIZE; i++)
-			if (contains(set, i))
-				array[j++] = (short) (i + offset);
+		for (int i = next(set, 0), j = 0; j < arraySize; i = next(set, i+1))
+			array[j++] = (short) (i + offset);
 		return array;
 	}
 
@@ -316,11 +310,10 @@ final public class PrimitiveBitSet {
 	 *         values from the given set
 	 */
 	static public int[] toArray(final long set, final int offset) {
-		int arraySize = size(set);
+		final int arraySize = size(set);
 		int[] array = new int[arraySize];
-		for (int i = 0, j = 0; i < Long.SIZE; i++)
-			if (contains(set, i))
-				array[j++] = i + offset;
+		for (int i = next(set, 0), j = 0; j < arraySize; i = next(set, i+1))
+			array[j++] = i + offset;
 		return array;
 	}
 
@@ -337,11 +330,10 @@ final public class PrimitiveBitSet {
 	 *         values from the given set
 	 */
 	static public long[] toArray(final long set, final long offset) {
-		int arraySize = size(set);
+		final int arraySize = size(set);
 		long[] array = new long[arraySize];
-		for (int i = 0, j = 0; i < Long.SIZE; i++)
-			if (contains(set, i))
-				array[j++] = i + offset;
+		for (int i = next(set, 0), j = 0; j < arraySize; i = next(set, i+1))
+			array[j++] = i + offset;
 		return array;
 	}
 
@@ -370,7 +362,7 @@ final public class PrimitiveBitSet {
 		sb.append('[');
 		boolean isSeparatorPending = false;
 		for (int i = 0; i < Long.SIZE; i++) {
-			if (((1L << i) & set) != 0) {
+			if (contains(set, i)) {
 				if (isSeparatorPending)
 					sb.append(',').append(' ');
 				sb.append(i);

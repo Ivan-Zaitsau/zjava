@@ -47,29 +47,26 @@ final public class Arrayz {
 	public static final Object[]  EMPTY_OBJECT_ARRAY  = new Object[] {};
 
 
-	// - actual implementation of toString() method
-	// - keeps track of visited Iterable's and arrays of Object's
-	// - limits returned String size to approximately 'charsLeft' characters
-	private static String toString(Object[] array, String onSelf, Set<Object> visited, int charsLeft) {
-		if (array == null)
-			return "null";
+	/* - actual implementation of toString() method
+	 * - keeps track of visited Iterable's and arrays of Object's
+	 */
+	private static StringBuilder toStringBuilder(Object[] array, String onSelf, Set<Object> visited, StringBuilder result) {
 		if (!visited.add(array))
-			return "[...]";
+			return result.append("[...]");
 
-		StringBuilder result = new StringBuilder();
 		result.append('[');
         for (int i = 0; i < array.length; i++) {
         	Object e = array[i];
         	if (e == array)
         		result.append(onSelf);
         	else if (e instanceof Iterable<?>)
-        		result.append(toString((Iterable<?>) e, "(this)", visited, charsLeft - result.length()));
+        		toStringBuilder((Iterable<?>) e, "(this)", visited, result);
         	else if (e instanceof Object[])
-        		result.append(toString((Object[]) e, "(this)", visited, charsLeft - result.length()));
+        		toStringBuilder((Object[]) e, "(this)", visited, result);
         	else 
         		result.append(e);
 
-            if (result.length() > charsLeft) {
+            if (result.length() > TO_STRING_SIZE_THRESHOLD) {
             	result.append(", ...");
             	break;
             }
@@ -77,32 +74,29 @@ final public class Arrayz {
             	result.append(',').append(' ');
         }
         result.append(']');
-        return result.toString();
+        return result;
 	}
 
-	// - actual implementation of toString() method
-	// - keeps track of visited Iterable's and arrays of Object's
-	// - limits returned String size to approximately 'charsLeft' characters
-	private static String toString(Iterable<?> c, String onSelf, Set<Object> visited, int charsLeft) {
-		if (c == null)
-			return "null";
+	/* - actual implementation of toString() method
+	 * - keeps track of visited Iterable's and arrays of Object's
+	 */
+	private static StringBuilder toStringBuilder(Iterable<?> c, String onSelf, Set<Object> visited, StringBuilder result) {
 		if (!visited.add(c))
-			return "[...]";
+			return result.append("[...]");
 
-		StringBuilder result = new StringBuilder();
 		result.append('[');
         for (Iterator<?> iter = c.iterator(); iter.hasNext(); ) {
         	Object e = iter.next();
         	if (e == c)
         		result.append(onSelf);
         	else if (e instanceof Iterable<?>)
-        		result.append(toString((Iterable<?>) e, "(this)", visited, charsLeft - result.length()));
+        		toStringBuilder((Iterable<?>) e, "(this)", visited, result);
         	else if (e instanceof Object[])
-        		result.append(toString((Object[]) e, "(this)", visited, charsLeft - result.length()));
+        		toStringBuilder((Object[]) e, "(this)", visited, result);
         	else 
         		result.append(e);
 
-            if (result.length() > charsLeft) {
+            if (result.length() > TO_STRING_SIZE_THRESHOLD) {
             	result.append(", ...");
             	break;
             }
@@ -110,9 +104,9 @@ final public class Arrayz {
             	result.append(',').append(' ');
         }
         result.append(']');
-        return result.toString();
+        return result;
 	}
-	
+
     /**
      * Returns a string representation of the given <tt>Object[]</tt>.<br>
      * The string representation consists of a list of the <tt>Object[]</tt>'s
@@ -129,7 +123,9 @@ final public class Arrayz {
 	 * @return a string representation of the given <tt>Object[]</tt>
      */
 	public static String toString(Object[] array, String onSelf) {
-		return toString(array, onSelf, new HashedSet<Object>(Hasher.IDENTITY), TO_STRING_SIZE_THRESHOLD);
+		if (array == null)
+			return "null";
+		return toStringBuilder(array, onSelf, new HashedSet<Object>(Hasher.IDENTITY), new StringBuilder()).toString();
 	}
 	
     /**

@@ -2,7 +2,9 @@ package zjava.test.collection;
 
 import static org.junit.Assert.*;
 
+import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
 
 import org.junit.Test;
@@ -11,7 +13,7 @@ import static zjava.collection.Collectionz.range;
 
 
 
-public class RangedSetTest {
+public class RangeSetTest {
 
 	// - General tests
 	
@@ -56,9 +58,9 @@ public class RangedSetTest {
 		set = new HashSet<Long>(range(-3477L, -17L));
 		assertEquals(set.hashCode(), range(-3477L, -17L).hashCode());
 		set = new HashSet<Long>(range(0L, -133L));
-		assertEquals(set.hashCode(), range(0, -133L).hashCode());
+		assertEquals(set.hashCode(), range(0L, -133L).hashCode());
 		set = new HashSet<Long>(range(0L, 166L));
-		assertEquals(set.hashCode(), range(0, 166L).hashCode());
+		assertEquals(set.hashCode(), range(0L, 166L).hashCode());
 		set = null;
 		
 		// - checks without actual set using contract definition from java.util.Set interface
@@ -68,19 +70,112 @@ public class RangedSetTest {
 		assertEquals(setHashCode(-37L, 177L + (1L << 32)), range(-37L, 177L + (1L << 32)).hashCode());
 	}
 	
-	@Test(timeout = 200)
+	@Test//(timeout = 200)
 	public void checkEqualsAgainstOtherRangeSet() {
-		
+		assertEquals(range(0, 0), range(100, 100));
+		assertEquals(range(0, 0).closed(), range(0, 1));
+		assertEquals(range(Long.MIN_VALUE, Long.MAX_VALUE).closed(), range(Long.MAX_VALUE, Long.MIN_VALUE).closed());
+		assertEquals(range(-344, 360), range(359, -345));
 	}
 	
 	@Test(timeout = 200)
 	public void checkEqualsAgainstHashSet() {
-		
+		assertEquals(new HashSet<Integer>(range(0, 0)), range(100, 100));
+		assertEquals(new HashSet<Integer>(range(0, 0).closed()), range(0, 1));
+		assertEquals(new HashSet<Short>(range(Short.MIN_VALUE, Short.MAX_VALUE).closed()), range(Short.MAX_VALUE, Short.MIN_VALUE).closed());
+		assertEquals(new HashSet<Integer>(range(-344, 360)), range(359, -345));
 	}
 	
 	@Test(timeout = 200)
 	public void unsupportedMethodCallsThrowUnsupportedOperationException() {
-		
+		Set<Integer> set = range(0, 100);
+		boolean isUnsupported;
+		// - add
+		isUnsupported = false;
+		try {
+			set.add(1);
+		}
+		catch (UnsupportedOperationException isOk) {
+			isUnsupported = true;
+		}
+		catch (Exception isNotGood) {
+			fail();
+		}
+		assertTrue(isUnsupported);
+		isUnsupported = false;
+		// - addAll
+		try {
+			set.addAll(Arrays.asList(1, 2, 3));
+		}
+		catch (UnsupportedOperationException isOk) {
+			isUnsupported = true;
+		}
+		catch (Exception isNotGood) {
+			fail();
+		}
+		assertTrue(isUnsupported);
+		isUnsupported = false;
+		// - clear
+		try {
+			set.clear();
+		}
+		catch (UnsupportedOperationException isOk) {
+			isUnsupported = true;
+		}
+		catch (Exception isNotGood) {
+			fail();
+		}
+		assertTrue(isUnsupported);
+		isUnsupported = false;
+		// - iterator().remove
+		Iterator<Integer> iter = set.iterator();
+		iter.next();
+		try {
+			iter.remove();
+		}
+		catch (UnsupportedOperationException isOk) {
+			isUnsupported = true;
+		}
+		catch (Exception isNotGood) {
+			fail();
+		}
+		assertTrue(isUnsupported);
+		isUnsupported = false;
+		// - remove
+		try {
+			set.remove(200);
+		}
+		catch (UnsupportedOperationException isOk) {
+			isUnsupported = true;
+		}
+		catch (Exception isNotGood) {
+			fail();
+		}
+		assertTrue(isUnsupported);
+		isUnsupported = false;
+		// - removeAll
+		try {
+			set.removeAll(Arrays.asList(100, 200, 300));
+		}
+		catch (UnsupportedOperationException isOk) {
+			isUnsupported = true;
+		}
+		catch (Exception isNotGood) {
+			fail();
+		}
+		assertTrue(isUnsupported);
+		isUnsupported = false;
+		// - retainAll
+		try {
+			set.retainAll(range(0, 100));
+		}
+		catch (UnsupportedOperationException isOk) {
+			isUnsupported = true;
+		}
+		catch (Exception isNotGood) {
+			fail();
+		}
+		assertTrue(isUnsupported);
 	}
 	
 	// - Performance tests

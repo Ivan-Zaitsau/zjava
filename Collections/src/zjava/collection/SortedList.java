@@ -6,7 +6,7 @@ import java.util.Comparator;
 import java.util.Iterator;
 
 /**
- * An ordered collection (also known as a <i>sequence</i>).<br>
+ * An sorted indexed collection (sorted <i>sequence</i> of elements).<br>
  * This interface mimics List interface with regard to the fact
  * that elements in this list are sorted.
  * 

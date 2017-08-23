@@ -2,7 +2,7 @@ package zjava.collection;
 
 /**
  * The <tt>HugeList</tt> interface provides number of methods to access
- * list elements beyond <tt>Integer.MAX_VALUE</tt> limit.<br>
+ * list elements beyond <tt>Integer.MAX_VALUE</tt> limit.
  * 
  * @param <E> - the type of elements in this list
  * 

@@ -17,7 +17,6 @@ public class ByteSet {
 	private static final int WORDS = 4;
 	private static final int ADDRESS_BITS_PER_WORD = Const.ADDRESS_BITS_PER_LONG;
 	
-	private int size;
 	private long[] words = new long[WORDS];
 	
 	/**
@@ -26,6 +25,10 @@ public class ByteSet {
 	 * @return number of elements in this set
 	 */
 	public int size() {
+		int size = 0;
+		for (int i = 0; i < WORDS; i++)
+			size += PrimitiveBitSet.size(words[i]);
+
 		return size;
 	}
 
@@ -53,7 +56,7 @@ public class ByteSet {
 	public boolean add(byte v) {
 		final int i = (int) v - Byte.MIN_VALUE;
 		final int wi = i >>> ADDRESS_BITS_PER_WORD;
-		long beforeUpdate = words[wi];
+		final long beforeUpdate = words[wi];
 		words[wi] = PrimitiveBitSet.add(beforeUpdate, i);
 		return words[wi] != beforeUpdate;
 	}
@@ -70,7 +73,7 @@ public class ByteSet {
 	public boolean remove(byte v) {
 		final int i = (int) v - Byte.MIN_VALUE;
 		final int wi = i >>> ADDRESS_BITS_PER_WORD;
-		long beforeUpdate = words[wi];
+		final long beforeUpdate = words[wi];
 		words[wi] = PrimitiveBitSet.remove(beforeUpdate, i);
 		return words[wi] != beforeUpdate;
 	}
@@ -100,7 +103,6 @@ public class ByteSet {
      * The set will be empty after this call returns.
      */
 	public void clear() {
-		size = 0;
 		for (int i = 0; i < WORDS; i++) words[i] = PrimitiveBitSet.EMPTY_SET;
 	}
 
@@ -110,9 +112,7 @@ public class ByteSet {
 	 * @return array of this set elements in increasing order
 	 */
 	public byte[] toPrimitiveArray() {
-		int arrSize = 0;
-		for (int i = 0; i < WORDS; i++) arrSize += PrimitiveBitSet.size(words[i]);
-		byte[] arr = new byte[arrSize];
+		byte[] arr = new byte[size()];
 		
 		int ai = 0;
 		for (int wi = 0; wi < WORDS; wi++) {

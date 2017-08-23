@@ -24,6 +24,7 @@ final public class Treez {
 	 * @author Ivan Zaitsau
 	 */
 	public interface NodeFilter<T extends Node<T>> {
+		
 		@SuppressWarnings("rawtypes")
 		NodeFilter NONE = new NodeFilter() {
 			public boolean isIgnored(Node node) {
@@ -54,9 +55,9 @@ final public class Treez {
 		private Stack<Iterator<T>> iteratorsStack;
 		private T currentNode;		
 		private NodeFilter<? super T> filter;
-		private boolean currentNodeReturned;
-		private boolean filterApplied;
-		private boolean iterationDone;
+		private boolean isCurrentNodeReturned;
+		private boolean isFilterApplied;
+		private boolean isIterationDone;
 
 		private DfsIterator(T root, NodeFilter<? super T> filter) {
 			iteratorsStack = new Stack<Iterator<T>>();
@@ -70,7 +71,7 @@ final public class Treez {
 				iteratorsStack.pop();
 
 			if (iteratorsStack.isEmpty()) {
-				iterationDone = true;
+				isIterationDone = true;
 				iteratorsStack = null;
 				currentNode = null;
 				filter = null;
@@ -78,16 +79,16 @@ final public class Treez {
 			}
 
 			currentNode = iteratorsStack.peek().next();
-			filterApplied = false;
-			currentNodeReturned = false;
+			isFilterApplied = false;
+			isCurrentNodeReturned = false;
 		}
 		
 		public boolean hasNext() {
 			while (true) {
-				if (iterationDone)
+				if (isIterationDone)
 					return false;
-				if (!currentNodeReturned && (filterApplied || !filter.isIgnored(currentNode))) {
-					filterApplied = true;
+				if (!isCurrentNodeReturned && (isFilterApplied || !filter.isIgnored(currentNode))) {
+					isFilterApplied = true;
 					return true;
 				}
 				moveToNext();
@@ -99,7 +100,7 @@ final public class Treez {
 				throw new NoSuchElementException();
 			
 			T result = currentNode;
-			currentNodeReturned = true;
+			isCurrentNodeReturned = true;
 			iteratorsStack.push(currentNode.getChildren().iterator());
 			return result;
 		}
@@ -152,9 +153,9 @@ final public class Treez {
 		private Queue<T> nodesQueue = new LinkedList<T>();
 		private T currentNode;		
 		private NodeFilter<? super T> filter;
-		private boolean currentNodeReturned;
-		private boolean filterApplied;
-		private boolean iterationDone;
+		private boolean isCurrentNodeReturned;
+		private boolean isFilterApplied;
+		private boolean isIterationDone;
 
 		private BfsIterator(T root, NodeFilter<? super T> filter) {
 			currentIterator = new Iterator<T>() {
@@ -172,7 +173,7 @@ final public class Treez {
 				currentIterator = nodesQueue.poll().getChildren().iterator();
 
 			if (!currentIterator.hasNext()) {
-				iterationDone = true;
+				isIterationDone = true;
 				currentIterator = null;
 				nodesQueue = null;
 				currentNode = null;
@@ -181,16 +182,16 @@ final public class Treez {
 			}
 
 			currentNode = currentIterator.next();
-			filterApplied = false;
-			currentNodeReturned = false;
+			isFilterApplied = false;
+			isCurrentNodeReturned = false;
 		}
 		
 		public boolean hasNext() {
 			while (true) {
-				if (iterationDone)
+				if (isIterationDone)
 					return false;
-				if (!currentNodeReturned && (filterApplied || !filter.isIgnored(currentNode))) {
-					filterApplied = true;
+				if (!isCurrentNodeReturned && (isFilterApplied || !filter.isIgnored(currentNode))) {
+					isFilterApplied = true;
 					return true;
 				}
 				moveToNext();
@@ -201,7 +202,7 @@ final public class Treez {
 			if (!hasNext())
 				throw new NoSuchElementException();
 			T result = currentNode;
-			currentNodeReturned = true;
+			isCurrentNodeReturned = true;
 			nodesQueue.add(currentNode);
 			return result;
 		}

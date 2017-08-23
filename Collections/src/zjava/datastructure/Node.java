@@ -11,7 +11,7 @@ import java.util.List;
  * 
  * @author Ivan Zaitsau
  */
-public interface Node<T extends Node<? super T>> {
+public interface Node<T extends Node<T>> {
 	
 	/**
 	 * Returns list of node child-nodes<br>

@@ -26,7 +26,7 @@ final public class Collectionz {
 	 * strictly less than given object.<br>
 	 * If list contains object, returned value is equal to position, otherwise it's
 	 * equal to binary inverse of the position.<br>
-	 * The array must be sorted into ascending order according to the
+	 * The array must be sorted in ascending order according to the
 	 * {@linkplain Comparable natural ordering} of its elements.
 	 * 
 	 * @param array <tt>HugeArray</tt> to be searched
@@ -41,7 +41,7 @@ final public class Collectionz {
 		if (o == null)
 			throw new NullPointerException();
 		
-		long size = array.size();
+		final long size = array.size();
 		if (size == 0)
 			return ~0;
 		
@@ -63,15 +63,16 @@ final public class Collectionz {
 	 * strictly less than given object.<br>
 	 * If list contains object, returned value is equal to position, otherwise it's
 	 * equal to binary inverse of the position.<br>
-     * The array must be sorted into ascending order according to the specified comparator
-     * prior to making this call.
+     * The array must be sorted in ascending order according to the specified comparator
+     * before making this call.
 	 * 
 	 * @param array <tt>HugeArray</tt> to be searched
 	 * @param o object to search for
 	 * @param comparator the comparator by which the list is ordered or null (if natural
 	 *                   ordering should be used)
 	 * 
-	 * @return index of position right after the last element strictly less than key or it's inverse
+	 * @return index of position (or it's inverse) right after the last element strictly
+	 *         less than given object
 	 * 
 	 * @throws NullPointerException if the specified object is null and comparator doesn't permit null elements
 	 */
@@ -82,7 +83,7 @@ final public class Collectionz {
 			return binarySearch(array, comparable);
 		}
 		
-		long size = array.size();
+		final long size = array.size();
 		if (size == 0)
 			return ~0;
 		
@@ -104,14 +105,14 @@ final public class Collectionz {
 	 * is less or equal to given object.<br>
 	 * If list contains object, returned value is equal to position, otherwise it's
 	 * equal to binary inverse of the position.<br>
-	 * The array must be sorted into ascending order according to the
+	 * The array must be sorted in ascending order according to the
 	 * {@linkplain Comparable natural ordering} of its elements.
 	 * 
 	 * @param array <tt>HugeArray</tt> to be searched
 	 * @param o object to search for
 	 * 
-	 * @return index of position right after the last element strictly less than given
-	 *         object (or it's inverse)
+	 * @return index of position (or it's inverse) right after the last element
+	 *         which is less than or equal to given object
 	 * 
 	 * @throws NullPointerException if the specified object is null
 	 */
@@ -119,7 +120,7 @@ final public class Collectionz {
 		if (o == null)
 			throw new NullPointerException();
 		
-		long size = array.size();
+		final long size = array.size();
 		if (size == 0)
 			return ~0;
 		
@@ -145,15 +146,16 @@ final public class Collectionz {
 	 * is less or equal to given object.<br>
 	 * If list contains object, returned value is equal to position, otherwise it's
 	 * equal to binary inverse of the position.<br>
-     * The array must be sorted into ascending order according to the specified comparator
-     * prior to making this call.
+     * The array must be sorted into ascending order according to the specified
+     * comparator before making this call.
 	 * 
 	 * @param array <tt>HugeArray</tt> to be searched
 	 * @param o object to search for
 	 * @param comparator the comparator by which the list is ordered or null (if natural
 	 *                   ordering should be used)
 	 * 
-	 * @return index of position right after the last element strictly less than key or it's inverse
+	 * @return index of position (or it's inverse) right after the last element
+	 *         which is less than or equal to given object
 	 * 
 	 * @throws NullPointerException if the specified object is null and comparator doesn't permit null elements
 	 */
@@ -164,7 +166,7 @@ final public class Collectionz {
 			return binarySearchNext(array, comparable);
 		}
 
-		long size = array.size();
+		final long size = array.size();
 		if (size == 0)
 			return ~0;
 		
@@ -301,29 +303,26 @@ final public class Collectionz {
 		return new CharacterRangeSet(fromInclusive, toExclusive);
 	}
 
-	// - actual implementation of toString() method
-	// - keeps track of visited Iterable's and arrays of Object's
-	// - limits returned String size to approximately 'charsLeft' characters
-	private static String toString(Object[] array, String onSelf, Set<Object> visited, int charsLeft) {
-		if (array == null)
-			return "null";
+	/* - actual implementation of toString() method
+	 * - keeps track of visited Iterable's and arrays of Object's
+	 */
+	private static StringBuilder toStringBuilder(Object[] array, String onSelf, Set<Object> visited, StringBuilder result) {
 		if (!visited.add(array))
-			return "[...]";
+			return result.append("[...]");
 
-		StringBuilder result = new StringBuilder();
 		result.append('[');
         for (int i = 0; i < array.length; i++) {
         	Object e = array[i];
         	if (e == array)
         		result.append(onSelf);
         	else if (e instanceof Iterable<?>)
-        		result.append(toString((Iterable<?>) e, "(this)", visited, charsLeft - result.length()));
+        		toStringBuilder((Iterable<?>) e, "(this)", visited, result);
         	else if (e instanceof Object[])
-        		result.append(toString((Object[]) e, "(this)", visited, charsLeft - result.length()));
+        		toStringBuilder((Object[]) e, "(this)", visited, result);
         	else 
         		result.append(e);
 
-            if (result.length() > charsLeft) {
+            if (result.length() > TO_STRING_SIZE_THRESHOLD) {
             	result.append(", ...");
             	break;
             }
@@ -331,32 +330,29 @@ final public class Collectionz {
             	result.append(',').append(' ');
         }
         result.append(']');
-        return result.toString();
+        return result;
 	}
 
-	// - actual implementation of toString() method
-	// - keeps track of visited Iterable's and arrays of Object's
-	// - limits returned String size to approximately 'charsLeft' characters
-	private static String toString(Iterable<?> c, String onSelf, Set<Object> visited, int charsLeft) {
-		if (c == null)
-			return "null";
+	/* - actual implementation of toString() method
+	 * - keeps track of visited Iterable's and arrays of Object's
+	 */
+	private static StringBuilder toStringBuilder(Iterable<?> c, String onSelf, Set<Object> visited, StringBuilder result) {
 		if (!visited.add(c))
-			return "[...]";
+			return result.append("[...]");
 
-		StringBuilder result = new StringBuilder();
 		result.append('[');
         for (Iterator<?> iter = c.iterator(); iter.hasNext(); ) {
         	Object e = iter.next();
         	if (e == c)
         		result.append(onSelf);
         	else if (e instanceof Iterable<?>)
-        		result.append(toString((Iterable<?>) e, "(this)", visited, charsLeft - result.length()));
+        		toStringBuilder((Iterable<?>) e, "(this)", visited, result);
         	else if (e instanceof Object[])
-        		result.append(toString((Object[]) e, "(this)", visited, charsLeft - result.length()));
+        		toStringBuilder((Object[]) e, "(this)", visited, result);
         	else 
         		result.append(e);
 
-            if (result.length() > charsLeft) {
+            if (result.length() > TO_STRING_SIZE_THRESHOLD) {
             	result.append(", ...");
             	break;
             }
@@ -364,7 +360,7 @@ final public class Collectionz {
             	result.append(',').append(' ');
         }
         result.append(']');
-        return result.toString();
+        return result;
 	}
 	
     /**
@@ -385,9 +381,11 @@ final public class Collectionz {
 	 * @return a string representation of the given <tt>Iterable</tt>
      */
 	public static String toString(Iterable<?> c, String onSelf) {
-		return toString(c, onSelf, new HashedSet<Object>(Hasher.IDENTITY), TO_STRING_SIZE_THRESHOLD);
+		if (c == null)
+			return "null";
+		return toStringBuilder(c, onSelf, new HashedSet<Object>(Hasher.IDENTITY), new StringBuilder()).toString();
 	}
-	
+
     /**
      * Returns a string representation of the given <tt>Iterable</tt>.<br>
      * The string representation consists of a list of the <tt>Iterable</tt>'s

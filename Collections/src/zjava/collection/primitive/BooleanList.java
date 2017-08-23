@@ -10,15 +10,15 @@ import zjava.system.Const;
  * <p>The <tt>size</tt>, <tt>get</tt>, <tt>set</tt> operations run in
  * constant time. The <tt>add</tt> operation runs in <i>amortized constant
  * time</i>, that is, adding n elements requires O(n) time. Removal and
- * insertion of elements at arbitrary index runs in <i>O(sqrt(n)) amortized
- * time</i>.
+ * insertion of elements at arbitrary index runs in O(n<sup>1/2</sup>)
+ * <i>amortized time</i>.
  * 
  * <p>Basically, this class has the following advantages over regular array:
- * <li>Resizable implementation which requires only O(sqrt(n)) of additional
- * memory.</li>
+ * <li>Resizable implementation which requires only O(n<sup>1/2</sup>) of
+ * additional memory.</li>
  * <li>Faster insertions at random positions.</li>
  * <li>Support for more than {@code Integer.MAX_VALUE} elements.</li>
- * <li>Uses only 1 bit of memory per value
+ * <li>Uses only 1 bit of memory per value</li>
  * 
  * @since Zjava 1.0
  *  
@@ -269,8 +269,10 @@ public class BooleanList implements Cloneable, java.io.Serializable {
 			return (values[index >>> ADDRESS_BITS_PER_WORD] & (1L << (index & WORD_MASK))) != 0;
 		}
 		
-		// - updates given bit at the specified index to given value
-		// - returns the value previously at the specified index
+		/*
+		 * updates given bit at the specified index to given value
+		 * returns the value previously at the specified index
+		 */
 		private boolean setBit(final int index, final boolean value) {
 			final int wi = index >>> ADDRESS_BITS_PER_WORD;
 			final long beforeUpdate = values[wi];

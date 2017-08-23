@@ -5,7 +5,7 @@ package zjava.collection;
  * 
  * The <tt>HugeArray</tt> interface defines basic methods (size/get/set).<br>
  * These methods operate on <tt>long</tt> indexes and are able to access
- * elements beyond <tt>Integer.MAX_VALUE</tt> limit.<br>
+ * elements beyond <tt>Integer.MAX_VALUE</tt> limit.
  * 
  * @param <E> - the type of elements in this array
  * 

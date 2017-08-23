@@ -16,14 +16,22 @@ import static zjava.system.Const.MAX_ARRAY_SIZE;
  * Implements all optional list operations, and permits all elements,
  * including <tt>null</tt>.
  *
- * <p>The <tt>size</tt>, <tt>isEmpty</tt>, <tt>get</tt>, <tt>set</tt>,
+ * <p>
+ * The <tt>size</tt>, <tt>isEmpty</tt>, <tt>get</tt>, <tt>set</tt>,
  * <tt>iterator</tt>, and <tt>listIterator</tt> operations run in constant
  * time.  The <tt>add</tt> operation runs in <i>amortized constant time</i>,
  * that is, adding n elements requires O(n) time. Removal and insertion of
- * elements at arbitrary index runs in <i>O(sqrt(n)) amortized time</i>.<br>
+ * elements at arbitrary index runs in O(n<sup>1/2</sup>) <i>amortized time</i>.
+ * 
+ * <p>
+ * DynamicList class supports lists of huge capacities and has means of accessing
+ * elements beyond regular limit. See {@link HugeListSupport} and {@link HugeList}
+ * for additional information.
+ * 
+ * <p>
  * In most cases this implementation is significantly faster than
  * {@link java.util.ArrayList ArrayList} implementation and requires just
- * O(sqrt(n)) of additional memory.
+ * O(n<sup>1/2</sup>) of additional memory.
  *
  * @param <E> - the type of elements in this list
  * 
@@ -39,7 +47,7 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeList
 	static private final long serialVersionUID = 201503121600L;
 	
 	/** Actual initial block size is 2<sup>INITIAL_BLOCK_ADDRESS_BITS</sup> */
-	static private final int INITIAL_BLOCK_ADDRESS_BITS = 5;
+	static private final int INITIAL_BLOCK_ADDRESS_BITS = 4;
 	
 	/** Number of blocks on DynamicList initialization.
 	 * <br> <b>Note:</b> Must be even number due to some simplifications and assumptions made in the code*/
@@ -57,7 +65,7 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeList
 	 * <p>Implementation may vary, but the following conditions must be met:
 	 * <li> Insertions and deletions at the beginning and the end of the block must complete in constant time
 	 * <li> Retrieval of element at arbitrary position must complete in constant time
-	 * <li> Any other operation must complete in O(n)
+	 * <li> Any other operation must complete in at least O(n)
 	 * <li> Only Blocks of sizes 2, 4, 8, ... 2<sup>30</sup> need to be supported
 	 * 
 	 * @author Ivan Zaitsau
@@ -181,22 +189,36 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeList
 		
 		// - shifts values in direction of the beginning of the values array
 		private void shiftToLeft(final int fromPosition, final int toPosition) {
+
+			int fromIndex = index(fromPosition);
 			final int toIndex = index(toPosition);
-			for (int i = index(fromPosition); i != toIndex; ) {
-				final int ni = (i + 1) & (values.length - 1);
-				values[i] = values[ni];
-				i = ni;
+			
+			if (fromIndex > toIndex) {
+				for (int i = fromIndex+1; i < values.length; i++)
+					values[i-1] = values[i];
+				values[values.length-1] = values[0];
+				fromIndex = 0;
 			}
+
+			for (int i = fromIndex; i < toIndex; i++)
+				values[i] = values[i+1];
 		}
 		
 		// - shifts values in direction of the end of the values array
 		private void shiftToRight(final int fromPosition, final int toPosition) {
+
 			final int fromIndex = index(fromPosition);
-			for (int i = index(toPosition); i != fromIndex; ) {
-				final int ni = (i - 1) & (values.length - 1);
-				values[i] = values[ni];
-				i = ni;
+			int toIndex = index(toPosition);
+			
+			if (fromIndex > toIndex) {
+				for (int i = toIndex; i > 0; i--)
+					values[i] = values[i-1];
+				values[0] = values[values.length-1];
+				toIndex = values.length - 1;
 			}
+
+			for (int i = toIndex; i > fromIndex; i--)
+				values[i] = values[i-1];
 		}
 
 		// - inserts given value at given position
@@ -211,7 +233,7 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeList
 				shiftToLeft(0, pos);
 			}
 			else {
-				shiftToRight(pos, (size == values.length) ? size-1 : size);
+				shiftToRight(pos, Math.min(size, values.length-1));
 			}
 			values[index(pos)] = value;
 			if (size < values.length) size++;
@@ -550,7 +572,7 @@ public class DynamicList<E> extends AbstractList<E> implements List<E>, HugeList
     	int blockSize = 1 << blockAddressBits;
     	int mask = (1 << blockAddressBits) - 1;
     	int i = 0;
-		while (i < values.length && ((index + i) & mask) > 0) {
+		while (i < values.length && ((index + i) & mask) != 0) {
     		fastAdd((long)index + i, values[i]);
     		i++;
 		}

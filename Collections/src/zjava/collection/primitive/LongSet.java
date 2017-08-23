@@ -13,7 +13,7 @@ import zjava.system.Const;
  * (Supports signed/unsigned and ascending/descending order of it's elements).
  * 
  * <p>This implementation provides guaranteed log(n) time cost for {@code contains},
- * {@code add} and {@code remove} operations.
+ * {@code add}, {@code remove} and {@code next} operations.
  * 
  * <p>Memory usage varies from approximately 2 bits to 80 bytes per value, depending
  * on numbers distribution.<br>

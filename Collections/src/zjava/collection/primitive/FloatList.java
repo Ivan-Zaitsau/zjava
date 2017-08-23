@@ -27,7 +27,7 @@ public class FloatList implements Cloneable, java.io.Serializable {
 	static private final long serialVersionUID = 201503092100L;
 	
 	/** Actual initial block size is 2<sup>INITIAL_BLOCK_ADDRESS_BITS</sup> */
-	static private final int INITIAL_BLOCK_ADDRESS_BITS = 5;
+	static private final int INITIAL_BLOCK_ADDRESS_BITS = 4;
 	
 	/** Number of blocks on FloatList initialization.
 	 * <br> <b>Note:</b> Must be even number due to some simplifications and assumptions made in the code*/

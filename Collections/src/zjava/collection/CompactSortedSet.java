@@ -9,10 +9,10 @@ import java.util.NoSuchElementException;
 import java.util.SortedSet;
 
 /**
- * A {@link SortedSet} implementation based on a {@link DynamicList}.<br>
- * The elements are ordered using their {@link Comparable natural ordering}, or by
- * a {@link Comparator} provided at set creation time, depending on which constructor
- * is used.<br>
+ * A {@link SortedSet} implementation which uses {@link DynamicList} as an internal
+ * storage.<br>
+ * The elements are ordered using their {@link Comparable natural ordering} or by
+ * a {@link Comparator} provided at creation time, depending on constructor used.<br>
  * Doesn't permit <tt>null</tt> element.<br>
  * Supports more than <tt>Integer.MAX_VALUE</tt> elements.
  * 
@@ -25,17 +25,16 @@ import java.util.SortedSet;
  * operation and amortized sqrt(n) time cost for the operations {@code add} and
  * {@code remove}. Retrieval of first or last element completes in constant time.
  *
- * <p>Note that the ordering maintained by a set (whether or not an explicit
- * comparator is provided) must be <i>consistent with equals</i> if it is to
- * correctly implement the {@code Set} interface.  (See {@link Comparable}
- * or {@link Comparator} for a precise definition of <i>consistent with
- * equals</i>.)  This is so because the {@code Set} interface is defined in
- * terms of the {@code equals} operation, but a {@code CompactSortedSet} instance
- * performs all element comparisons using its {@code compareTo} (or
- * {@code compare}) method, so two elements that are deemed equal by this method
- * are, from the standpoint of the set, equal.  The behavior of a set
- * <i>is</i> well-defined even if its ordering is inconsistent with equals; it
- * just fails to obey the general contract of the {@code Set} interface.
+ * <p>Note that the ordering maintained by this set (whether or not an explicit
+ * comparator is provided) must be <i>consistent with equals</i> to follow  {@code Set}
+ * interface contract. (See {@link Comparable} or {@link Comparator} for a precise
+ * definition of <i>consistent with equals</i>.)
+ * Reason for this is that {@code Set} interface is defined in terms of the {@code equals}
+ * operation, but a {@code CompactSortedSet} instance performs all element comparisons using
+ * {@code compareTo} or {@code compare} method, so two elements that are deemed equal by this
+ * method are, from the standpoint of this set, equal.
+ * However, the behavior of a set <i>is</i> well-defined even if its ordering is inconsistent
+ * with equals.
  *
  * @param <E> - the type of elements in this set
  *  

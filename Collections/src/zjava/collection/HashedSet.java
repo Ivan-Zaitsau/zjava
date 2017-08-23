@@ -73,6 +73,15 @@ public class HashedSet<E> extends AbstractSet<E> implements Set<E>, HugeCapacity
 		return false;
 	}
 
+	private boolean removeNull() {
+		if (containsNull) {
+			containsNull = false;
+			size--;
+			return true;			
+		}
+		return false;
+	}
+
 	public boolean add(E e) {
 		if (e == null)
 			return addNull();
@@ -80,15 +89,6 @@ public class HashedSet<E> extends AbstractSet<E> implements Set<E>, HugeCapacity
 			modCount++;
 			size++;
 			return true;
-		}
-		return false;
-	}
-
-	private boolean removeNull() {
-		if (containsNull) {
-			containsNull = false;
-			size--;
-			return true;			
 		}
 		return false;
 	}

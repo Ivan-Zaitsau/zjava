@@ -169,6 +169,17 @@ public abstract class RangeSet<E> extends AbstractSet<E> implements Set<E>, Huge
      * 
      * @throws UnsupportedOperationException {@inheritDoc}
      */
+    public boolean remove(Object o) {
+    	throw new UnsupportedOperationException();    	
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * <p>This implementation always throws an {@code UnsupportedOperationException}.
+     * 
+     * @throws UnsupportedOperationException {@inheritDoc}
+     */
     public void clear() {
     	throw new UnsupportedOperationException();    	
     }
